@@ -7,8 +7,11 @@
 # If the above line is not correctly displayed, fix your editor first!
 
 general {
-        colors = true
-        interval = 5
+    colors = true
+    color_good = "#a1b56c"
+    color_bad = "#ab4642"
+    ## remember to add your prefered interval
+    interval = 1
 }
 
 # order += "ipv6"
@@ -54,7 +57,10 @@ net_rate {
 battery_level {
 	hide_seconds = True
 	measurement_mode = "acpi"
-        format = "battery: {percent}% {time_remaining}"
+	charging_character = "⚡"
+	blocks = "?"
+        format = "{icon} {percent}% {time_remaining}"
+	notify_low_level = True
 }
 
 run_watch DHCP {
@@ -95,8 +101,30 @@ volume_status master {
 	device = 1
         format = "♪: {percentage} %"
         format_muted = "♪: muted {percentage} %"
-        threshold_bad = 1
-        threshold_degraded = 0
+
+	thresholds = [
+		(0    , "#FF000"),
+		(5    , "#FF1900"),
+		(10   , "#FF3200"),
+		(15   , "#FF4B00"),
+		(20   , "#FF6400"),
+		(25   , "#FF7D00"),
+		(30   , "#FF9600"),
+		(35   , "#FFAF00"),
+		(40   , "#FFC800"),
+		(45   , "#FFE100"),
+		(50   , "#FFFA00"),
+		(55   , "#E6FA00"),
+		(60   , "#CDFA00"),
+		(65   , "#B4FA00"),
+		(70   , "#9BFA00"),
+		(75   , "#82FA00"),
+		(80   , "#69FA00"),
+		(85   , "#50FA00"),
+		(90   , "#37FA00"),
+		(95   , "#1EFA00"),
+		(100  , "#00FF00")
+	]
 }
 
 backlight {

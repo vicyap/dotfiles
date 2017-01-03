@@ -232,8 +232,9 @@ bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle # mute sound
 
 # screen brightness controls
-bindsym XF86MonBrightnessUp exec xbacklight -inc 10 # increase screen brightness
-bindsym XF86MonBrightnessDown exec xbacklight -dec 10 # decrease screen brightness
+set $brightness_delta 5
+bindsym XF86MonBrightnessUp exec xbacklight -inc $brightness_delta # increase screen brightness
+bindsym XF86MonBrightnessDown exec xbacklight -dec $brightness_delta # decrease screen brightness
 
 # playerctl controls
 bindsym $mod+Control+Right exec playerctl next
