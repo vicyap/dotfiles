@@ -65,7 +65,7 @@ battery_level {
 	hide_seconds = True
 	measurement_mode = "acpi"
 	charging_character = "⚡"
-	blocks = "?"
+	blocks = ""
         format = "{icon} {percent}% {time_remaining}"
 	notify_low_level = True
 }
