@@ -44,40 +44,74 @@
 ! ============
 
 URxvt.scrollBar: false
-
 URxvt.font: xft:monospace:size=12
 
-URxvt.background:                     #181818
-URxvt.foreground:                     #d8d8d8
-URxvt.cursorColor:                    #d8d8d8
+! default dark
+! URxvt.background:                     #181818
+! URxvt.foreground:                     #d8d8d8
+! URxvt.cursorColor:                    #d8d8d8
+! 
+! URxvt.scrollColor:                    #d8d8d8
+! URxvt.highlightColor:                 #383838
+! URxvt.highlightTextColor:             #b8b8b8
+! 
+! URxvt.color0:                         #181818
+! URxvt.color1:                         #ab4642
+! URxvt.color2:                         #a1b56c
+! URxvt.color3:                         #f7ca88
+! URxvt.color4:                         #7cafc2
+! URxvt.color5:                         #ba8baf
+! URxvt.color6:                         #86c1b9
+! URxvt.color7:                         #d8d8d8
+! URxvt.color8:                         #585858
+! URxvt.color9:                         #ab4642
+! URxvt.color10:                        #a1b56c
+! URxvt.color11:                        #f7ca88
+! URxvt.color12:                        #7cafc2
+! URxvt.color13:                        #ba8baf
+! URxvt.color14:                        #86c1b9
+! URxvt.color15:                        #f8f8f8
+! 
+! URxvt.color16:                        #dc9656
+! URxvt.color17:                        #a16946
+! URxvt.color18:                        #282828
+! URxvt.color19:                        #383838
+! URxvt.color20:                        #b8b8b8
+! URxvt.color21:                        #e8e8e8
 
-URxvt.scrollColor:                    #d8d8d8
-URxvt.highlightColor:                 #383838
-URxvt.highlightTextColor:             #b8b8b8
+! irblack dark
+URxvt*background:                     #000000
+URxvt*foreground:                     #b5b3aa
+URxvt*cursorColor:                    #b5b3aa
 
-URxvt.color0:                         #181818
-URxvt.color1:                         #ab4642
-URxvt.color2:                         #a1b56c
-URxvt.color3:                         #f7ca88
-URxvt.color4:                         #7cafc2
-URxvt.color5:                         #ba8baf
-URxvt.color6:                         #86c1b9
-URxvt.color7:                         #d8d8d8
-URxvt.color8:                         #585858
-URxvt.color9:                         #ab4642
-URxvt.color10:                        #a1b56c
-URxvt.color11:                        #f7ca88
-URxvt.color12:                        #7cafc2
-URxvt.color13:                        #ba8baf
-URxvt.color14:                        #86c1b9
-URxvt.color15:                        #f8f8f8
+URxvt*scrollColor:                    #b5b3aa
+URxvt*highlightColor:                 #484844
+URxvt*highlightTextColor:             #918f88
 
-URxvt.color16:                        #dc9656
-URxvt.color17:                        #a16946
-URxvt.color18:                        #282828
-URxvt.color19:                        #383838
-URxvt.color20:                        #b8b8b8
-URxvt.color21:                        #e8e8e8
+URxvt*color0:                         #000000
+URxvt*color1:                         #ff6c60
+URxvt*color2:                         #a8ff60
+URxvt*color3:                         #ffffb6
+URxvt*color4:                         #96cbfe
+URxvt*color5:                         #ff73fd
+URxvt*color6:                         #c6c5fe
+URxvt*color7:                         #b5b3aa
+URxvt*color8:                         #6c6c66
+URxvt*color9:                         #ff6c60
+URxvt*color10:                        #a8ff60
+URxvt*color11:                        #ffffb6
+URxvt*color12:                        #96cbfe
+URxvt*color13:                        #ff73fd
+URxvt*color14:                        #c6c5fe
+URxvt*color15:                        #fdfbee
+
+URxvt*color16:                        #e9c062
+URxvt*color17:                        #b18a3d
+URxvt*color18:                        #242422
+URxvt*color19:                        #484844
+URxvt*color20:                        #918f88
+URxvt*color21:                        #d9d7cc
+
 
 URxvt.perl-ext-common: default,matcher,fullscreen,resize-font
 URxvt.keysym.F11: perl:fullscreen:switch

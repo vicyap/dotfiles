@@ -8,8 +8,15 @@
 
 general {
     colors = true
-    color_good = "#a1b56c"
-    color_bad = "#ab4642"
+
+    # default dark
+    # color_good = "#a1b56c"
+    # color_bad = "#ab4642"
+
+    # irblack dark
+    color_good = "#a8ff60"
+    color_bad = "#ff6c60"
+
     ## remember to add your prefered interval
     interval = 1
 }
@@ -129,7 +136,7 @@ volume_status master {
 
 backlight {
 	cache_timeout = 0.5
-	format = "brightness: {level} %"
+	format = ": {level} %"
 }
 
 spotify {
