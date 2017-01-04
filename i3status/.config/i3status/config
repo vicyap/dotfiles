@@ -9,8 +9,7 @@
 general {
     colors = true
 
-    # default dark
-    # color_good = "#a1b56c"
+    # default dark # color_good = "#a1b56c"
     # color_bad = "#ab4642"
 
     # irblack dark
@@ -65,9 +64,8 @@ battery_level {
 	hide_seconds = True
 	measurement_mode = "acpi"
 	charging_character = "⚡"
-	blocks = ""
+	blocks = " "
         format = "{icon} {percent}% {time_remaining}"
-	notify_low_level = True
 }
 
 run_watch DHCP {
