@@ -30,6 +30,7 @@ order += "spotify"
 order += "wifi"
 order += "ethernet _first_"
 # order += "load"
+order += "diskdata all"
 order += "battery_level"
 order += "volume_status master"
 order += "backlight"
@@ -57,7 +58,7 @@ ethernet _first_ {
 
 net_rate {
 	precision = 0
-	format = "(D:{down}) (U:{up})"
+	format = "(D:{down:10}) (U:{up:10})"
 }
 
 battery_level {
@@ -97,7 +98,21 @@ load {
 }
 
 disk "/" {
-        format = "%avail"
+        format = "%free"
+}
+
+diskdata "all" {
+	format = ": {free} GB"
+}
+
+diskdata "root" {
+	disk = "/dev/mapper/years--of--war--vg-root"
+	format = "{disk}: {free}"
+}
+
+diskdata "home" {
+	disk = "/dev/mapper/years--of--war--vg-home"
+	format = "/home: {free}"
 }
 
 volume_status master {
