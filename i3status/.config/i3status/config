@@ -14,27 +14,49 @@ general {
 
     # irblack dark
     color_good = "#a8ff60"
+    color_degraded = "#e9c062"
+    color_charging = "#ffffb6"
     color_bad = "#ff6c60"
 
     ## remember to add your prefered interval
     interval = 1
 }
 
+order += "weather_yahoo"
 # order += "ipv6"
 order += "spotify"
 # order += "net_rate"
 # order += "disk /"
 # order += "run_watch DHCP"
 # order += "run_watch VPN"
+order += "whatismyip"
 # order += "wireless _first_"
 order += "wifi"
-order += "ethernet _first_"
+# order += "ethernet _first_"
 # order += "load"
+order += "sysdata"
 order += "diskdata all"
 order += "battery_level"
 order += "volume_status master"
 order += "backlight"
 order += "tztime local"
+
+weather_yahoo {
+    cache_timeout = 3600
+    woeid = 12590014 # Austin
+    units = 'f'
+    forecast_include_today = True
+    forecast_text_separator = "|"
+    format_forecast = "({low}, {high}, {icon})"
+    format_today = "{temp}°{units} {icon}"
+    format = "{today}|{forecasts}"
+    forecast_days = 3
+}
+
+whatismyip {
+    cache_timeout = 1
+    format = "{ip}"
+}
 
 wireless _first_ {
         format_up = "W: (%quality at %essid) %ip"
@@ -63,10 +85,11 @@ net_rate {
 
 battery_level {
 	hide_seconds = True
+    threshold_full = 30
 	measurement_mode = "acpi"
 	charging_character = "⚡"
 	blocks = " "
-        format = "{icon} {percent}% {time_remaining}"
+    format = "{icon} {percent}% {time_remaining}"
 }
 
 run_watch DHCP {
@@ -88,9 +111,11 @@ cpu_usage {
 
 sysdata {
 	cache_timeout = 2
-	high_threshold = 75
-	med_threshold = 40
-	format = "CPU: {cpu_usage} % RAM: {mem_used} G {mem_used_percent} %"
+    thresholds = [
+        (0, "good"),
+        (40, "degraded"),
+        (80, "high")]
+	format = "[\?color=cpu CPU: {cpu_usage} %], [\?color=mem RAM: {mem_used} G {mem_used_percent} %]"
 }
 
 load {
@@ -102,7 +127,13 @@ disk "/" {
 }
 
 diskdata "all" {
-	format = ": {free} GB"
+	format = "[\?color=free : {free} G]"
+    thresholds = {
+        'free': [
+            (20, 'bad'),
+            (20, 'degraded'),
+            (20, 'good')]
+    }
 }
 
 diskdata "root" {
