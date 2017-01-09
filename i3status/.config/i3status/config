@@ -22,14 +22,14 @@ general {
     interval = 1
 }
 
+order += "spotify"
 order += "weather_yahoo"
 # order += "ipv6"
-order += "spotify"
 # order += "net_rate"
 # order += "disk /"
 # order += "run_watch DHCP"
 # order += "run_watch VPN"
-order += "whatismyip"
+# order += "whatismyip"
 # order += "wireless _first_"
 order += "wifi"
 # order += "ethernet _first_"
@@ -46,10 +46,10 @@ weather_yahoo {
     woeid = 12590014 # Austin
     units = 'f'
     forecast_include_today = True
-    forecast_text_separator = "|"
-    format_forecast = "({low}, {high}, {icon})"
+    forecast_text_separator = " | "
+    format_forecast = "({low}, {high})"
     format_today = "{temp}°{units} {icon}"
-    format = "{today}|{forecasts}"
+    format = "{today} {forecasts}"
     forecast_days = 3
 }
 
@@ -68,7 +68,7 @@ wifi {
 	bitrate_degraded = 1
 	cache_timeout = 1
 	round_bitrate = False
-	format_up = "W: ({signal_percent} at {ssid}) {bitrate} {ip}"
+	format_up = "W: ({signal_percent} at {ssid}) {bitrate}"
 	format_down = "W: down"
 }
 
