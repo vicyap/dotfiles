@@ -10,8 +10,7 @@ export ZSH=$HOME/.oh-my-zsh
 # it'll load a random theme each time that oh-my-zsh is loaded.
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 # ZSH_THEME="robbyrussell"
-# ZSH_THEME="minimal"
-ZSH_THEME="pure"
+ZSH_THEME=""
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -88,9 +87,38 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# Aliases
+
+alias tasks="task list"
+
+# Theme
+
+PROMPT_ICON=">"
+
 ZSH_THEME_HG_PROMPT_PREFIX="%{$fg_bold[magenta]%}hg:(%{$fg[red]%}"
 ZSH_THEME_HG_PROMPT_SUFFIX="%{$reset_color%}"
 ZSH_THEME_HG_PROMPT_DIRTY="%{$fg[magenta]%}) %{$fg[yellow]%}✗%{$reset_color%}"
 ZSH_THEME_HG_PROMPT_CLEAN="%{$fg[magenta]%})"
 
-alias tasks="task list"
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[magenta]%}git:(%{$fg[red]%}"
+ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%} "
+ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[magenta]%}) %{$fg[yellow]%}✗%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg[magenta]%})"
+
+# Displays the exec time of the last command if set threshold was exceeded
+#
+cmd_exec_time() {
+    local stop=`date +%s`
+    local start=${cmd_timestamp:-$stop}
+    let local elapsed=$stop-$start
+    [ $elapsed -gt 5 ] && echo "%{$fg[yellow]%}${elapsed}s%{$reset_color%}"
+}
+
+# Get the initial timestamp for cmd_exec_time
+#
+function preexec() {
+  cmd_timestamp=`date +%s`
+}
+
+local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON :%{$fg_bold[red]%}$PROMPT_ICON )"
+PROMPT=$'\n%{$fg[cyan]%}%c $(git_prompt_info)$(hg_prompt_info)$(cmd_exec_time)\n%* ${ret_status} %{$reset_color%}'
