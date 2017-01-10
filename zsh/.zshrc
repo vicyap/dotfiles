@@ -54,7 +54,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(command-not-found cp git man mercurial)
+plugins=(command-not-found cp git git-prompt man mercurial)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -100,10 +100,9 @@ ZSH_THEME_HG_PROMPT_SUFFIX="%{$reset_color%}"
 ZSH_THEME_HG_PROMPT_DIRTY="%{$fg[magenta]%}) %{$fg[yellow]%}✗%{$reset_color%}"
 ZSH_THEME_HG_PROMPT_CLEAN="%{$fg[magenta]%})"
 
-ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[magenta]%}git:(%{$fg[red]%}"
-ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%} "
-ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[magenta]%}) %{$fg[yellow]%}✗%{$reset_color%}"
-ZSH_THEME_GIT_PROMPT_CLEAN="%{$fg[magenta]%})"
+ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[magenta]%}git:(%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_SUFFIX="%{$fg_bold[magenta]%})%{$reset_color%}"
+ZSH_THEME_GIT_PROMPT_BRANCH="%{$fg_bold[red]%}"
 
 # Displays the exec time of the last command if set threshold was exceeded
 #
@@ -120,5 +119,6 @@ function preexec() {
   cmd_timestamp=`date +%s`
 }
 
-local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON :%{$fg_bold[red]%}$PROMPT_ICON )"
-PROMPT=$'\n%{$fg[cyan]%}%c $(git_prompt_info)$(hg_prompt_info)$(cmd_exec_time)\n%* ${ret_status} %{$reset_color%}'
+local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_ICON)"
+PROMPT=$'\n%{$fg[cyan]%}%c $(git_super_status)$(hg_prompt_info) $(cmd_exec_time)\n%* ${ret_status} %{$reset_color%}'
+RPROMPT=''
