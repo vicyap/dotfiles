@@ -54,7 +54,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(command-not-found cp git git-prompt man mercurial)
+plugins=(autoenv command-not-found cp git git-prompt mercurial virtualenvwrapper)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -122,3 +122,9 @@ function preexec() {
 local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_ICON)"
 PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(git_super_status)$(hg_prompt_info) $(cmd_exec_time)\n%* ${ret_status} %{$reset_color%}'
 RPROMPT=''
+
+# virtualenvwrapper
+
+export WORKON_HOME=~/.virtualenvs
+DISABLE_VENV_CD=0
+VIRTUAL_ENV_DISABLE_PROMPT=1
