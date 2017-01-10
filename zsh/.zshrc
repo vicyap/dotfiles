@@ -120,5 +120,5 @@ function preexec() {
 }
 
 local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_ICON)"
-PROMPT=$'\n%{$fg[cyan]%}%c $(git_super_status)$(hg_prompt_info) $(cmd_exec_time)\n%* ${ret_status} %{$reset_color%}'
+PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(git_super_status)$(hg_prompt_info) $(cmd_exec_time)\n%* ${ret_status} %{$reset_color%}'
 RPROMPT=''
