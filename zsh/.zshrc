@@ -123,8 +123,16 @@ local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_I
 PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(git_super_status)$(hg_prompt_info) $(cmd_exec_time)\n%* ${ret_status} %{$reset_color%}'
 RPROMPT=''
 
+ local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_ICON)"
+ local current_user="%{$fg_bold[magenta]%}$(hostname)(%{$fg_bold[red]%}$(whoami)%{$fg_bold[magenta]%})"
+ local current_time="%{$reset_color%}%*"
+ PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(git_super_status)$(hg_prompt_info) $(cmd_exec_time)\n${current_time} ${current_user} ${ret_status} %{$reset_color%}'
+ RPROMPT=''
+
 # virtualenvwrapper
 
 export WORKON_HOME=~/.virtualenvs
 DISABLE_VENV_CD=0
 VIRTUAL_ENV_DISABLE_PROMPT=1
+
+export DISPLAY=:0
