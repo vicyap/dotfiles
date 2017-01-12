@@ -99,8 +99,8 @@ PROMPT_ICON=">"
 # mercurial
 ZSH_THEME_HG_PROMPT_PREFIX="%{$fg_bold[magenta]%}hg:(%{$fg[red]%}"
 ZSH_THEME_HG_PROMPT_SUFFIX="%{$reset_color%}"
-ZSH_THEME_HG_PROMPT_DIRTY="%{$fg[magenta]%}) %{$fg[yellow]%}✗%{$reset_color%}"
-ZSH_THEME_HG_PROMPT_CLEAN="%{$fg[magenta]%})"
+ZSH_THEME_HG_PROMPT_DIRTY="%{$reset_color%}|%{$fg[yellow]%}✗%{$reset_color%}%{$fg[magenta]%})"
+ZSH_THEME_HG_PROMPT_CLEAN="%{$reset_color%}|%{$fg[yellow]%}✔%{$reset_color%}%{$fg[magenta]%})"
 
 # git
 ZSH_THEME_GIT_PROMPT_PREFIX="%{$fg_bold[magenta]%}git:(%{$reset_color%}"
@@ -109,11 +109,26 @@ ZSH_THEME_GIT_PROMPT_BRANCH="%{$fg_bold[red]%}"
 
 # zsh_vcs_prompt
 ZSH_VCS_PROMPT_ENABLE_CACHING='true'
+
+#s : The VCS name (e.g. git svn hg).
+#a : The action name (e.g. merge, rebase, rebase_i)
+#b : The current branch name.
+
+#c : The ahead status.
+#d : The behind status.
+
+#e : The staged status.
+#f : The conflicted status.
+#g : The unstaged status.
+#h : The untracked status.
+#i : The stashed status.
+#j : The clean status.
+
 ## Git without Action.
 # VCS name
-ZSH_VCS_PROMPT_GIT_FORMATS='(%{%B%F{yellow}%}#s%{%f%b%})'
+ZSH_VCS_PROMPT_GIT_FORMATS='%{%B%F{magenta}%}#s%{%f%b%}'
 # Branch name
-ZSH_VCS_PROMPT_GIT_FORMATS+='[%{%B%F{red}%}#b%{%f%b%}'
+ZSH_VCS_PROMPT_GIT_FORMATS+='%{%B%F{magenta}%}(%{%B%F{red}%}#b%{%f%b%}'
 # Ahead and Behind
 ZSH_VCS_PROMPT_GIT_FORMATS+='#c#d|'
 # Staged
@@ -127,13 +142,13 @@ ZSH_VCS_PROMPT_GIT_FORMATS+='#h'
 # Stashed
 ZSH_VCS_PROMPT_GIT_FORMATS+='%{%F{cyan}%}#i%{%f%b%}'
 # Clean
-ZSH_VCS_PROMPT_GIT_FORMATS+='%{%F{green}%}#j%{%f%b%}]'
+ZSH_VCS_PROMPT_GIT_FORMATS+='%{%F{green}%}#j%{%f%b%}%{%B%F{magenta}%})'
 
 ### Git with Action.
 # VCS name
-ZSH_VCS_PROMPT_GIT_ACTION_FORMATS='(%{%B%F{yellow}%}#s%{%f%b%})'
+ZSH_VCS_PROMPT_GIT_ACTION_FORMATS='%{%B%F{yellow}%}#s%{%f%b%}'
 # Branch name
-ZSH_VCS_PROMPT_GIT_ACTION_FORMATS+='[%{%B%F{red}%}#b%{%f%b%}'
+ZSH_VCS_PROMPT_GIT_ACTION_FORMATS+='%{%B%F{magenta}%}(%{%B%F{red}%}#b%{%f%b%}'
 # Action
 ZSH_VCS_PROMPT_GIT_ACTION_FORMATS+=':%{%B%F{red}%}#a%{%f%b%}'
 # Ahead and Behind
@@ -149,21 +164,15 @@ ZSH_VCS_PROMPT_GIT_ACTION_FORMATS+='#h'
 # Stashed
 ZSH_VCS_PROMPT_GIT_ACTION_FORMATS+='%{%F{cyan}%}#i%{%f%}'
 # Clean
-ZSH_VCS_PROMPT_GIT_ACTION_FORMATS+='%{%F{green}%}#j%{%f%}]'
+ZSH_VCS_PROMPT_GIT_ACTION_FORMATS+='%{%F{green}%}#j%{%f%}%{%B%F{magenta}%})'
 
 ## Other VCS without Action.
 # VCS name
-ZSH_VCS_PROMPT_VCS_FORMATS='(%{%B%F{yellow}%}#s%{%f%b%})'
-# Branch name
-ZSH_VCS_PROMPT_VCS_FORMATS+='[%{%B%F{red}%}#b%{%f%b%}]'
+ZSH_VCS_PROMPT_VCS_FORMATS=''
 
 ## Other VCS with Action.
 # VCS name
-ZSH_VCS_PROMPT_VCS_ACTION_FORMATS='(%{%B%F{yellow}%}#s%{%f%b%})'
-# Branch name
-ZSH_VCS_PROMPT_VCS_ACTION_FORMATS+='[%{%B%F{red}%}#b%{%f%b%}'
-# Action
-ZSH_VCS_PROMPT_VCS_ACTION_FORMATS+=':%{%B%F{red}%}#a%{%f%b%}]'
+ZSH_VCS_PROMPT_VCS_ACTION_FORMATS=''
 
 # Displays the exec time of the last command if set threshold was exceeded
 #
@@ -187,7 +196,7 @@ RPROMPT=''
 local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_ICON)"
 local current_user="%{$fg_bold[magenta]%}$(hostname)(%{$fg_bold[red]%}$(whoami)%{$fg_bold[magenta]%})"
 local current_time="%{$reset_color%}%*"
-PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(vcs_super_info) $(cmd_exec_time)\n${current_time} ${current_user} ${ret_status} %{$reset_color%}'
+PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(vcs_super_info)$(hg_prompt_info) $(cmd_exec_time)\n${current_time} ${current_user} ${ret_status} %{$reset_color%}'
 RPROMPT=''
 
 # virtualenvwrapper
