@@ -14,5 +14,7 @@ rm -f ~/.virtualenvs/postactivate
 rm -f ~/.virtualenvs/postdeactivate
 ./stow_packages.sh
 
+git clone git://github.com/yonchu/zsh-vcs-prompt.git ~/.zsh/custom/zsh-vcs-prompt
+
 ./install_oh_my_zsh.sh
 xrdb $HOME/.Xresources
