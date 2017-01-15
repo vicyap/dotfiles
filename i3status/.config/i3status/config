@@ -114,7 +114,7 @@ sysdata {
     thresholds = [
         (0, "good"),
         (40, "degraded"),
-        (80, "high")]
+        (80, "bad")]
 	format = "[\?color=cpu CPU: {cpu_usage} %], [\?color=mem RAM: {mem_used} G {mem_used_percent} %]"
 }
 
