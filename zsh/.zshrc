@@ -54,7 +54,7 @@ ZSH_CUSTOM=~/.zsh/custom
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(autoenv command-not-found git-prompt mercurial virtualenvwrapper)
+plugins=(autoenv command-not-found mercurial virtualenvwrapper)
 
 source $ZSH/oh-my-zsh.sh
 source $ZSH_CUSTOM/zsh-vcs-prompt/zshrc.sh
@@ -204,3 +204,7 @@ RPROMPT=''
 export WORKON_HOME=~/.virtualenvs
 DISABLE_VENV_CD=0
 VIRTUAL_ENV_DISABLE_PROMPT=1
+
+export PATH="$PATH:/opt/android-studio/bin/"
+export PATH="$PATH:$HOME/.cargo/bin"
+export PATH="$PATH:$HOME/.gem/ruby/2.3.0/bin/"
