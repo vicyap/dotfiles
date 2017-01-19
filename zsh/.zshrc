@@ -88,6 +88,11 @@ source $ZSH_CUSTOM/zsh-vcs-prompt/zshrc.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+
+# Fix Home and End keys
+bindkey "${terminfo[khome]}" beginning-of-line
+bindkey "${terminfo[kend]}" end-of-line
+
 # Aliases
 
 alias tasks="task list"
@@ -204,3 +209,4 @@ VIRTUAL_ENV_DISABLE_PROMPT=1
 export PATH="$PATH:/opt/android-studio/bin/"
 export PATH="$PATH:$HOME/.cargo/bin"
 export PATH="$PATH:$HOME/.gem/ruby/2.3.0/bin/"
+
