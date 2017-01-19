@@ -45,6 +45,7 @@
 
 URxvt.scrollBar: false
 URxvt.font: xft:monospace:size=12
+URxvt.termName: rxvt-unicode
 
 ! default dark
 ! URxvt.background:                     #181818

@@ -1,4 +1,4 @@
-export TERM="xterm-256color"
+# export TERM="xterm-256color"
 
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
@@ -54,7 +54,7 @@ ZSH_CUSTOM=~/.zsh/custom
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(autoenv command-not-found mercurial virtualenvwrapper)
+plugins=(autoenv mercurial virtualenvwrapper)
 
 source $ZSH/oh-my-zsh.sh
 source $ZSH_CUSTOM/zsh-vcs-prompt/zshrc.sh
@@ -188,10 +188,6 @@ cmd_exec_time() {
 function preexec() {
   cmd_timestamp=`date +%s`
 }
-
-local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_ICON)"
-PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(git_super_status)$(hg_prompt_info) $(cmd_exec_time)\n%* ${ret_status} %{$reset_color%}'
-RPROMPT=''
 
 local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_ICON)"
 local current_user="%{$fg_bold[magenta]%}$(hostname)(%{$fg_bold[red]%}$(whoami)%{$fg_bold[magenta]%})"
