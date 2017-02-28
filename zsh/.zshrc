@@ -210,3 +210,4 @@ export PATH="$PATH:/opt/android-studio/bin/"
 export PATH="$PATH:$HOME/.cargo/bin"
 export PATH="$PATH:$HOME/.gem/ruby/2.3.0/bin/"
 
+export EDITOR=/usr/bin/vim
