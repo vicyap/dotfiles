@@ -7,7 +7,7 @@ PIP_PACKAGES=(autoenv virtualenv virtualenvwrapper git+https://github.com/ultrab
 
 sudo pacman -Syu --noconfirm
 sudo pacman -Sy --noconfirm ${PROGRAMS[*]}
-sudo pip install ${PIP_PACKAGES[*]}
+./pip_install.sh
 rm -f ~/.virtualenvs/postactivate
 rm -f ~/.virtualenvs/postdeactivate
 ./stow_packages.sh
