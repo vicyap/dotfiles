@@ -271,4 +271,4 @@ exec --no-startup-id xinput set-prop 12 275 -112 -112 # natural scroll touchpad
 exec xss-lock -- i3lock -c 000000 -f -i ~/.config/.wallpaper.png # lock
 # exec compton -f -D 1 # opacity, fade 5ms
 
-exec --no-startup-id rxvt-unicode
+exec --no-startup-id urxvt
