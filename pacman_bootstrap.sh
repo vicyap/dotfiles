@@ -2,8 +2,7 @@
 
 set -e
 
-PROGRAMS=(acpi stow xorg-server xorg-xinit i3 rxvt-unicode vim task tmux zsh python-pip)
-PIP_PACKAGES=(autoenv virtualenv virtualenvwrapper git+https://github.com/ultrabug/py3status)
+PROGRAMS=(acpi arandr stow xorg-server xorg-xinit i3 rxvt-unicode vim task tmux zsh python-pip)
 
 sudo pacman -Syu --noconfirm
 sudo pacman -Sy --noconfirm ${PROGRAMS[*]}
