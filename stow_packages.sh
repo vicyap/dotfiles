@@ -3,7 +3,7 @@
 set -e
 set -x
 
-PACKAGES=(i3 i3status Xresources urxvt vim tmux virtualenvs wallpaper zsh)
+PACKAGES=(i3 i3status fonts Xresources urxvt vim tmux virtualenvs wallpaper zsh)
 
 POTENTIAL_CONFLICTS=(\
     $HOME/.virtualenvs/postactivate\
