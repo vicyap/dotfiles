@@ -2,7 +2,7 @@
 
 set -e
 
-PROGRAMS=(acpi arandr stow xorg-server xorg-xinit i3 rxvt-unicode vim task tmux zsh python-pip)
+PROGRAMS=(acpi arandr dmenu numix-gtk-theme stow xorg-server xorg-xinit i3 rxvt-unicode vim task tmux zsh python-pip)
 
 sudo pacman -Syu --noconfirm
 sudo pacman -Sy --noconfirm ${PROGRAMS[*]}
