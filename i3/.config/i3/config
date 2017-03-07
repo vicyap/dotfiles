@@ -102,7 +102,7 @@ bindsym $mod+a focus parent
 #bindsym $mod+d focus child
 
 # Shortcuts
-bindsym $mod+Shift+b exec sensible-browser
+bindsym $mod+Shift+b exec google-chrome-stable
 
 set $workspace1 "1. "
 set $workspace2 "2. "

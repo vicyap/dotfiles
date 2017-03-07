@@ -149,7 +149,7 @@ diskdata "home" {
 volume_status master {
 	command = "pactl"
 	cache_timeout = 0.5
-	device = 1
+	device = 0
         format = "♪: {percentage} %"
         format_muted = "♪: muted {percentage} %"
 
