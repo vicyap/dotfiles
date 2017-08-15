@@ -202,7 +202,7 @@ RPROMPT=''
 
 # virtualenvwrapper
 
-source /usr/local/bin/virtualenvwrapper.sh || $HOME/Library/Python/2.7/bin/virtualenvwrapper.sh
+source /usr/local/bin/virtualenvwrapper.sh || source $HOME/Library/Python/2.7/bin/virtualenvwrapper.sh
 
 export WORKON_HOME=~/.virtualenvs
 DISABLE_VENV_CD=0
