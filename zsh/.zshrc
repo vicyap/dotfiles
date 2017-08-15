@@ -206,8 +206,6 @@ export WORKON_HOME=~/.virtualenvs
 DISABLE_VENV_CD=0
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
-export PATH="$PATH:/opt/android-studio/bin/"
-export PATH="$PATH:$HOME/.cargo/bin"
-export PATH="$PATH:$HOME/.gem/ruby/2.3.0/bin/"
-
 export EDITOR=/usr/bin/vim
+
+tmux a || tmux
