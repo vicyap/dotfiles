@@ -54,7 +54,7 @@ ZSH_CUSTOM=~/.zsh/custom
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(mercurial virtualenvwrapper)
+plugins=(mercurial)
 
 source $ZSH/oh-my-zsh.sh
 source $ZSH_CUSTOM/zsh-vcs-prompt/zshrc.sh
@@ -201,6 +201,8 @@ PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(vcs_super_info)$(hg_prompt_info) $(cmd_exec_tim
 RPROMPT=''
 
 # virtualenvwrapper
+
+source /usr/local/bin/virtualenvwrapper.sh || $HOME/Library/Python/2.7/bin/virtualenvwrapper.sh
 
 export WORKON_HOME=~/.virtualenvs
 DISABLE_VENV_CD=0
