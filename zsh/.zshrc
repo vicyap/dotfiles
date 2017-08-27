@@ -208,4 +208,8 @@ export WORKON_HOME=~/.virtualenvs
 DISABLE_VENV_CD=0
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
+# rust
+
+source $HOME/.cargo/env || echo 'Is rust installed?'
+
 export EDITOR=/usr/bin/vim
