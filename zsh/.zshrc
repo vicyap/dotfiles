@@ -202,12 +202,10 @@ RPROMPT=''
 
 # virtualenvwrapper
 
-source /usr/local/bin/virtualenvwrapper.sh || source $HOME/Library/Python/2.7/bin/virtualenvwrapper.sh
+source $HOME/.local/bin/virtualenvwrapper.sh || source /usr/local/bin/virtualenvwrapper.sh || source $HOME/Library/Python/2.7/bin/virtualenvwrapper.sh
 
 export WORKON_HOME=~/.virtualenvs
 DISABLE_VENV_CD=0
 VIRTUAL_ENV_DISABLE_PROMPT=1
 
 export EDITOR=/usr/bin/vim
-
-tmux a || tmux
