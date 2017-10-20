@@ -1,0 +1,12 @@
+---
+# This role contains common plays
+
+- name: install common packages
+  package:
+      name: "{{ item }}"
+      state: latest
+  with_items: "{{ common_packages }}"
+
+- name: stow configs
+  shell: pushd .. && stow "{{ item }}" && popd
+  with_items: "{{ common_configs }}"

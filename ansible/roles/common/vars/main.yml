@@ -1,0 +1,13 @@
+---
+# Variables for common role
+
+common_packages:
+    - vim
+    - tmux
+    - zsh
+    - stow
+
+common_configs:
+    - vim
+    - tmux
+    - zsh
