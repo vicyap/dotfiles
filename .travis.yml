@@ -9,9 +9,8 @@ before_install:
     - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get -qq update; fi
 
 install:
-    - sudo pip install -r requirements.txt
-    - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install -y shellcheck; else brew install shellcheck; fi
+    - sudo ./run.sh install
 
 script:
-    - ./ansible_check.sh
-    - sudo ./ansible_install.sh
+    - sudo ./run.sh check
+    - sudo ./run.sh deploy

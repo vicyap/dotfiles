@@ -8,3 +8,7 @@
         package:
             name: vim
             state: latest
+      - name: stow
+        package:
+            name: stow
+            state: latest
