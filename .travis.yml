@@ -16,3 +16,4 @@ install:
 script:
     - sudo ./run.sh check
     - sudo ./run.sh deploy
+    - sudo ./run.sh deploy # idempotency
