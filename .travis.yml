@@ -1,9 +1,11 @@
-os:
-    - linux
-    - osx
-
-language:
-    - python
+matrix:
+    include:
+        - os: linux
+          dist: trusty
+          sudo: required
+          language: python
+        - os: osx
+          language: generic
 
 before_install:
     - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get -qq update; fi
