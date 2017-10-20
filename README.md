@@ -4,7 +4,7 @@
 
 ## Install
 
-`sudo ./run.sh deploy`
+`sudo ./run.sh install && sudo ./run.sh deploy`
 
 ## Description
 
