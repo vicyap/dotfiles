@@ -194,7 +194,7 @@ function preexec() {
   cmd_timestamp=`date +%s`
 }
 
-local ret_status="%(?:%{$fg_bold[green]%}$PROMPT_ICON:%{$fg_bold[red]%}$PROMPT_ICON)"
+local ret_status="%(?:%{$fg_bold[green]%}[%?] $PROMPT_ICON:%{$fg_bold[red]%}[%?] $PROMPT_ICON)"
 local current_user="%{$fg_bold[magenta]%}$(hostname)(%{$fg_bold[red]%}$(whoami)%{$fg_bold[magenta]%})"
 local current_time="%{$reset_color%}%*"
 PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(vcs_super_info)$(hg_prompt_info) $(cmd_exec_time)\n${current_time} ${current_user} ${ret_status} %{$reset_color%}'
@@ -206,5 +206,7 @@ source $HOME/.local/bin/virtualenvwrapper.sh || source /usr/local/bin/virtualenv
 export WORKON_HOME=$HOME/.virtualenvs
 DISABLE_VENV_CD=0
 VIRTUAL_ENV_DISABLE_PROMPT=1
+
+# EDITOR
 
 export EDITOR=/usr/bin/vim
