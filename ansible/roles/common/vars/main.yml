@@ -12,3 +12,4 @@ common_configs:
     - vim
     - tmux
     - zsh
+    - virtualenvs

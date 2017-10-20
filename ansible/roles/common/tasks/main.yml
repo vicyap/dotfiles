@@ -10,11 +10,14 @@
 - name: chsh zsh
   shell: "chsh -s $(which zsh) {{ lookup('env', 'SUDO_USER') }}"
 
+- name: stow configs
+  shell: pushd .. && stow "{{ item }}" && popd
+  with_items: "{{ common_configs }}"
+
 - name: install oh_my_zsh
   shell: 'sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"'
   become: true
   become_user: "{{ lookup('env', 'SUDO_USER') }}"
 
-- name: stow configs
-  shell: pushd .. && stow "{{ item }}" && popd
-  with_items: "{{ common_configs }}"
+- name: pip install requirements
+  shell: pip install -r ../requirements.txt
