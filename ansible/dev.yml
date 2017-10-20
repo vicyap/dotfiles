@@ -1,0 +1,10 @@
+---
+# This playbook sets up my development environment
+
+- hosts: localhost
+
+  tasks:
+      - name: vim
+        package:
+            name: vim
+            state: latest

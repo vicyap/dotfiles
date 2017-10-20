@@ -1,0 +1,10 @@
+before_install:
+    - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get -qq update; else breww update; fi
+
+install:
+	- if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install -y ansible; else brew install ansible; fi
+	- if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install -y shell_check; else brew install shell_check; fi
+
+script:
+    - ./scripts/ansible_check.sh
+    - sudo ./scripts/ansible_install.sh
