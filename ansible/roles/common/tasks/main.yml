@@ -1,11 +1,22 @@
 ---
 # This role contains common plays
 
-- name: install common packages
+# For macOS, we cannot run brew as root
+- name: install common macOS packages
   package:
       name: "{{ item }}"
       state: latest
   with_items: "{{ common_packages }}"
+  become: true
+  become_user: "{{ lookup('env', 'SUDO_USER') }}"
+  when: ansible_os_family == 'DARWIN'
+
+- name: install common linux packages
+  package:
+      name: "{{ item }}"
+      state: latest
+  with_items: "{{ common_packages }}"
+  when: ansible_os_family != 'DARWIN'
 
 - name: chsh zsh
   shell: "chsh -s $(which zsh) {{ lookup('env', 'SUDO_USER') }}"
@@ -13,6 +24,8 @@
 - name: stow configs
   shell: pushd .. && stow "{{ item }}" && popd
   with_items: "{{ common_configs }}"
+  become: true
+  become_user: "{{ lookup('env', 'SUDO_USER') }}"
 
 - name: install oh_my_zsh
   shell: 'sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"'
