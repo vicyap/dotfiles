@@ -201,15 +201,10 @@ PROMPT=$'\n%{$fg[cyan]%}$(pwd) $(vcs_super_info)$(hg_prompt_info) $(cmd_exec_tim
 RPROMPT=''
 
 # virtualenvwrapper
-
 source $HOME/.local/bin/virtualenvwrapper.sh || source /usr/local/bin/virtualenvwrapper.sh || source $HOME/Library/Python/2.7/bin/virtualenvwrapper.sh
 
-export WORKON_HOME=~/.virtualenvs
+export WORKON_HOME=$HOME/.virtualenvs
 DISABLE_VENV_CD=0
 VIRTUAL_ENV_DISABLE_PROMPT=1
-
-# rust
-
-source $HOME/.cargo/env || echo 'Is rust installed?'
 
 export EDITOR=/usr/bin/vim
