@@ -3,12 +3,12 @@ os:
     - osx
 
 before_install:
-    - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get -qq update; else brew update; fi
+    - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get -qq update; fi
 
 install:
     - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install -y ansible; else brew install ansible; fi
     - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install -y shellcheck; else brew install shellcheck; fi
 
 script:
-    - ./scripts/ansible_check.sh
-    - sudo ./scripts/ansible_install.sh
+    - ./ansible_check.sh
+    - sudo ./ansible_install.sh
