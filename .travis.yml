@@ -2,11 +2,14 @@ os:
     - linux
     - osx
 
+language:
+    - python
+
 before_install:
     - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get -qq update; fi
 
 install:
-    - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install -y ansible; else brew install ansible; fi
+    - sudo pip install -r requirements.txt
     - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get install -y shellcheck; else brew install shellcheck; fi
 
 script:
