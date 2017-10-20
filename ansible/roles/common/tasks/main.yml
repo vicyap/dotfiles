@@ -18,14 +18,14 @@
   with_items: "{{ common_packages }}"
   when: ansible_os_family != 'DARWIN'
 
-- name: chsh zsh
-  shell: "chsh -s $(which zsh) {{ lookup('env', 'SUDO_USER') }}"
-
 - name: stow configs
   shell: pushd .. && stow "{{ item }}" && popd
   with_items: "{{ common_configs }}"
   become: true
   become_user: "{{ lookup('env', 'SUDO_USER') }}"
+
+- name: chsh zsh
+  shell: "chsh -s $(which zsh) {{ lookup('env', 'SUDO_USER') }}"
 
 - name: install oh_my_zsh
   shell: "source ../install-oh-my-zsh.sh"
