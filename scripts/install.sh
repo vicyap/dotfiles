@@ -19,9 +19,19 @@ fi
 ansible --version
 
 # Install shellcheck
+if [[ "$OSTYPE" == "darwin"* ]]; then
+# macOS should not brew install as root
 ansible localhost \
-	--inventory "$ANSIBLE_INVENTORY_FILE" \
+    --inventory "$ANSIBLE_INVENTORY_FILE" \
     --connection "$ANSIBLE_CONNECTION_TYPE" \
-	--module-name package \
-	--args "name=shellcheck state=latest"
+    --module-name package \
+    --args "name=shellcheck state=latest"
+    --become --become-user="$SUDO_USER"
+else
+ansible localhost \
+    --inventory "$ANSIBLE_INVENTORY_FILE" \
+    --connection "$ANSIBLE_CONNECTION_TYPE" \
+    --module-name package \
+    --args "name=shellcheck state=latest"
+fi
 shellcheck --version
