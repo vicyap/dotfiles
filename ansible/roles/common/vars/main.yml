@@ -7,6 +7,9 @@ common_packages:
     - zsh
     - stow
     - wget
+    - entr
+    - silversearcher-ag
+    - the_silver_searcher
 
 common_configs:
     - vim
