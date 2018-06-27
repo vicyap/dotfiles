@@ -1,21 +1,10 @@
 language: generic
 
-matrix:
-    allow_failures:
-        - os: osx
-    include:
-        - os: linux
-          dist: trusty
-          sudo: required
-        - os: osx
-
 before_install:
-    - if [ $TRAVIS_OS_NAME = linux ]; then sudo apt-get -qq update; fi
+  - sudo apt-get -qq update && sudo apt-get install python python-pip
 
 install:
-    - sudo ./run.sh install
+  - sudo pip install pipenv
 
 script:
-    - sudo ./run.sh check
-    - sudo ./run.sh deploy
-    - sudo ./run.sh deploy # idempotency
+  - make -C ansible/roles/common test
