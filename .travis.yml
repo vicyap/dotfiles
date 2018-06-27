@@ -5,6 +5,7 @@ before_install:
 
 install:
   - sudo pip install pipenv
+  - pushd ansible && pipenv install && popd
 
 script:
   - make -C ansible/roles/common test
