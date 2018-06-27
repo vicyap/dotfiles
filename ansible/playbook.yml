@@ -1,7 +1,5 @@
 ---
-# This playbook sets up my development environment
-
-- hosts: localhost
-
+- hosts: all
+  become: true
   roles:
-      - common
+    - common

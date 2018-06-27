@@ -113,20 +113,9 @@ URxvt*color19:                        #484844
 URxvt*color20:                        #918f88
 URxvt*color21:                        #d9d7cc
 
-
 URxvt.perl-ext-common: default,matcher,fullscreen,resize-font
 URxvt.keysym.F11: perl:fullscreen:switch
 URxvt.resize-font.smaller: C-Down
 URxvt.resize-font.bigger: C-Up
 URxvt.url-launcher: /usr/bin/xdg-open
 URxvt.matcher.button: 1
-
-! rofi
-! ====
-
-! State:           'bg',    'fg',    'bgalt', 'hlbg',  'hlfg'
-rofi.color-normal: #181818, #f8f8f8, #181818, #f8f8f8, #181818
-rofi.color-urgent: #181818, #ab4642, #181818, #ab4642, #181818
-rofi.color-active: #181818, #7cafc2, #181818, #7cafc2, #181818
-!                  'bg',    'border'
-rofi.color-window: #181818, #f8f8f8

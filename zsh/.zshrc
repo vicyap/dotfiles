@@ -210,3 +210,5 @@ VIRTUAL_ENV_DISABLE_PROMPT=1
 # EDITOR
 
 export EDITOR=/usr/bin/vim
+
+export PATH="$PATH":"$HOME"/.local/bin

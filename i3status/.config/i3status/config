@@ -23,7 +23,8 @@ general {
 }
 
 order += "spotify"
-order += "weather_yahoo"
+order += "apt_updates"
+# order += "weather_yahoo"
 # order += "ipv6"
 # order += "net_rate"
 # order += "disk /"
@@ -31,6 +32,7 @@ order += "weather_yahoo"
 # order += "run_watch VPN"
 # order += "whatismyip"
 # order += "wireless _first_"
+# order += "vpn_status"
 order += "wifi"
 # order += "ethernet _first_"
 # order += "load"
@@ -41,22 +43,6 @@ order += "volume_status master"
 order += "backlight"
 order += "tztime local"
 
-weather_yahoo {
-    cache_timeout = 3600
-    woeid = 12590014 # Austin
-    units = 'f'
-    forecast_include_today = True
-    forecast_text_separator = " | "
-    format_forecast = "({low}, {high})"
-    format_today = "{temp}°{units} {icon}"
-    format = "{today} {forecasts}"
-    forecast_days = 3
-}
-
-whatismyip {
-    cache_timeout = 1
-    format = "{ip}"
-}
 
 wireless _first_ {
         format_up = "W: (%quality at %essid) %ip"
@@ -70,6 +56,10 @@ wifi {
 	round_bitrate = False
 	format_up = "W: ({signal_percent} at {ssid}) {bitrate}"
 	format_down = "W: down"
+}
+
+vpn_status {
+    cache_timeout = 1
 }
 
 ethernet _first_ {
@@ -136,16 +126,6 @@ diskdata "all" {
     }
 }
 
-diskdata "root" {
-	disk = "/dev/mapper/years--of--war--vg-root"
-	format = "{disk}: {free}"
-}
-
-diskdata "home" {
-	disk = "/dev/mapper/years--of--war--vg-home"
-	format = "/home: {free}"
-}
-
 volume_status master {
 	command = "pactl"
 	cache_timeout = 0.5
@@ -180,7 +160,7 @@ volume_status master {
 
 backlight {
 	cache_timeout = 0.5
-	format = ": {level} %"
+    command = "light"
 }
 
 spotify {
