@@ -1,11 +1,12 @@
 language: generic
 
 before_install:
-  - sudo apt-get -qq update && sudo apt-get install python python-pip
+  - sudo apt-get -qq update && sudo apt-get install -yqq python python-pip
 
 install:
   - sudo pip install pipenv
-  - pushd ansible && pipenv install && popd
 
 script:
+  - pushd ansible && pipenv run pip list && popd
+  - make -C ansible install
   - make -C ansible/roles/common test
