@@ -7,6 +7,7 @@ install:
   - sudo pip install pipenv
 
 script:
-  - pushd ansible && pipenv run pip list && popd
-  - make -C ansible install
-  - make -C ansible/roles/common test
+  - cd ansible
+  - make install
+  - pipenv run pip list
+  - make -C roles/common test
