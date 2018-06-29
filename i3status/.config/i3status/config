@@ -23,6 +23,7 @@ general {
 }
 
 order += "spotify"
+order += "screenshot"
 order += "apt_updates"
 # order += "weather_yahoo"
 # order += "ipv6"
@@ -32,12 +33,13 @@ order += "apt_updates"
 # order += "run_watch VPN"
 # order += "whatismyip"
 # order += "wireless _first_"
-# order += "vpn_status"
+order += "vpn_status"
 order += "wifi"
 # order += "ethernet _first_"
 # order += "load"
 order += "sysdata"
 order += "diskdata all"
+order += "xrandr"
 order += "battery_level"
 order += "volume_status master"
 order += "backlight"
@@ -59,7 +61,9 @@ wifi {
 }
 
 vpn_status {
+    check_pid = True
     cache_timeout = 1
+    pidfile = '/sys/class/net/tun0/dev_id'
 }
 
 ethernet _first_ {
@@ -101,11 +105,13 @@ cpu_usage {
 
 sysdata {
 	cache_timeout = 2
+    mem_unit = 'GiB'
+    swap_unit = 'MiB'
     thresholds = [
         (0, "good"),
         (40, "degraded"),
         (80, "bad")]
-	format = "[\?color=cpu CPU: {cpu_usage} %], [\?color=mem RAM: {mem_used} G {mem_used_percent} %]"
+	format = "[\?color=cpu CPU: {cpu_usage:.0f} %], [\?color=mem RAM: {mem_used} G {mem_used_percent:.0f} %], [\?color=swap SWAP: {swap_used} M {swap_used_percent:.0f} %]"
 }
 
 load {
@@ -161,6 +167,12 @@ volume_status master {
 backlight {
 	cache_timeout = 0.5
     command = "light"
+}
+
+screenshot {
+    push = False
+    save_path = '~/'
+    screenshot_command = "gnome-screenshot -w -B -f"
 }
 
 spotify {
