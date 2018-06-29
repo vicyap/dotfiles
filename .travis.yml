@@ -13,4 +13,5 @@ script:
   - cd ansible
   - make install
   - pipenv run pip list
+  - pip list
   - make -C roles/common test
