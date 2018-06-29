@@ -9,5 +9,4 @@ install:
 script:
   - cd ansible
   - make install
-  - pipenv run pip list
   - make -C roles/common test
