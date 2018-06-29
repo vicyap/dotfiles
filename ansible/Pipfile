@@ -8,6 +8,7 @@ ansible = "*"
 molecule = "*"
 boto = "*"
 "boto3" = "*"
+botocore = "*"
 
 [dev-packages]
 
