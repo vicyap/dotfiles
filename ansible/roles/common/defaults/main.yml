@@ -37,6 +37,7 @@ apt_packages:
   - x11-xserver-utils
   - xbacklight
   - xclip
+  - xfce4-power-manager
   - xorg
   - zsh
 

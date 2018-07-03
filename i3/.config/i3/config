@@ -249,5 +249,6 @@ bindsym $mod+shift+x exec i3lock -c 000000
 # exec xss-lock -- i3lock -c 000000 -f -i ~/.config/wallpaper.png # lock
 exec_always --no-startup-id xinput set-prop 'DLL0704:01 06CB:76AE Touchpad' 'libinput Natural Scrolling Enabled' 1
 
+exec --no-startup-id xfce4-power-manager
 exec --no-startup-id nm-applet
 exec --no-startup-id urxvt
