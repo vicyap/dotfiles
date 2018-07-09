@@ -1,0 +1,150 @@
+---
+- name: update repositories and cache
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: install packages
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - "{{ apt_packages }}"
+
+- name: stat spotify
+  stat:
+    path: /snap/bin/spotify
+  register: p
+
+- name: install spotify
+  command: snap install spotify
+  when: p.stat.exists == false
+
+- name: mkdir {{ download_dir }}
+  file:
+    path: "{{ download_dir }}"
+    state: directory
+    mode: 0755
+
+- name: light - stat
+  stat:
+    path: /usr/bin/light
+  register: p
+
+- name: light - git clone
+  git:
+    repo: https://github.com/haikarainen/light.git
+    dest: "{{ download_dir }}/light"
+    version: 1.1.2
+  when: p.stat.exists == false
+
+- name: light - make
+  make:
+    chdir: "{{ download_dir }}/light"
+  when: p.stat.exists == false
+
+- name: light - make install
+  make:
+    chdir: "{{ download_dir }}/light"
+    target: install
+  when: p.stat.exists == false
+
+- name: light - clean up
+  file:
+    path: "{{ download_dir }}/light"
+    state: absent
+  when: p.stat.exists == false
+
+- name: signal-desktop - add apt key
+  apt_key:
+    url: https://updates.signal.org/desktop/apt/keys.asc
+    state: present
+
+- name: signal-desktop - add apt repo
+  apt_repository:
+    repo: "deb [arch=amd64] https://updates.signal.org/desktop/apt xenial main"
+    state: present
+
+- name: signal-desktop - install
+  apt:
+    name: signal-desktop
+    update_cache: true
+
+- name: zoom - stat
+  stat:
+    path: /usr/bin/zoom
+  register: p
+
+- name: zoom - download
+  get_url:
+    url: https://zoom.us/client/latest/zoom_amd64.deb
+    dest: "{{ download_dir }}/zoom_amd64.deb"
+  when: p.stat.exists == false
+
+- name: zoom - install dependencies
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - "{{ zoom_dependencies }}"
+  when: p.stat.exists == false
+
+- name: zoom - install
+  command: "dpkg -i {{ download_dir }}/zoom_amd64.deb"
+  when: p.stat.exists == false
+
+- name: zoom - clean up
+  file:
+    path: "{{ download_dir }}/zoom_amd64.deb"
+    state: absent
+  when: p.stat.exists == false
+
+- name: openconnect - stat
+  stat:
+    path: /usr/local/sbin/openconnect
+  register: p
+
+- name: openconnect - git clone
+  git:
+    repo: https://github.com/dlenski/openconnect.git
+    dest: "{{ download_dir }}/openconnect"
+    version: globalprotect
+  when: p.stat.exists == false
+
+- name: openconnect - install dependencies
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - "{{ openconnect_dependencies }}"
+  when: p.stat.exists == false
+
+- name: openconnect - autogen.sh
+  command: ./autogen.sh
+  args:
+    chdir: "{{ download_dir }}/openconnect"
+  when: p.stat.exists == false
+
+- name: openconnect - configure
+  command: ./configure
+  args:
+    chdir: "{{ download_dir }}/openconnect"
+  when: p.stat.exists == false
+
+- name: openconnect - make
+  make:
+    chdir: "{{ download_dir }}/openconnect"
+  when: p.stat.exists == false
+
+- name: openconnect - make install
+  make:
+    chdir: "{{ download_dir }}/openconnect"
+    target: install
+  when: p.stat.exists == false
+
+- name: openconnect - ldconfig
+  command: ldconfig
+  when: p.stat.exists == false
+
+- name: openconnect - clean up
+  file:
+    path: "{{ download_dir }}/openconnect"
+    state: absent
+  when: p.stat.exists == false

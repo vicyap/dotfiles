@@ -9,6 +9,8 @@ molecule = "*"
 boto = "*"
 "boto3" = "*"
 botocore = "*"
+apache-libcloud = "*"
+pycrypto = "*"
 
 [dev-packages]
 

@@ -1,0 +1,76 @@
+---
+download_dir: /opt/download
+
+apt_packages:
+  - acpi
+  - arandr
+  - curl
+  - dtrx
+  - firefox
+  - fonts-dejavu
+  - gdm3
+  - git
+  - git-lfs
+  - help2man
+  - htop
+  - i3
+  - lastpass-cli
+  - lxappearance
+  - nautilus
+  - network-manager
+  - numix-blue-gtk-theme
+  - numix-gtk-theme
+  - numix-icon-theme
+  - pulseaudio
+  - py3status
+  - python3
+  - python3-pip
+  - python3-pydbus
+  - rxvt-unicode
+  - silversearcher-ag
+  - snapd
+  - software-properties-common
+  - software-properties-gtk
+  - stow
+  - tmux
+  - vim
+  - wget
+  - x11-xserver-utils
+  - xbacklight
+  - xclip
+  - xfce4-power-manager
+  - xorg
+  - zsh
+
+openconnect_dependencies:
+  - build-essential
+  - gettext
+  - autoconf
+  - automake
+  - libproxy-dev
+  - libxml2-dev
+  - libtool
+  - vpnc-scripts
+  - pkg-config
+  - libgnutls28-dev
+
+zoom_dependencies:
+  - libglib2.0-0
+  - libxcb-shape0
+  - libxcb-shm0
+  - libxcb-xfixes0
+  - libxcb-randr0
+  - libxcb-image0
+  - libfontconfig1
+  - libgl1-mesa-glx
+  - libegl1-mesa
+  - libxi6
+  - libsm6
+  - libxrender1
+  - libpulse0
+  - libxcomposite1
+  - libxslt1.1
+  - libsqlite3-0
+  - libxcb-keysyms1
+  - libxcb-xtest0
+  - libdbus-1-3
