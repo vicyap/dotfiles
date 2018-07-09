@@ -10,6 +10,7 @@ apt_packages:
   - fonts-dejavu
   - gdm3
   - git
+  - git-lfs
   - help2man
   - htop
   - i3
