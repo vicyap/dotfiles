@@ -179,3 +179,17 @@ spotify {
 	format = "{artist} - {title}"
 	format_down = ""
 }
+
+xrandr {
+    cache_timeout = 1
+    fallback = "eDP-1"
+    output_combinations = "eDP-1|eDP-1+DP-1"
+
+    eDP-1_pos = "0x0"
+    eDP-1_rotate = "normal"
+    eDP-1_mode = "3200x1800"
+
+    DP-1_pos = "-120x-1440" # above and centered
+    DP-1_rotate = "normal"
+    DP-1_mode = "3440x1440"
+}
