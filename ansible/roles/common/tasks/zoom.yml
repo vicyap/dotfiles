@@ -1,0 +1,28 @@
+---
+- name: zoom - stat
+  stat:
+    path: /usr/bin/zoom
+  register: p
+
+- name: zoom - download
+  get_url:
+    url: https://zoom.us/client/latest/zoom_amd64.deb
+    dest: "{{ download_dir }}/zoom_amd64.deb"
+  when: p.stat.exists == false
+
+- name: zoom - install dependencies
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - "{{ zoom_dependencies }}"
+  when: p.stat.exists == false
+
+- name: zoom - install
+  command: "dpkg -i {{ download_dir }}/zoom_amd64.deb"
+  when: p.stat.exists == false
+
+- name: zoom - clean up
+  file:
+    path: "{{ download_dir }}/zoom_amd64.deb"
+    state: absent
+  when: p.stat.exists == false
