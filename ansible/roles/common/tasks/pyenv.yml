@@ -1,0 +1,12 @@
+---
+- name: pyenv - stat
+  stat:
+    path: "{{ lookup('env', 'HOME') }}/.pyenv"
+  register: p
+
+- name: pyenv - git clone
+  git:
+    repo: https://github.com/pyenv/pyenv.git
+    dest: "{{ lookup('env', 'HOME') }}/.pyenv"
+    version: master
+  when: p.stat.exists == false
