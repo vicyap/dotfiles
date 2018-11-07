@@ -27,13 +27,13 @@ order += "screenshot"
 order += "apt_updates"
 # order += "weather_yahoo"
 # order += "ipv6"
-# order += "net_rate"
 # order += "disk /"
 # order += "run_watch DHCP"
 # order += "run_watch VPN"
 # order += "whatismyip"
 # order += "wireless _first_"
 order += "vpn_status"
+# order += "net_rate"
 order += "wifi"
 # order += "ethernet _first_"
 # order += "load"
@@ -192,4 +192,9 @@ xrandr {
     DP-1_pos = "-120x-1440" # above and centered
     DP-1_rotate = "normal"
     DP-1_mode = "3440x1440"
+}
+
+net_rate {
+    si_units = true
+    format = "D:{down} U:{up}"
 }
