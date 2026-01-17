@@ -36,23 +36,17 @@ main() {
   symlink_all_packages "$DOTFILES_DIR/packages"
   echo
 
-  # Symlink platform-specific
-  local platform_dir="$DOTFILES_DIR/platform/$os"
-  if [[ -d "$platform_dir" ]]; then
-    echo "=== Symlinking platform-specific ($os) ==="
-    symlink_all_packages "$platform_dir"
-    echo
-  fi
-
   # Ensure bin is in PATH
   ensure_path
 
-  # Set default shell (optional, prompts user)
-  echo
-  read -p "Set zsh as default shell? [y/N] " -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-    set_default_shell
+  # Set default shell (only prompt if running interactively)
+  if [[ -t 0 ]]; then
+    echo
+    read -p "Set zsh as default shell? [y/N] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      set_default_shell
+    fi
   fi
 
   echo
