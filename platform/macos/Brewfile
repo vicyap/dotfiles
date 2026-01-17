@@ -1,0 +1,22 @@
+# Homebrew packages for macOS
+
+# Core tools
+brew "git"
+brew "vim"
+brew "curl"
+brew "wget"
+brew "jq"
+brew "tree"
+brew "ripgrep"
+brew "fd"
+brew "fzf"
+brew "htop"
+
+# Development
+brew "gh"
+brew "node"
+brew "python"
+
+# Shell
+brew "zsh"
+brew "zsh-completions"

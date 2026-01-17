@@ -1,2 +1,31 @@
-virtualenvs/.virtualenvs
-*.retry
+# Sensitive files - NEVER commit
+**/.ssh/id_*
+**/.ssh/*.pem
+**/.ssh/known_hosts
+**/*.key
+**/*.pem
+
+# Credentials
+**/.netrc
+**/.npmrc
+**/.pypirc
+**/credentials*
+**/*token*
+**/*secret*
+**/.env
+**/.env.*
+
+# Local overrides
+*.local
+.local/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.idea/
+.vscode/

@@ -1,0 +1,29 @@
+[user]
+    name = Victor Yap
+    email = vicyap@users.noreply.github.com
+
+[init]
+    defaultBranch = main
+
+[core]
+    editor = vim
+    autocrlf = input
+
+[pull]
+    rebase = true
+
+[push]
+    default = current
+    autoSetupRemote = true
+
+[alias]
+    st = status
+    co = checkout
+    br = branch
+    ci = commit
+    lg = log --oneline --graph --decorate
+    last = log -1 HEAD
+    unstage = reset HEAD --
+
+[color]
+    ui = auto

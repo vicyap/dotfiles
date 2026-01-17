@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Dotfiles CLI
+
+DOTFILES_DIR="$HOME/.dotfiles"
+
+usage() {
+  cat <<EOF
+Usage: dotfiles <command>
+
+Commands:
+  pull      Pull latest changes and re-symlink
+  status    Show git status of dotfiles repo
+  edit      Open dotfiles directory in \$EDITOR
+  cd        Print dotfiles directory (use: cd \$(dotfiles cd))
+  help      Show this help message
+EOF
+}
+
+cmd_pull() {
+  echo "Pulling latest dotfiles..."
+  git -C "$DOTFILES_DIR" pull --rebase
+  echo
+  echo "Re-running install..."
+  "$DOTFILES_DIR/install.sh"
+}
+
+cmd_status() {
+  git -C "$DOTFILES_DIR" status
+}
+
+cmd_edit() {
+  ${EDITOR:-vim} "$DOTFILES_DIR"
+}
+
+cmd_cd() {
+  echo "$DOTFILES_DIR"
+}
+
+main() {
+  local cmd="${1:-help}"
+
+  case "$cmd" in
+    pull)   cmd_pull ;;
+    status) cmd_status ;;
+    edit)   cmd_edit ;;
+    cd)     cmd_cd ;;
+    help)   usage ;;
+    *)
+      echo "Unknown command: $cmd"
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"
