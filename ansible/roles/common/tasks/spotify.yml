@@ -1,9 +1,0 @@
----
-- name: stat spotify
-  stat:
-    path: /snap/bin/spotify
-  register: p
-
-- name: install spotify
-  command: snap install spotify
-  when: p.stat.exists == false

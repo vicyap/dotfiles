@@ -1,0 +1,42 @@
+# Shared shell aliases
+
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# ls variants
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Safety
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+# Git shortcuts
+alias g='git'
+alias gs='git status'
+alias gd='git diff'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git pull'
+alias gco='git checkout'
+alias gb='git branch'
+alias glog='git log --oneline --graph --decorate'
+
+# Misc
+alias c='clear'
+alias h='history'
+alias grep='grep --color=auto'
+alias df='df -h'
+alias du='du -h'
+
+# Platform-specific
+if [[ "$(uname)" == "Darwin" ]]; then
+  alias ls='ls -G'
+else
+  alias ls='ls --color=auto'
+fi
