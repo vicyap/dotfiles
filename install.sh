@@ -20,6 +20,7 @@ main() {
   # Load helpers
   source "$DOTFILES_DIR/lib/platform.sh"
   source "$DOTFILES_DIR/lib/symlink.sh"
+  source "$DOTFILES_DIR/lib/version.sh"
 
   # Detect platform
   local os
@@ -29,6 +30,13 @@ main() {
 
   # Install zsh
   install_zsh
+  echo
+
+  # Install Go and web CLI
+  echo "=== Installing development tools ==="
+  install_go
+  install_web
+  install_ask
   echo
 
   # Symlink packages
