@@ -39,3 +39,6 @@ export PATH="$HOME/.dotfiles/bin:$PATH"
 # Editor
 export EDITOR=vim
 export VISUAL=vim
+
+# Dotfiles bin
+export PATH="/home/sprite/.dotfiles/bin:$PATH"
