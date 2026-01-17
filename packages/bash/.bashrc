@@ -20,3 +20,10 @@ PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
 # Dotfiles bin
 export PATH="$HOME/.dotfiles/bin:$PATH"
+export PATH="/usr/local/go/bin:$PATH"
+
+# Go binaries
+export PATH="/home/sprite/go/bin:$PATH"
+
+# Local binaries
+export PATH="$HOME/.local/bin:$PATH"

@@ -42,3 +42,10 @@ export VISUAL=vim
 
 # Dotfiles bin
 export PATH="/home/sprite/.dotfiles/bin:$PATH"
+export PATH="/usr/local/go/bin:$PATH"
+
+# Go binaries
+export PATH="/home/sprite/go/bin:$PATH"
+
+# Local binaries
+export PATH="$HOME/.local/bin:$PATH"
