@@ -44,6 +44,8 @@ create_symlink() {
 # Usage: symlink_package <package_path>
 symlink_package() {
   local pkg_path="$1"
+  # Remove trailing slash if present
+  pkg_path="${pkg_path%/}"
   local pkg_name
   pkg_name="$(basename "$pkg_path")"
 
