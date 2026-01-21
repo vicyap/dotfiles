@@ -4,6 +4,38 @@
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
 
+# Detect if running interactively
+# DOTFILES_INTERACTIVE: auto (default), always, never
+is_interactive() {
+  if [[ "$DOTFILES_INTERACTIVE" == "always" ]]; then
+    return 0
+  elif [[ "$DOTFILES_INTERACTIVE" == "never" ]]; then
+    return 1
+  else
+    [[ -t 0 ]]  # auto: check if stdin is a terminal
+  fi
+}
+
+# Prompt user for y/n confirmation
+# Usage: prompt_user "message" [default: n]
+# Returns: 0 for yes, 1 for no
+prompt_user() {
+  local message="$1"
+  local default="${2:-n}"
+  local prompt reply
+
+  if [[ "$default" == "y" ]]; then
+    prompt="[Y/n]"
+  else
+    prompt="[y/N]"
+  fi
+
+  read -r -p "  $message $prompt " reply
+  reply="${reply:-$default}"
+
+  [[ "$reply" =~ ^[Yy] ]]
+}
+
 # Create a symlink, backing up existing files
 # Usage: create_symlink <source> <target>
 create_symlink() {
@@ -27,9 +59,28 @@ create_symlink() {
         echo "  ✓ $target (already linked)"
         return 0
       fi
-      echo "  → Removing old symlink: $target"
+      # Symlink points elsewhere - ask before replacing
+      if is_interactive; then
+        if ! prompt_user "Replace $target (currently → $current_link)?"; then
+          echo "  ⊘ Skipped: $target"
+          return 0
+        fi
+      else
+        echo "  ⊘ Skipped (non-interactive): $target"
+        return 0
+      fi
       rm "$target"
     else
+      # Regular file exists - ask before backing up
+      if is_interactive; then
+        if ! prompt_user "Backup and replace $target?"; then
+          echo "  ⊘ Skipped: $target"
+          return 0
+        fi
+      else
+        echo "  ⊘ Skipped (non-interactive): $target"
+        return 0
+      fi
       echo "  → Backing up: $target"
       mkdir -p "$BACKUP_DIR"
       mv "$target" "$BACKUP_DIR/"
