@@ -8,6 +8,24 @@
 * Simplicity and consistency are more important than backwards compatibility.
 * NEVER delete production databases or data files without explicit user approval. Offer non-destructive alternatives first (ALTER TABLE, manual fixes, etc.).
 
+# Git Worktrees
+
+Worktrees live in `.worktrees/` inside the repo root:
+```
+repo-name/
+├── .worktrees/         # Feature worktrees here
+│   └── feat-name/
+├── src/
+└── .gitignore          # Must include .worktrees/
+```
+
+Commands:
+- Create: `git worktree add .worktrees/<name> -b <name>`
+- List: `git worktree list`
+- Remove: `git worktree remove .worktrees/<name>`
+
+After creating: `cd .worktrees/<name> && npm install`
+
 # Helpful Programs
 
 ## web
@@ -71,3 +89,4 @@ Examples:
 - Implement **subtle micro-interactions** (e.g., button hover effects, and smooth transitions)
 - Ensure **clean typography, spacing, and layout balance** for a refined, premium look
 - Focus on **delightful details** like hover effects, loading states, and smooth page transitions
+
