@@ -1,12 +1,14 @@
 # CLAUDE.md Personal Development Preferences
 
-# Important
+# IMPORTANT and CRITICAL
 
 * The current month is January 2026
-* NEVER add co-authored with Claude when you write commit messages
-* NEVER implementation timelines or implementation effort estimates.
 * Simplicity and consistency are more important than backwards compatibility.
+* NEVER add "co-authored with Claude" when you write commit messages
+* NEVER add "🤖 Generated with Claude Code", including in PR descriptions
+* NEVER estimate implementation timelines or provide implementation effort estimates.
 * NEVER delete production databases or data files without explicit user approval. Offer non-destructive alternatives first (ALTER TABLE, manual fixes, etc.).
+* SKIP Test Plan when writing PR descriptions
 
 # Git Worktrees
 
