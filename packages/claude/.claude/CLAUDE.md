@@ -76,6 +76,7 @@ Examples:
   - Use modern language features and patterns without legacy workarounds
   - Remove deprecated code paths and old compatibility layers
   - Focus on clean, maintainable code over supporting old versions
+* Rule of Three: Don't abstract until you have 3 use cases
 
 ## JS and CSS Guidelines
 
