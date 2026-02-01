@@ -8,7 +8,7 @@
 * NEVER add "🤖 Generated with Claude Code", including in PR descriptions
 * NEVER estimate implementation timelines or provide implementation effort estimates.
 * NEVER delete production databases or data files without explicit user approval. Offer non-destructive alternatives first (ALTER TABLE, manual fixes, etc.).
-* SKIP Test Plan when writing PR descriptions
+* When writing PR titles and descriptions, write them like git commit titles and descriptions. SKIP Test Plan.
 
 # Git Worktrees
 
