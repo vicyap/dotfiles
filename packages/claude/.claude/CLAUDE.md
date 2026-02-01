@@ -24,7 +24,7 @@ Commands:
 - List: `git worktree list`
 - Remove: `git worktree remove .worktrees/<name>`
 
-After creating: `cd .worktrees/<name> && npm install`
+Prefer naming using kebab-case, do not use "/" in names.
 
 # Helpful Programs
 
