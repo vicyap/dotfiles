@@ -2,20 +2,30 @@
 set -e
 
 DOTFILES_REPO="https://github.com/vicyap/dotfiles.git"
-DOTFILES_DIR="$HOME/.dotfiles"
+
+# Auto-detect location: use script's directory if running locally, otherwise ~/.dotfiles
+if [[ -n "${BASH_SOURCE[0]}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
+  DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+  DOTFILES_DIR="$HOME/.dotfiles"
+fi
 
 main() {
   echo "=== Dotfiles Installer ==="
   echo
 
-  # Clone or update repo
-  if [[ -d "$DOTFILES_DIR" ]]; then
-    echo "Updating dotfiles..."
-    git -C "$DOTFILES_DIR" pull --rebase --quiet
-  else
+  # If running via curl pipe, clone the repo
+  if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
+    if [[ -d "$DOTFILES_DIR" ]]; then
+      echo "Error: $DOTFILES_DIR exists but is not a git repo"
+      exit 1
+    fi
     echo "Cloning dotfiles..."
     git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
   fi
+
+  echo "Dotfiles directory: $DOTFILES_DIR"
+  echo
 
   # Load helpers
   source "$DOTFILES_DIR/lib/platform.sh"
@@ -44,9 +54,6 @@ main() {
   symlink_all_packages "$DOTFILES_DIR/packages"
   echo
 
-  # Ensure bin is in PATH
-  ensure_path
-
   # Set default shell (only prompt if running interactively)
   if [[ -t 0 ]]; then
     echo
@@ -59,20 +66,8 @@ main() {
 
   echo
   echo "=== Done! ==="
+  echo "Create ~/.secrets for API keys and tokens."
   echo "Restart your terminal or run: exec zsh"
-}
-
-ensure_path() {
-  local bin_dir="$DOTFILES_DIR/bin"
-  local path_line="export PATH=\"$bin_dir:\$PATH\""
-
-  # Check if already in zshrc
-  if ! grep -q "$bin_dir" "$HOME/.zshrc" 2>/dev/null; then
-    echo "" >> "$HOME/.zshrc"
-    echo "# Dotfiles bin" >> "$HOME/.zshrc"
-    echo "$path_line" >> "$HOME/.zshrc"
-    echo "✓ Added $bin_dir to PATH in .zshrc"
-  fi
 }
 
 main "$@"

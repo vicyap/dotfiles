@@ -26,6 +26,16 @@ alias gl='git pull'
 alias gco='git checkout'
 alias gb='git branch'
 alias glog='git log --oneline --graph --decorate'
+alias gpom='git pull origin main'
+
+# Claude
+alias cc='claude'
+alias ccp='claude /prime'
+alias ccu='claude /usage'
+alias ccc='claude /commit-commands:commit'
+
+# Dev
+alias nr='npm run'
 
 # Misc
 alias c='clear'
@@ -39,4 +49,6 @@ if [[ "$(uname)" == "Darwin" ]]; then
   alias ls='ls -G'
 else
   alias ls='ls --color=auto'
+  alias fd='fdfind'
+  alias bat='batcat'
 fi

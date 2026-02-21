@@ -10,7 +10,7 @@
     autocrlf = input
 
 [pull]
-    rebase = true
+    ff = only
 
 [push]
     default = current
@@ -24,6 +24,15 @@
     lg = log --oneline --graph --decorate
     last = log -1 HEAD
     unstage = reset HEAD --
+    initer = "!f() { git init && git commit --allow-empty --allow-empty-message --message ''; }; f"
 
 [color]
     ui = auto
+
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+    helper =
+    helper = !gh auth git-credential

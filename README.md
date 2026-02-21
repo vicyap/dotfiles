@@ -8,6 +8,13 @@ Personal dotfiles managed with a simple shell script. No dependencies required.
 curl -fsSL https://raw.githubusercontent.com/vicyap/dotfiles/main/install.sh | bash
 ```
 
+Or clone and run locally:
+
+```bash
+git clone https://github.com/vicyap/dotfiles.git ~/.dotfiles
+~/.dotfiles/install.sh
+```
+
 ## Structure
 
 ```
@@ -16,12 +23,13 @@ curl -fsSL https://raw.githubusercontent.com/vicyap/dotfiles/main/install.sh | b
 ├── bin/dotfiles        # CLI tool
 ├── lib/                # Helper scripts
 ├── packages/           # Cross-platform dotfiles
-│   ├── git/
-│   ├── vim/
 │   ├── bash/
-│   ├── zsh/
+│   ├── claude/
+│   ├── git/
 │   ├── shell/
-│   └── claude/
+│   ├── starship/
+│   ├── vim/
+│   └── zsh/
 └── platform/           # OS-specific configs
     ├── macos/
     └── linux/
@@ -36,6 +44,18 @@ dotfiles pull     # Pull latest changes and re-symlink
 dotfiles status   # Show git status of dotfiles repo
 dotfiles edit     # Open dotfiles in $EDITOR
 ```
+
+## Secrets
+
+API keys and tokens go in `~/.secrets` (not tracked by git):
+
+```bash
+# ~/.secrets
+export OPENROUTER_API_KEY='...'
+export KAGI_API_KEY='...'
+```
+
+This file is sourced by `.zshrc` and `.bashrc` if it exists.
 
 ## Adding new dotfiles
 

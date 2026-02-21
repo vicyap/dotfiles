@@ -11,11 +11,24 @@ brew "ripgrep"
 brew "fd"
 brew "fzf"
 brew "htop"
+brew "btop"
+
+# Modern CLI replacements
+brew "bat"
+brew "eza"
+brew "delta"
+brew "duf"
+brew "zoxide"
+brew "direnv"
+brew "starship"
+brew "tldr"
 
 # Development
 brew "gh"
 brew "node"
 brew "python"
+brew "shellcheck"
+brew "tmux"
 
 # Shell
 brew "zsh"

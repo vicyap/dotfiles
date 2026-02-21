@@ -18,12 +18,12 @@ PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 # Source shared aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
 
-# Dotfiles bin
+# PATH
 export PATH="$HOME/.dotfiles/bin:$PATH"
 export PATH="/usr/local/go/bin:$PATH"
-
-# Go binaries
-export PATH="/home/sprite/go/bin:$PATH"
-
-# Local binaries
+export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
+
+# Secrets
+[[ -f ~/.secrets ]] && source ~/.secrets

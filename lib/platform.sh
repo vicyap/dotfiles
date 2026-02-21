@@ -74,24 +74,6 @@ set_default_shell() {
   echo "✓ Default shell changed to zsh (restart terminal to apply)"
 }
 
-# Ensure ~/go/bin is in PATH (added to shell rc files)
-ensure_go_path() {
-  local go_bin="$HOME/go/bin"
-  local path_line="export PATH=\"$go_bin:\$PATH\""
-
-  for rcfile in "$HOME/.zshrc" "$HOME/.bashrc"; do
-    if [[ -f "$rcfile" ]] && ! grep -q "$go_bin" "$rcfile" 2>/dev/null; then
-      echo "" >> "$rcfile"
-      echo "# Go binaries" >> "$rcfile"
-      echo "$path_line" >> "$rcfile"
-      echo "✓ Added $go_bin to PATH in $(basename "$rcfile")"
-    fi
-  done
-
-  # Also export for current session
-  export PATH="$go_bin:$PATH"
-}
-
 # Install or update Go to version specified in versions.conf
 install_go() {
   local desired_version
@@ -115,7 +97,6 @@ install_go() {
   case "$(detect_os)" in
     macos)
       if has_cmd brew; then
-        # Homebrew manages Go versions
         brew install go || brew upgrade go
       else
         echo "⚠ Please install Homebrew first: https://brew.sh"
@@ -137,20 +118,10 @@ install_go() {
       echo "Downloading $url..."
       curl -fsSL "$url" -o "/tmp/$tarball"
 
-      # Remove existing Go installation
       sudo rm -rf /usr/local/go
-
-      # Extract new version
       sudo tar -C /usr/local -xzf "/tmp/$tarball"
       rm -f "/tmp/$tarball"
 
-      # Ensure /usr/local/go/bin is in PATH
-      if ! grep -q "/usr/local/go/bin" "$HOME/.zshrc" 2>/dev/null; then
-        echo 'export PATH="/usr/local/go/bin:$PATH"' >> "$HOME/.zshrc"
-      fi
-      if ! grep -q "/usr/local/go/bin" "$HOME/.bashrc" 2>/dev/null; then
-        echo 'export PATH="/usr/local/go/bin:$PATH"' >> "$HOME/.bashrc"
-      fi
       export PATH="/usr/local/go/bin:$PATH"
       ;;
     *)
@@ -160,11 +131,9 @@ install_go() {
   esac
 
   echo "✓ Go $(go version 2>/dev/null | awk '{print $3}' | sed 's/go//') installed"
-  ensure_go_path
 }
 
 # Install or update web CLI (requires Go)
-# Note: Must build from source since go.mod declares module as "web" not "github.com/chrismccord/web"
 install_web() {
   local desired_version
   desired_version="$(get_desired_version web)"
@@ -174,13 +143,11 @@ install_web() {
     return 0
   fi
 
-  # Ensure Go is available
   if ! has_cmd go; then
     echo "⚠ Go is required to install web CLI. Installing Go first..."
     install_go || return 1
   fi
 
-  # Ensure go bin is in PATH for current session
   export PATH="/usr/local/go/bin:$HOME/go/bin:$PATH"
 
   local web_repo="https://github.com/chrismccord/web.git"
@@ -188,7 +155,6 @@ install_web() {
 
   echo "Installing web CLI (from source)..."
 
-  # Clone or update repo
   if [[ -d "$web_dir" ]]; then
     git -C "$web_dir" fetch --quiet
     git -C "$web_dir" reset --hard origin/main --quiet
@@ -196,21 +162,16 @@ install_web() {
     git clone --quiet "$web_repo" "$web_dir"
   fi
 
-  # Build and install
   (cd "$web_dir" && go build -o "$HOME/go/bin/web" .) || {
     echo "⚠ Failed to build web CLI"
     return 1
   }
 
-  # Cleanup
   rm -rf "$web_dir"
-
   echo "✓ web CLI installed"
-  ensure_go_path
 }
 
 # Install or update ask CLI (Kagi search CLI)
-# Requires: curl, jq, bc
 install_ask() {
   local desired_version
   desired_version="$(get_desired_version ask)"
@@ -223,13 +184,11 @@ install_ask() {
   local bin_dir="$HOME/.local/bin"
   local ask_path="$bin_dir/ask"
 
-  # Check if already installed (for non-latest versions)
   if [[ "$desired_version" != "latest" ]] && [[ -x "$ask_path" ]]; then
     echo "✓ ask CLI already installed"
     return 0
   fi
 
-  # Ensure dependencies are available
   local missing_deps=()
   for dep in curl jq bc; do
     if ! has_cmd "$dep"; then
@@ -256,26 +215,12 @@ install_ask() {
   fi
 
   echo "Installing ask CLI..."
-
-  # Create bin directory if needed
   mkdir -p "$bin_dir"
-
-  # Download ask script
   curl -fsSL "https://raw.githubusercontent.com/kagisearch/ask/main/ask" -o "$ask_path"
   chmod +x "$ask_path"
 
-  # Ensure ~/.local/bin is in PATH
-  for rcfile in "$HOME/.zshrc" "$HOME/.bashrc"; do
-    if [[ -f "$rcfile" ]] && ! grep -q '\.local/bin' "$rcfile" 2>/dev/null; then
-      echo "" >> "$rcfile"
-      echo '# Local binaries' >> "$rcfile"
-      echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$rcfile"
-      echo "✓ Added ~/.local/bin to PATH in $(basename "$rcfile")"
-    fi
-  done
-
   echo "✓ ask CLI installed"
-  echo "  Note: Set OPENROUTER_API_KEY environment variable to use ask"
+  echo "  Note: Set KAGI_API_KEY in ~/.secrets to use ask"
 }
 
 # Install platform-specific packages

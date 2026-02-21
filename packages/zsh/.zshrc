@@ -1,4 +1,4 @@
-# ~/.zshrc - Zsh configuration
+# ~/.zshrc
 
 # History
 HISTFILE=~/.zsh_history
@@ -18,34 +18,57 @@ autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
-# Prompt
-autoload -Uz vcs_info
-precmd() { vcs_info }
-zstyle ':vcs_info:git:*' formats ' (%b)'
-setopt PROMPT_SUBST
-PROMPT='%F{green}%n@%m%f:%F{blue}%~%f%F{yellow}${vcs_info_msg_0_}%f$ '
-
 # Key bindings (emacs style)
 bindkey -e
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
 
-# Source shared aliases
-[[ -f ~/.aliases ]] && source ~/.aliases
-
-# Dotfiles bin
-export PATH="$HOME/.dotfiles/bin:$PATH"
-
-# Editor
+# Environment
 export EDITOR=vim
 export VISUAL=vim
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export TERM=xterm-256color
 
-# Dotfiles bin
-export PATH="/home/sprite/.dotfiles/bin:$PATH"
+# PATH
+export PATH="$HOME/.dotfiles/bin:$PATH"
 export PATH="/usr/local/go/bin:$PATH"
-
-# Go binaries
-export PATH="/home/sprite/go/bin:$PATH"
-
-# Local binaries
+export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
+
+# Aliases
+[[ -f ~/.aliases ]] && source ~/.aliases
+
+# Tool integrations
+command -v starship &>/dev/null && eval "$(starship init zsh)"
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+
+# fzf
+[[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
+[[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+
+# nvm
+export NVM_DIR="$HOME/.nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
+
+# bun
+if [[ -d "$HOME/.bun" ]]; then
+  export BUN_INSTALL="$HOME/.bun"
+  export PATH="$BUN_INSTALL/bin:$PATH"
+  [[ -s "$BUN_INSTALL/_bun" ]] && source "$BUN_INSTALL/_bun"
+fi
+
+# fnm
+if [[ -d "$HOME/.local/share/fnm" ]]; then
+  export PATH="$HOME/.local/share/fnm:$PATH"
+  eval "$(fnm env --use-on-cd)"
+fi
+
+# uv
+[[ -s "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
+
+# Secrets (API keys, tokens - not tracked in dotfiles)
+[[ -f ~/.secrets ]] && source ~/.secrets

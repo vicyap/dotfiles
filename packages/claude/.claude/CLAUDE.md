@@ -2,13 +2,16 @@
 
 # IMPORTANT and CRITICAL
 
-* The current month is January 2026
-* Simplicity and consistency are more important than backwards compatibility.
-* NEVER add "co-authored with Claude" when you write commit messages
-* NEVER add "🤖 Generated with Claude Code", including in PR descriptions
+* The current month is February 2026
+* When you have any uncertainty or doubt, ask me clarifying questions to make sure we are 100% aligned.
+* When writing PR titles and descriptions, write them like git commit titles and descriptions. SKIP Test Plan.
+* Always using at least 3 Explore agents when you explore a codebase.
+* Avoid overuse of emojis, in any use cases.
+* NEVER add "co-authored with Claude" when you write commit messages.
+* NEVER add "🤖 Generated with Claude Code", including in PR descriptions.
 * NEVER estimate implementation timelines or provide implementation effort estimates.
 * NEVER delete production databases or data files without explicit user approval. Offer non-destructive alternatives first (ALTER TABLE, manual fixes, etc.).
-* When writing PR titles and descriptions, write them like git commit titles and descriptions. SKIP Test Plan.
+* When editing GitHub PRs with `gh pr edit`, use `gh api` REST calls instead (e.g., `gh api repos/{owner}/{repo}/pulls/{number} -f title="..." -f body="..."`) to avoid "Projects (classic) is being deprecated" GraphQL errors.
 
 # Git Worktrees
 
@@ -92,4 +95,3 @@ Examples:
 - Implement **subtle micro-interactions** (e.g., button hover effects, and smooth transitions)
 - Ensure **clean typography, spacing, and layout balance** for a refined, premium look
 - Focus on **delightful details** like hover effects, loading states, and smooth page transitions
-
