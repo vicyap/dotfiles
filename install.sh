@@ -30,7 +30,6 @@ main() {
   # Load helpers
   source "$DOTFILES_DIR/lib/platform.sh"
   source "$DOTFILES_DIR/lib/symlink.sh"
-  source "$DOTFILES_DIR/lib/version.sh"
 
   # Detect platform
   local os
@@ -42,17 +41,28 @@ main() {
   install_zsh
   echo
 
-  # Install Go and web CLI
+  # Install mise and dev tools
   echo "=== Installing development tools ==="
-  install_go
-  install_web
-  install_ask
+  install_mise
   echo
 
   # Symlink packages
   echo "=== Symlinking packages ==="
   symlink_all_packages "$DOTFILES_DIR/packages"
   echo
+
+  # Install tools via mise (after symlinks so config.toml is in place)
+  if has_cmd mise; then
+    echo "=== Installing mise tools (Go, Node, Python) ==="
+    mise install --yes
+    echo
+
+    echo "=== Installing web and ask CLIs ==="
+    eval "$(mise activate bash)"
+    mise run setup:web
+    mise run setup:ask
+    echo
+  fi
 
   # Set default shell (only prompt if running interactively)
   if [[ -t 0 ]]; then

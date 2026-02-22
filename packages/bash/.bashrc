@@ -20,10 +20,12 @@ PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
 # PATH
 export PATH="$HOME/.dotfiles/bin:$PATH"
-export PATH="/usr/local/go/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
+
+# mise
+command -v mise &>/dev/null && eval "$(mise activate bash)"
 
 # Secrets
 [[ -f ~/.secrets ]] && source ~/.secrets

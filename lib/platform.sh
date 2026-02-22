@@ -74,153 +74,33 @@ set_default_shell() {
   echo "✓ Default shell changed to zsh (restart terminal to apply)"
 }
 
-# Install or update Go to version specified in versions.conf
-install_go() {
-  local desired_version
-  desired_version="$(get_desired_version go)"
-
-  if [[ -z "$desired_version" ]]; then
-    echo "⚠ No Go version specified in versions.conf"
+# Install mise version manager
+install_mise() {
+  if has_cmd mise; then
+    echo "✓ mise already installed"
     return 0
   fi
 
-  local installed_version
-  installed_version="$(get_installed_version go)"
-
-  if [[ "$installed_version" == "$desired_version" ]]; then
-    echo "✓ Go $desired_version already installed"
-    return 0
-  fi
-
-  echo "Installing Go $desired_version (current: ${installed_version:-none})..."
-
+  echo "Installing mise..."
   case "$(detect_os)" in
     macos)
       if has_cmd brew; then
-        brew install go || brew upgrade go
+        brew install mise
       else
-        echo "⚠ Please install Homebrew first: https://brew.sh"
-        return 1
+        curl https://mise.run | sh
       fi
       ;;
     linux)
-      local arch
-      case "$(uname -m)" in
-        x86_64)  arch="amd64" ;;
-        aarch64) arch="arm64" ;;
-        armv*)   arch="armv6l" ;;
-        *)       echo "⚠ Unsupported architecture: $(uname -m)"; return 1 ;;
-      esac
-
-      local tarball="go${desired_version}.linux-${arch}.tar.gz"
-      local url="https://go.dev/dl/${tarball}"
-
-      echo "Downloading $url..."
-      curl -fsSL "$url" -o "/tmp/$tarball"
-
-      sudo rm -rf /usr/local/go
-      sudo tar -C /usr/local -xzf "/tmp/$tarball"
-      rm -f "/tmp/$tarball"
-
-      export PATH="/usr/local/go/bin:$PATH"
+      curl https://mise.run | sh
+      export PATH="$HOME/.local/bin:$PATH"
       ;;
     *)
-      echo "⚠ Unknown OS, please install Go manually"
+      echo "⚠ Unknown OS, please install mise manually: https://mise.jdx.dev"
       return 1
       ;;
   esac
 
-  echo "✓ Go $(go version 2>/dev/null | awk '{print $3}' | sed 's/go//') installed"
-}
-
-# Install or update web CLI (requires Go)
-install_web() {
-  local desired_version
-  desired_version="$(get_desired_version web)"
-
-  if [[ -z "$desired_version" ]]; then
-    echo "⚠ No web version specified in versions.conf"
-    return 0
-  fi
-
-  if ! has_cmd go; then
-    echo "⚠ Go is required to install web CLI. Installing Go first..."
-    install_go || return 1
-  fi
-
-  export PATH="/usr/local/go/bin:$HOME/go/bin:$PATH"
-
-  local web_repo="https://github.com/chrismccord/web.git"
-  local web_dir="/tmp/web-cli-build"
-
-  echo "Installing web CLI (from source)..."
-
-  if [[ -d "$web_dir" ]]; then
-    git -C "$web_dir" fetch --quiet
-    git -C "$web_dir" reset --hard origin/main --quiet
-  else
-    git clone --quiet "$web_repo" "$web_dir"
-  fi
-
-  (cd "$web_dir" && go build -o "$HOME/go/bin/web" .) || {
-    echo "⚠ Failed to build web CLI"
-    return 1
-  }
-
-  rm -rf "$web_dir"
-  echo "✓ web CLI installed"
-}
-
-# Install or update ask CLI (Kagi search CLI)
-install_ask() {
-  local desired_version
-  desired_version="$(get_desired_version ask)"
-
-  if [[ -z "$desired_version" ]]; then
-    echo "⚠ No ask version specified in versions.conf"
-    return 0
-  fi
-
-  local bin_dir="$HOME/.local/bin"
-  local ask_path="$bin_dir/ask"
-
-  if [[ "$desired_version" != "latest" ]] && [[ -x "$ask_path" ]]; then
-    echo "✓ ask CLI already installed"
-    return 0
-  fi
-
-  local missing_deps=()
-  for dep in curl jq bc; do
-    if ! has_cmd "$dep"; then
-      missing_deps+=("$dep")
-    fi
-  done
-
-  if [[ ${#missing_deps[@]} -gt 0 ]]; then
-    echo "Installing ask dependencies: ${missing_deps[*]}..."
-    case "$(detect_os)" in
-      macos)
-        brew install "${missing_deps[@]}"
-        ;;
-      linux)
-        if has_cmd apt; then
-          sudo apt update && sudo apt install -y "${missing_deps[@]}"
-        elif has_cmd dnf; then
-          sudo dnf install -y "${missing_deps[@]}"
-        elif has_cmd pacman; then
-          sudo pacman -S --noconfirm "${missing_deps[@]}"
-        fi
-        ;;
-    esac
-  fi
-
-  echo "Installing ask CLI..."
-  mkdir -p "$bin_dir"
-  curl -fsSL "https://raw.githubusercontent.com/kagisearch/ask/main/ask" -o "$ask_path"
-  chmod +x "$ask_path"
-
-  echo "✓ ask CLI installed"
-  echo "  Note: Set KAGI_API_KEY in ~/.secrets to use ask"
+  echo "✓ mise installed"
 }
 
 # Install platform-specific packages

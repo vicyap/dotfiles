@@ -1,0 +1,32 @@
+[tools]
+go = "1.23"
+node = "24"
+python = "3.12"
+
+[tasks."setup:web"]
+description = "Install web CLI from source (requires Go)"
+run = """
+#!/usr/bin/env bash
+set -e
+repo="/tmp/web-cli-build"
+if [[ -d "$repo" ]]; then
+  git -C "$repo" pull --quiet
+else
+  git clone --quiet https://github.com/chrismccord/web.git "$repo"
+fi
+cd "$repo" && go build -o "$HOME/.local/bin/web" .
+rm -rf "$repo"
+echo "✓ web CLI installed to ~/.local/bin/web"
+"""
+
+[tasks."setup:ask"]
+description = "Install ask CLI (Kagi search)"
+run = """
+#!/usr/bin/env bash
+set -e
+mkdir -p "$HOME/.local/bin"
+curl -fsSL "https://raw.githubusercontent.com/kagisearch/ask/main/ask" -o "$HOME/.local/bin/ask"
+chmod +x "$HOME/.local/bin/ask"
+echo "✓ ask CLI installed to ~/.local/bin/ask"
+echo "  Set KAGI_API_KEY in ~/.secrets to use ask"
+"""

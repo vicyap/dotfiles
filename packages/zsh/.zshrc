@@ -32,13 +32,15 @@ export TERM=xterm-256color
 
 # PATH
 export PATH="$HOME/.dotfiles/bin:$PATH"
-export PATH="/usr/local/go/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 
 # Aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
+
+# mise (manages Go, Node, Python)
+command -v mise &>/dev/null && eval "$(mise activate zsh)"
 
 # Tool integrations
 command -v starship &>/dev/null && eval "$(starship init zsh)"
@@ -49,22 +51,11 @@ command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
 [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
 
-# nvm
-export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
-[[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
-
 # bun
 if [[ -d "$HOME/.bun" ]]; then
   export BUN_INSTALL="$HOME/.bun"
   export PATH="$BUN_INSTALL/bin:$PATH"
   [[ -s "$BUN_INSTALL/_bun" ]] && source "$BUN_INSTALL/_bun"
-fi
-
-# fnm
-if [[ -d "$HOME/.local/share/fnm" ]]; then
-  export PATH="$HOME/.local/share/fnm:$PATH"
-  eval "$(fnm env --use-on-cd)"
 fi
 
 # uv
