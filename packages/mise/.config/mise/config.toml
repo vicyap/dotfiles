@@ -2,6 +2,7 @@
 go = "1.23"
 node = "24"
 python = "3.12"
+bun = "latest"
 
 [tasks."setup:web"]
 description = "Install web CLI from source (requires Go)"

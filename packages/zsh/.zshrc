@@ -39,7 +39,7 @@ export PATH="$HOME/bin:$PATH"
 # Aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
 
-# mise (manages Go, Node, Python)
+# mise (manages Go, Node, Python, Bun)
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
 
 # Tool integrations
@@ -50,13 +50,6 @@ command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 # fzf
 [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
 [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
-
-# bun
-if [[ -d "$HOME/.bun" ]]; then
-  export BUN_INSTALL="$HOME/.bun"
-  export PATH="$BUN_INSTALL/bin:$PATH"
-  [[ -s "$BUN_INSTALL/_bun" ]] && source "$BUN_INSTALL/_bun"
-fi
 
 # uv
 [[ -s "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
