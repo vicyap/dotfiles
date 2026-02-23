@@ -8,6 +8,12 @@ Personal dotfiles managed with a simple shell script. No dependencies required.
 curl -fsSL https://raw.githubusercontent.com/vicyap/dotfiles/main/install.sh | bash
 ```
 
+In non-interactive environments (e.g. piped via curl), existing files are skipped by default. Use `DOTFILES_FORCE=1` to back up and replace all conflicts:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/vicyap/dotfiles/main/install.sh | DOTFILES_FORCE=1 bash
+```
+
 Or clone and run locally:
 
 ```bash

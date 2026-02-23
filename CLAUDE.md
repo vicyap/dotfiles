@@ -32,7 +32,7 @@ Files under `packages/<name>/` mirror `$HOME` structure and get symlinked there:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/claude/.claude/settings.json` -> `~/.claude/settings.json`
 
-The `lib/symlink.sh` module handles this. It backs up existing files to `~/.dotfiles-backup/<timestamp>/` before replacing. In non-interactive mode, it skips conflicts rather than overwriting.
+The `lib/symlink.sh` module handles this. It backs up existing files to `~/.dotfiles-backup/<timestamp>/` before replacing. In non-interactive mode, it skips conflicts rather than overwriting. Set `DOTFILES_FORCE=1` to back up and replace all conflicts without prompting.
 
 ### Adding a New Package
 
@@ -62,3 +62,4 @@ Sensitive data lives in `~/.secrets` (never committed). Both `.zshrc` and `.bash
 - All scripts use `#!/usr/bin/env bash` with `set -e`
 - Guard pattern for optional tools: `command -v tool &>/dev/null && eval "$(tool init zsh)"`
 - Interactive detection via `[[ -t 0 ]]` or `DOTFILES_INTERACTIVE` env var (auto/always/never)
+- Force mode via `DOTFILES_FORCE=1` to replace conflicts without prompting (backs up originals first)

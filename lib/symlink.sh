@@ -4,6 +4,12 @@
 DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.dotfiles}"
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d_%H%M%S)"
 
+# Force overwrite existing files without prompting
+# DOTFILES_FORCE: set to 1 to back up and replace all conflicts
+is_force() {
+  [[ "$DOTFILES_FORCE" == "1" ]]
+}
+
 # Detect if running interactively
 # DOTFILES_INTERACTIVE: auto (default), always, never
 is_interactive() {
@@ -60,7 +66,9 @@ create_symlink() {
         return 0
       fi
       # Symlink points elsewhere - ask before replacing
-      if is_interactive; then
+      if is_force; then
+        : # force mode: proceed to replace
+      elif is_interactive; then
         if ! prompt_user "Replace $target (currently → $current_link)?"; then
           echo "  ⊘ Skipped: $target"
           return 0
@@ -72,7 +80,9 @@ create_symlink() {
       rm "$target"
     else
       # Regular file exists - ask before backing up
-      if is_interactive; then
+      if is_force; then
+        : # force mode: proceed to backup and replace
+      elif is_interactive; then
         if ! prompt_user "Backup and replace $target?"; then
           echo "  ⊘ Skipped: $target"
           return 0
