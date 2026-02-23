@@ -46,7 +46,7 @@ git clone https://github.com/vicyap/dotfiles.git ~/.dotfiles
 After installation, use the `dotfiles` CLI:
 
 ```bash
-dotfiles pull     # Pull latest changes and re-symlink
+dotfiles sync     # Pull latest changes and re-symlink
 dotfiles status   # Show git status of dotfiles repo
 dotfiles edit     # Open dotfiles in $EDITOR
 ```
@@ -68,7 +68,7 @@ This file is sourced by `.zshrc` and `.bashrc` if it exists.
 2. Add your config file with the same path it would have in `$HOME`:
    - `packages/myapp/.myapprc` will be symlinked to `~/.myapprc`
    - `packages/myapp/.config/myapp/config` will be symlinked to `~/.config/myapp/config`
-3. Run `dotfiles pull` or `./install.sh` to apply
+3. Run `dotfiles sync` or `./install.sh` to apply
 
 ## License
 

@@ -8,7 +8,7 @@ usage() {
 Usage: dotfiles <command>
 
 Commands:
-  pull      Pull latest changes and re-symlink
+  sync      Pull latest changes and re-symlink
   status    Show git status of dotfiles repo
   edit      Open dotfiles directory in \$EDITOR
   local     Edit ~/.claude/rules/local.md (machine-specific rules)
@@ -17,8 +17,8 @@ Commands:
 EOF
 }
 
-cmd_pull() {
-  echo "Pulling latest dotfiles..."
+cmd_sync() {
+  echo "Syncing dotfiles..."
   git -C "$DOTFILES_DIR" pull --rebase
   echo
   echo "Re-symlinking packages..."
@@ -61,7 +61,7 @@ main() {
   local cmd="${1:-help}"
 
   case "$cmd" in
-    pull)   cmd_pull ;;
+    sync)   cmd_sync ;;
     status) cmd_status ;;
     edit)   cmd_edit ;;
     local)  cmd_local ;;
