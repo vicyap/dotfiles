@@ -51,8 +51,7 @@ API keys and tokens go in `~/.secrets` (not tracked by git):
 
 ```bash
 # ~/.secrets
-export OPENROUTER_API_KEY='...'
-export KAGI_API_KEY='...'
+export A_SECRET_API_KEY='...'
 ```
 
 This file is sourced by `.zshrc` and `.bashrc` if it exists.
