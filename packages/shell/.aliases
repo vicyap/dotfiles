@@ -52,8 +52,6 @@ alias gstp='git stash pop'
 
 # Claude
 alias cc='claude'
-alias ccp='claude /prime'
-alias ccu='claude /usage'
 alias ccc='claude /commit-commands:commit'
 
 # Dev
