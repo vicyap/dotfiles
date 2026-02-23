@@ -58,6 +58,8 @@ brew "zig"
 # Cloud / infra
 brew "awscli"
 brew "flyctl"
+
+# AI tools
 brew "codex"
 
 # Shell
