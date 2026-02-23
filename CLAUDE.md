@@ -51,6 +51,12 @@ Sensitive data lives in `~/.secrets` (never committed). Both `.zshrc` and `.bash
 
 `mise` manages language runtimes (Go, Node, Python, Bun, Erlang, Elixir). Versions are pinned in `packages/mise/.config/mise/config.toml`. The mise config also defines setup tasks (`setup:web`, `setup:ask`) for building CLI tools from source.
 
+## Tools
+
+- `mise` manages language runtimes (versions pinned in `packages/mise/.config/mise/config.toml`)
+- `brew` for system packages on macOS, `apt` on Linux
+- Repos live at `~/code/{org}/{repo}` on all machines
+
 ## Shell Conventions
 
 - All scripts use `#!/usr/bin/env bash` with `set -e`
