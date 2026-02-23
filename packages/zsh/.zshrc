@@ -22,6 +22,8 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 bindkey -e
 bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
+bindkey '^[OA' history-search-backward
+bindkey '^[OB' history-search-forward
 
 # Environment
 export EDITOR=vim
