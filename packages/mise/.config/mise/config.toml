@@ -1,8 +1,10 @@
 [tools]
-go = "1.23"
+go = "1.26"
 node = "24"
-python = "3.12"
+python = "3.14"
 bun = "latest"
+erlang = "28"
+elixir = "1.19"
 
 [tasks."setup:web"]
 description = "Install web CLI from source (requires Go)"
