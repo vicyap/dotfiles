@@ -8,7 +8,6 @@ curl
 delta
 direnv
 docker-ce
-dtrx
 duf
 eza
 fd-find
@@ -23,13 +22,11 @@ jq
 lolcat
 make
 mtr-tiny
-neovim
 nethogs
 ripgrep
 rsync
 rustc
 shellcheck
-silversearcher-ag
 strace
 tailscale
 tldr

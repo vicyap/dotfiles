@@ -20,8 +20,9 @@ cmd_pull() {
   echo "Pulling latest dotfiles..."
   git -C "$DOTFILES_DIR" pull --rebase
   echo
-  echo "Re-running install..."
-  "$DOTFILES_DIR/install.sh"
+  echo "Re-symlinking packages..."
+  source "$DOTFILES_DIR/lib/symlink.sh"
+  symlink_all_packages "$DOTFILES_DIR/packages"
 }
 
 cmd_status() {

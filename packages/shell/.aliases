@@ -5,10 +5,18 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
-# ls variants
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
+# ls (prefer eza when available)
+if command -v eza &>/dev/null; then
+  alias ls='eza'
+  alias ll='eza -la --git'
+  alias la='eza -a'
+  alias l='eza -F'
+  alias lt='eza --tree --level=2'
+else
+  alias ll='ls -alF'
+  alias la='ls -A'
+  alias l='ls -CF'
+fi
 
 # Safety
 alias rm='rm -i'
@@ -44,11 +52,8 @@ alias grep='grep --color=auto'
 alias df='df -h'
 alias du='du -h'
 
-# Platform-specific
-if [[ "$(uname)" == "Darwin" ]]; then
-  alias ls='ls -G'
-else
-  alias ls='ls --color=auto'
+# Linux-specific package name aliases
+if [[ "$(uname)" != "Darwin" ]]; then
   alias fd='fdfind'
   alias bat='batcat'
 fi

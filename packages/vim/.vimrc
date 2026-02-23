@@ -30,7 +30,7 @@ set smartcase
 set backspace=indent,eol,start
 set hidden
 set autoread
-set clipboard=unnamed
+set clipboard=unnamedplus
 
 " Splits
 set splitbelow
