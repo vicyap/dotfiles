@@ -2,6 +2,7 @@
 
 # Core tools
 brew "git"
+brew "git-lfs"
 brew "vim"
 brew "curl"
 brew "wget"
@@ -12,6 +13,8 @@ brew "fd"
 brew "fzf"
 brew "htop"
 brew "btop"
+brew "watch"
+brew "p7zip"
 
 # Modern CLI replacements
 brew "bat"
@@ -23,12 +26,44 @@ brew "direnv"
 brew "starship"
 brew "tldr"
 
+# Formatters & linters
+brew "shfmt"
+brew "shellcheck"
+brew "typos-cli"
+brew "taplo"
+brew "yamlfmt"
+brew "clang-format"
+brew "cmake"
+
 # Development
 brew "gh"
 brew "mise"
-brew "shellcheck"
 brew "tmux"
+brew "imagemagick"
+brew "aria2"
+brew "rclone"
+brew "redis"
+brew "pandoc"
+brew "exiftool"
+brew "gifsicle"
+brew "ocrmypdf"
+brew "poppler"
+brew "pdfly"
+
+# Language tooling
+brew "eslint"
+brew "typescript-language-server"
+brew "zig"
+
+# Cloud / infra
+brew "awscli"
+brew "flyctl"
+brew "codex"
 
 # Shell
 brew "zsh"
 brew "zsh-completions"
+
+# Taps
+tap "turbot/tap"
+brew "steampipe"
