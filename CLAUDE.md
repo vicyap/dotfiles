@@ -14,7 +14,7 @@ Personal dotfiles repo. Shell scripts that symlink config files from `packages/`
 
 ```bash
 ./install.sh              # Full bootstrap: install zsh, mise, symlink everything, install tools
-dotfiles pull             # Pull latest + re-run install.sh
+dotfiles sync             # Pull latest + re-run install.sh
 dotfiles status           # Git status of this repo
 ```
 
