@@ -12,6 +12,7 @@
 * NEVER estimate implementation timelines or provide implementation effort estimates.
 * NEVER delete production databases or data files without explicit user approval. Offer non-destructive alternatives first (ALTER TABLE, manual fixes, etc.).
 * When editing GitHub PRs with `gh pr edit`, use `gh api` REST calls instead (e.g., `gh api repos/{owner}/{repo}/pulls/{number} -f title="..." -f body="..."`) to avoid "Projects (classic) is being deprecated" GraphQL errors.
+* Proactively use Context7 (via `resolve-library-id` then `query-docs`) to look up library/framework documentation when writing or debugging code that uses external dependencies. Don't rely on training data for API details -- fetch current docs instead.
 
 # Git Worktrees
 
