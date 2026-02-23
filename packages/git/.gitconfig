@@ -26,13 +26,6 @@
     autoSetupRemote = true
 
 [alias]
-    st = status
-    co = checkout
-    br = branch
-    ci = commit
-    lg = log --oneline --graph --decorate
-    last = log -1 HEAD
-    unstage = reset HEAD --
     initer = "!f() { git init && git commit --allow-empty --allow-empty-message --message ''; }; f"
 
 [color]
