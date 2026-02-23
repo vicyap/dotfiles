@@ -7,11 +7,38 @@ alias ....='cd ../../..'
 
 # ls (prefer eza when available)
 if command -v eza &>/dev/null; then
-  alias ls='eza'
+  # Wrapper that translates common ls flags that are incompatible with eza:
+  #   ls -t (sort by time)   -> eza --sort=modified  (eza's -t needs a value)
+  #   ls -S (sort by size)   -> eza --sort=size       (eza's -S means blocksize)
+  #   ls -h (human-readable) -> stripped              (eza always uses human-readable)
+  unalias ls 2>/dev/null
+  function ls {
+    local args=()
+    local sort_flag=""
+    for arg in "$@"; do
+      if [[ "$arg" == -* && "$arg" != --* ]]; then
+        local cleaned="$arg"
+        if [[ "$cleaned" == *t* ]]; then
+          cleaned="${cleaned//t/}"
+          sort_flag="--sort=modified"
+        fi
+        if [[ "$cleaned" == *S* ]]; then
+          cleaned="${cleaned//S/}"
+          sort_flag="--sort=size"
+        fi
+        cleaned="${cleaned//h/}"
+        [[ "$cleaned" != "-" ]] && args+=("$cleaned")
+      else
+        args+=("$arg")
+      fi
+    done
+    [[ -n "$sort_flag" ]] && args+=("$sort_flag")
+    command eza "${args[@]}"
+  }
   alias ll='eza -la --git'
   alias la='eza -a'
   alias l='eza -F'
-  alias lt='eza --tree --level=2'
+  alias ltree='eza --tree --level=2'
 else
   alias ll='ls -alF'
   alias la='ls -A'
