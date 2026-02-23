@@ -11,6 +11,7 @@ Commands:
   pull      Pull latest changes and re-symlink
   status    Show git status of dotfiles repo
   edit      Open dotfiles directory in \$EDITOR
+  local     Edit ~/.claude/rules/local.md (machine-specific rules)
   cd        Print dotfiles directory (use: cd \$(dotfiles cd))
   help      Show this help message
 EOF
@@ -37,6 +38,25 @@ cmd_cd() {
   echo "$DOTFILES_DIR"
 }
 
+cmd_local() {
+  local rules_dir="$HOME/.claude/rules"
+  local local_file="$rules_dir/local.md"
+  local example_file="$rules_dir/local.example"
+
+  if [[ ! -f "$local_file" ]]; then
+    if [[ -f "$example_file" ]]; then
+      cp "$example_file" "$local_file"
+      echo "Created $local_file from template"
+    else
+      mkdir -p "$rules_dir"
+      echo "# Local Rules" > "$local_file"
+      echo "Created $local_file"
+    fi
+  fi
+
+  ${EDITOR:-vim} "$local_file"
+}
+
 main() {
   local cmd="${1:-help}"
 
@@ -44,6 +64,7 @@ main() {
     pull)   cmd_pull ;;
     status) cmd_status ;;
     edit)   cmd_edit ;;
+    local)  cmd_local ;;
     cd)     cmd_cd ;;
     help)   usage ;;
     *)

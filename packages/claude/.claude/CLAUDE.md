@@ -68,30 +68,3 @@ Examples:
   web https://example.com --screenshot page.png --truncate-after 5000
   web localhost:4000/login --form login_form --input email --value test@example.com --input password --value secret
 ```
-
-# Code Guidelines
-
-## General
-
-* Prefer functional composition over object-oriented inheritance
-* Always use descriptive variable names. Avoid single-letter names except for counters or iterators. (eg. use `user` not `u`).
-* Do not abbreviate variable names unless the abbreviation is widely recognized (e.g., `id`, `url`, `html`). (eg. `stage` not `stg`).
-* When removing code, do not leave behind deprecation comments.
-* **Simplicity over Backwards Compatibility**: Default to ignoring backwards compatibility
-  - Use modern language features and patterns without legacy workarounds
-  - Remove deprecated code paths and old compatibility layers
-  - Focus on clean, maintainable code over supporting old versions
-* Rule of Three: Don't abstract until you have 3 use cases
-
-## JS and CSS Guidelines
-
-- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually stunning interfaces.
-- Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`
-- **Never** use `@apply` when writing raw css
-
-### UI/UX & design guidelines
-
-- **Produce world-class UI designs** with a focus on usability, aesthetics, and modern design principles
-- Implement **subtle micro-interactions** (e.g., button hover effects, and smooth transitions)
-- Ensure **clean typography, spacing, and layout balance** for a refined, premium look
-- Focus on **delightful details** like hover effects, loading states, and smooth page transitions

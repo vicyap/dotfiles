@@ -1,0 +1,13 @@
+---
+description: Machine-specific rules (not committed to dotfiles)
+---
+
+# Local Rules
+
+Copy this file to `local.md` in the same directory to add machine-specific rules.
+
+Example entries:
+
+* Default deployment target is staging (staging.example.com)
+* Use `pnpm` instead of `npm` for all JS projects
+* Prefer port 4000 for local dev servers

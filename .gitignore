@@ -18,6 +18,7 @@
 # Local overrides
 *.local
 .local/
+**/rules/local.md
 
 # OS junk
 .DS_Store
