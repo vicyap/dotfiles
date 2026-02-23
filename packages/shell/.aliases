@@ -79,7 +79,7 @@ alias gstp='git stash pop'
 
 # Claude
 alias cc='claude'
-alias ccc='claude /commit-commands:commit'
+alias ccc='claude --model sonnet --effort low /commit-commands:commit'
 
 # Dev
 alias nr='npm run'
