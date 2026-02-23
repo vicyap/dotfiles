@@ -38,6 +38,7 @@ export PATH="$HOME/bin:$PATH"
 
 # Aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
+[[ -f ~/.zsh/alias-suggest.zsh ]] && source ~/.zsh/alias-suggest.zsh
 
 # mise (manages Go, Node, Python, Bun)
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
