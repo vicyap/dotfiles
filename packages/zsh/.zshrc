@@ -36,6 +36,15 @@ export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
 
+# Wrap dotfiles CLI so `dotfiles cd` can change the shell's directory
+dotfiles() {
+  if [[ "$1" == "cd" ]]; then
+    cd "$HOME/.dotfiles"
+  else
+    command dotfiles "$@"
+  fi
+}
+
 # Aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
 [[ -f ~/.zsh/alias-suggest.zsh ]] && source ~/.zsh/alias-suggest.zsh
