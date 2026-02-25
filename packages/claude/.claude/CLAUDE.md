@@ -13,6 +13,7 @@
 * NEVER delete production databases or data files without explicit user approval. Offer non-destructive alternatives first (ALTER TABLE, manual fixes, etc.).
 * When editing GitHub PRs with `gh pr edit`, use `gh api` REST calls instead (e.g., `gh api repos/{owner}/{repo}/pulls/{number} -f title="..." -f body="..."`) to avoid "Projects (classic) is being deprecated" GraphQL errors.
 * Proactively use Context7 (via `resolve-library-id` then `query-docs`) to look up library/framework documentation when writing or debugging code that uses external dependencies. Don't rely on training data for API details -- fetch current docs instead.
+* Shell aliases `rm='rm -i'`, `cp='cp -i'`, and `mv='mv -i'` are set for user safety. These cause interactive prompts that hang Bash tool execution. When using these commands, pass `-f` to override (e.g., `rm -f`, `cp -f`, `mv -f`). Double-check targets before using `-f` -- the safety aliases exist for a reason.
 
 # Git Worktrees
 
