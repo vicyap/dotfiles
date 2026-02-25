@@ -13,6 +13,10 @@ setopt AUTO_CD
 setopt AUTO_PUSHD
 setopt PUSHD_SILENT
 
+# Pass unmatched globs through literally instead of erroring.
+# Prevents zsh from choking on paths with parentheses like app/(tabs)/
+setopt NO_NOMATCH
+
 # Completion
 autoload -Uz compinit && compinit
 zstyle ':completion:*' menu select
