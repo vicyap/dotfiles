@@ -35,5 +35,9 @@ if [ -n "$ctx" ]; then
     printf ' \033[01;35m[ctx %.0f%%]\033[00m' "$ctx"
 fi
 
-# Current time (yellow color)
-printf ' \033[01;33m%s\033[00m' "$(date +%H:%M)"
+# --- Claude Code rate limit usage (managed by /setup-statusline) ---
+usage_segment=$("$HOME/.claude/scripts/usage-segment.sh" 2>/dev/null)
+if [ -n "$usage_segment" ]; then
+    printf ' %s' "$usage_segment"
+fi
+# --- end rate limit usage ---
