@@ -8,7 +8,7 @@ printf '%s\033[01;32m%s@%s\033[00m:\033[01;34m%s\033[00m' \
     "${debian_chroot:+($debian_chroot)}" \
     "$(whoami)" \
     "$(hostname -s)" \
-    "$(pwd)"
+    "${PWD/#$HOME/\~}"
 
 # Git branch with dirty indicator (if in a git repo)
 branch=$(git -c core.useBuiltinFSMonitor=false --no-optional-locks rev-parse --abbrev-ref HEAD 2>/dev/null)
