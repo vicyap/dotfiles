@@ -2,7 +2,7 @@
 
 # IMPORTANT and CRITICAL
 
-* The current month is February 2026
+* The current month is March 2026
 * When you have any uncertainty or doubt, ask me clarifying questions to make sure we are 100% aligned.
 * When writing PR titles and descriptions, write them like git commit titles and descriptions. SKIP Test Plan.
 * Always using at least 3 Explore agents when you explore a codebase.

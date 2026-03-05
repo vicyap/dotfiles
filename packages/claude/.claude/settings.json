@@ -21,5 +21,6 @@
     "temi-skills@usetemi-skills": true
   },
   "autoUpdatesChannel": "latest",
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "effortLevel": "high"
 }
