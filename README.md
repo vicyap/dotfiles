@@ -70,6 +70,12 @@ This file is sourced by `.zshrc` and `.bashrc` if it exists.
    - `packages/myapp/.config/myapp/config` will be symlinked to `~/.config/myapp/config`
 3. Run `dotfiles sync` or `./install.sh` to apply
 
+## Remote browser / OAuth
+
+[ssh-opener](https://github.com/vicyap/ssh-opener) opens URLs on a local machine's browser from a headless remote and sets up reverse SSH port forwarding for OAuth callbacks. On headless Linux machines, `.zshrc` sets it as `$BROWSER`.
+
+Installed automatically by `./install.sh` via `mise run setup:ssh-opener`. See the [ssh-opener README](https://github.com/vicyap/ssh-opener) for setup instructions (SSH config, env vars).
+
 ## License
 
 MIT
