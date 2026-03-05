@@ -16,6 +16,7 @@ setopt PUSHD_SILENT
 # Pass unmatched globs through literally instead of erroring.
 # Prevents zsh from choking on paths with parentheses like app/(tabs)/
 setopt NO_NOMATCH
+setopt INTERACTIVE_COMMENTS
 
 # Completion
 autoload -Uz compinit && compinit
