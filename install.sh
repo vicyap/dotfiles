@@ -57,10 +57,11 @@ main() {
     mise install --yes
     echo
 
-    echo "=== Installing web and ask CLIs ==="
+    echo "=== Installing CLI tools ==="
     eval "$(mise activate bash)"
     mise run setup:web
     mise run setup:ask
+    mise run setup:ssh-opener
     echo
   fi
 

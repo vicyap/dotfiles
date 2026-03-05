@@ -49,13 +49,17 @@ Sensitive data lives in `~/.secrets` (never committed). Both `.zshrc` and `.bash
 
 ### Tool Management
 
-`mise` manages language runtimes (Go, Node, Python, Bun, Erlang, Elixir). Versions are pinned in `packages/mise/.config/mise/config.toml`. The mise config also defines setup tasks (`setup:web`, `setup:ask`) for building CLI tools from source.
+`mise` manages language runtimes (Go, Node, Python, Bun, Erlang, Elixir). Versions are pinned in `packages/mise/.config/mise/config.toml`. The mise config also defines setup tasks (`setup:web`, `setup:ask`, `setup:ssh-opener`) for installing CLI tools. Always prefer mise tasks for installing tools.
 
 ## Tools
 
 - `mise` manages language runtimes (versions pinned in `packages/mise/.config/mise/config.toml`)
 - `brew` for system packages on macOS, `apt` on Linux
 - Repos live at `~/code/{org}/{repo}` on all machines
+
+### Remote Browser / OAuth (`ssh-opener`)
+
+[ssh-opener](https://github.com/vicyap/ssh-opener) opens URLs on a local machine's browser from headless remotes and sets up reverse SSH tunnels for OAuth callbacks. Installed via `mise run setup:ssh-opener` (downloads to `~/.local/bin/`). Set as `$BROWSER` on headless Linux machines via `.zshrc`. See the ssh-opener README for full setup instructions.
 
 ## Shell Conventions
 

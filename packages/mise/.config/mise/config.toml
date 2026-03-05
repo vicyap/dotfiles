@@ -35,3 +35,19 @@ chmod +x "$HOME/.local/bin/ask"
 echo "✓ ask CLI installed to ~/.local/bin/ask"
 echo "  Set KAGI_API_KEY in ~/.secrets to use ask"
 """
+
+[tasks."setup:ssh-opener"]
+description = "Install ssh-opener (open URLs on local browser from headless remote)"
+run = """
+#!/usr/bin/env bash
+set -e
+mkdir -p "$HOME/.local/bin"
+curl -fsSL "https://raw.githubusercontent.com/vicyap/ssh-opener/main/ssh-opener" -o "$HOME/.local/bin/ssh-opener"
+chmod +x "$HOME/.local/bin/ssh-opener"
+echo "✓ ssh-opener installed to ~/.local/bin/ssh-opener"
+echo "  Set SSH_OPENER_LOCALHOST in ~/.secrets to use ssh-opener"
+"""
+
+[tasks."update:tools"]
+description = "Update all CLI tools (web, ask, ssh-opener)"
+depends = ["setup:web", "setup:ask", "setup:ssh-opener"]

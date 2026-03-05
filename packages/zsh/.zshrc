@@ -73,3 +73,8 @@ command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 
 # Secrets (API keys, tokens - not tracked in dotfiles)
 [[ -f ~/.secrets ]] && source ~/.secrets
+
+# Open URLs on local machine's browser from headless remotes (github.com/vicyap/ssh-opener)
+if [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" && "$(uname)" != "Darwin" ]]; then
+  command -v ssh-opener &>/dev/null && export BROWSER="ssh-opener"
+fi
