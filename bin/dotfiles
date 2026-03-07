@@ -9,7 +9,7 @@ Usage: dotfiles <command>
 
 Commands:
   sync      Pull latest changes and re-symlink
-  install   Re-install all CLI tools (web, ask, ssh-opener)
+  install   Re-install all CLI tools
   status    Show git status of dotfiles repo
   edit      Open dotfiles directory in \$EDITOR
   local     Edit ~/.claude/rules/local.md (machine-specific rules)
