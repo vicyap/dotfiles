@@ -24,12 +24,6 @@ cmd_sync() {
   echo "Re-symlinking packages..."
   source "$DOTFILES_DIR/lib/symlink.sh"
   symlink_all_packages "$DOTFILES_DIR/packages"
-
-  if command -v mise &>/dev/null; then
-    echo
-    echo "Updating CLI tools..."
-    mise run update:tools
-  fi
 }
 
 cmd_status() {
