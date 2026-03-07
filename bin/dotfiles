@@ -8,13 +8,13 @@ usage() {
 Usage: dotfiles <command>
 
 Commands:
-  sync      Pull latest changes and re-symlink
+  sync            Pull latest changes and re-symlink
   install-tools   Re-install all CLI tools
-  status    Show git status of dotfiles repo
-  edit      Open dotfiles directory in \$EDITOR
-  local     Edit ~/.claude/rules/local.md (machine-specific rules)
-  cd        Print dotfiles directory (use: cd \$(dotfiles cd))
-  help      Show this help message
+  status          Show git status of dotfiles repo
+  edit            Open dotfiles directory in \$EDITOR
+  local           Edit ~/.claude/rules/local.md (machine-specific rules)
+  cd              Print dotfiles directory (use: cd \$(dotfiles cd))
+  help            Show this help message
 EOF
 }
 
