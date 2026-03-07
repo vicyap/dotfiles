@@ -11,7 +11,7 @@
 
 CACHE_DIR="${XDG_CACHE_DIR:-$HOME/.cache}/claude-code"
 CACHE_FILE="$CACHE_DIR/usage.json"
-CACHE_TTL=60
+CACHE_TTL=300
 CREDS_FILE="$HOME/.claude/.credentials.json"
 API_URL="https://api.anthropic.com/api/oauth/usage"
 
