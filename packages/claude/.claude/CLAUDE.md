@@ -70,3 +70,30 @@ Examples:
   web https://example.com --screenshot page.png --truncate-after 5000
   web localhost:4000/login --form login_form --input email --value test@example.com --input password --value secret
 ```
+
+## ask
+
+Use `ask` to query external AI models. Use it for exploratory questions,
+brainstorming, getting a second opinion, or when you want idea diversity
+from a different model. Run `ask --help` for full usage.
+
+When to use `ask`:
+- Brainstorming or exploring ideas (get a different model's perspective)
+- Sanity-checking your approach with another model
+- Getting alternative solutions or implementations
+- Quick factual lookups where a second opinion helps
+
+Examples:
+```
+# Get a second opinion from GPT-5.4
+ask -Q -o "is there a simpler way to implement X"
+
+# Brainstorm with GPT-5.4
+ask -Q -o "what are the tradeoffs of approach A vs B"
+
+# Include code files for context
+ask -Q -o -f src/main.py "suggest improvements to this code"
+
+# Pipe in context
+git diff | ask -Q -o "review this diff"
+```
