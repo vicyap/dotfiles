@@ -25,15 +25,15 @@ echo "✓ web CLI installed to ~/.local/bin/web"
 """
 
 [tasks."setup:ask"]
-description = "Install ask CLI (Kagi search)"
+description = "Install ask CLI (OpenRouter AI query tool)"
 run = """
 #!/usr/bin/env bash
 set -e
 mkdir -p "$HOME/.local/bin"
-curl -fsSL "https://raw.githubusercontent.com/kagisearch/ask/main/ask" -o "$HOME/.local/bin/ask"
+curl -fsSL "https://raw.githubusercontent.com/vicyap/ask/main/ask" -o "$HOME/.local/bin/ask"
 chmod +x "$HOME/.local/bin/ask"
 echo "✓ ask CLI installed to ~/.local/bin/ask"
-echo "  Set KAGI_API_KEY in ~/.secrets to use ask"
+echo "  Set OPENROUTER_API_KEY in ~/.secrets to use ask"
 """
 
 [tasks."setup:ssh-opener"]
