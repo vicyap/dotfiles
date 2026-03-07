@@ -9,6 +9,7 @@ Usage: dotfiles <command>
 
 Commands:
   sync      Pull latest changes and re-symlink
+  install   Re-install all CLI tools (web, ask, ssh-opener)
   status    Show git status of dotfiles repo
   edit      Open dotfiles directory in \$EDITOR
   local     Edit ~/.claude/rules/local.md (machine-specific rules)
@@ -24,6 +25,15 @@ cmd_sync() {
   echo "Re-symlinking packages..."
   source "$DOTFILES_DIR/lib/symlink.sh"
   symlink_all_packages "$DOTFILES_DIR/packages"
+}
+
+cmd_install() {
+  if ! command -v mise &>/dev/null; then
+    echo "Error: mise not found"
+    exit 1
+  fi
+  echo "Installing CLI tools..."
+  mise run update:tools
 }
 
 cmd_status() {
@@ -62,6 +72,7 @@ main() {
 
   case "$cmd" in
     sync)   cmd_sync ;;
+    install) cmd_install ;;
     status) cmd_status ;;
     edit)   cmd_edit ;;
     local)  cmd_local ;;
