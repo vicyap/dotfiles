@@ -23,5 +23,5 @@ cleanup() {
 trap cleanup INT TERM
 
 echo "Streaming mic to $HOST:$FIFO (Ctrl+C to stop)"
-rec -q -t raw -r 48000 -c 1 -b 16 -e signed-integer -L - |
+rec -q --buffer 4096 -t raw -r 48000 -c 1 -b 16 -e signed-integer -L - |
   ssh -T -o Compression=no -o ServerAliveInterval=30 "$HOST" "cat > $FIFO"
