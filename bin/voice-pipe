@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -e
+
+HOST="${1:-rhinestone}"
+FIFO="/tmp/claude-voice-fifo"
+
+# Pre-flight checks
+if ! command -v rec &>/dev/null; then
+  echo "Error: sox not found (install with: brew install sox)" >&2
+  exit 1
+fi
+
+if ! ssh -o ConnectTimeout=5 "$HOST" "test -p $FIFO" 2>/dev/null; then
+  echo "Creating FIFO on $HOST..."
+  ssh "$HOST" "rm -f $FIFO && mkfifo $FIFO"
+fi
+
+cleanup() {
+  echo ""
+  echo "Stopped."
+  exit 0
+}
+trap cleanup INT TERM
+
+echo "Streaming mic to $HOST:$FIFO (Ctrl+C to stop)"
+rec -q -t raw -r 48000 -c 1 -b 16 -e signed-integer -L - |
+  ssh -T -o Compression=no -o ServerAliveInterval=30 "$HOST" "cat > $FIFO"
