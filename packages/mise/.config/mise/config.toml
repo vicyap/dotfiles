@@ -48,6 +48,15 @@ echo "✓ ssh-opener installed to ~/.local/bin/ssh-opener"
 echo "  Set SSH_OPENER_LOCALHOST in ~/.secrets to use ssh-opener"
 """
 
+[tasks."setup:pyright"]
+description = "Install pyright-langserver (Python LSP)"
+run = """
+#!/usr/bin/env bash
+set -e
+uv tool install pyright
+echo "✓ pyright-langserver installed"
+"""
+
 [tasks."update:tools"]
-description = "Update all CLI tools (web, ask, ssh-opener)"
-depends = ["setup:web", "setup:ask", "setup:ssh-opener"]
+description = "Update all CLI tools (web, ask, ssh-opener, pyright)"
+depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright"]
