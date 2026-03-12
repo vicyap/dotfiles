@@ -57,6 +57,17 @@ uv tool install pyright
 echo "✓ pyright-langserver installed"
 """
 
+[tasks."setup:tmux-status"]
+description = "Build and install tmux-status (Go binary for tmux status line)"
+run = """
+#!/usr/bin/env bash
+set -e
+mkdir -p "$HOME/.local/bin"
+cd "$HOME/.dotfiles/packages/tmux/.tmux/status/tmux-status"
+go build -ldflags="-s -w" -o "$HOME/.local/bin/tmux-status" .
+echo "✓ tmux-status installed to ~/.local/bin/tmux-status"
+"""
+
 [tasks."update:tools"]
-description = "Update all CLI tools (web, ask, ssh-opener, pyright)"
-depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright"]
+description = "Update all CLI tools (web, ask, ssh-opener, pyright, tmux-status)"
+depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright", "setup:tmux-status"]
