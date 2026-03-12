@@ -1,3 +1,4 @@
+alsa-utils
 bat
 btop
 build-essential
@@ -23,6 +24,11 @@ lolcat
 make
 mtr-tiny
 nethogs
+pipewire
+pipewire-alsa
+pipewire-bin
+pipewire-pulse
+pulseaudio-utils
 ripgrep
 rsync
 rustc
@@ -34,6 +40,7 @@ tmux
 tree
 vim
 wget
+wireplumber
 xvfb
 zoxide
 zsh

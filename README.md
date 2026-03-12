@@ -32,6 +32,7 @@ git clone https://github.com/vicyap/dotfiles.git ~/.dotfiles
 │   ├── bash/
 │   ├── claude/
 │   ├── git/
+│   ├── pipewire/
 │   ├── shell/
 │   ├── starship/
 │   ├── vim/
@@ -75,6 +76,28 @@ This file is sourced by `.zshrc` and `.bashrc` if it exists.
 [ssh-opener](https://github.com/vicyap/ssh-opener) opens URLs on a local machine's browser from a headless remote and sets up reverse SSH port forwarding for OAuth callbacks. On headless Linux machines, `.zshrc` sets it as `$BROWSER`.
 
 Installed automatically by `./install.sh` via `mise run setup:ssh-opener`. See the [ssh-opener README](https://github.com/vicyap/ssh-opener) for setup instructions (SSH config, env vars).
+
+## Voice pipe
+
+Forward macOS microphone audio to a headless Linux machine for Claude Code `/voice`.
+
+Audio is captured with `sox` on macOS, streamed as raw PCM over SSH, and fed into a PipeWire virtual mic source via a FIFO pipe. Claude Code's native audio module picks it up through ALSA -> pipewire-alsa.
+
+### First-time setup
+
+Run `dotfiles sync` on both machines. On Linux this installs PipeWire, symlinks the virtual mic config, enables services, and sets the default source. On macOS it installs sox via brew.
+
+### Daily usage
+
+1. On macOS: `voice-pipe` (leave running in a tmux pane)
+2. On Linux: use `/voice` in Claude Code normally
+
+### Troubleshooting
+
+- Verify the source exists: `pactl list sources short | grep claude-voice-mic`
+- Check PipeWire is running: `systemctl --user status pipewire`
+- Test recording while voice-pipe runs: `arecord -f S16_LE -r 48000 -c 1 -d 3 /tmp/test.wav`
+- Check FIFO exists: `test -p /tmp/claude-voice-fifo && echo ok`
 
 ## License
 
