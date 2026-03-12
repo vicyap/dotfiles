@@ -62,6 +62,7 @@ main() {
     mise run setup:web
     mise run setup:ask
     mise run setup:ssh-opener
+    mise run setup:pyright
     echo
   fi
 
