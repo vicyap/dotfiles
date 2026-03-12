@@ -62,9 +62,6 @@ brew "flyctl"
 # AI tools
 brew "codex"
 
-# Audio
-brew "sox"
-
 # Shell
 brew "zsh"
 brew "zsh-completions"

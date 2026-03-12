@@ -22,6 +22,6 @@
   },
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
-  "skipDangerousModePermissionPrompt": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }

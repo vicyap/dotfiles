@@ -22,53 +22,9 @@ cmd_sync() {
   echo "Syncing dotfiles..."
   git -C "$DOTFILES_DIR" pull --rebase
   echo
-
-  source "$DOTFILES_DIR/lib/platform.sh"
-
-  echo "Installing platform packages..."
-  install_platform_packages "$DOTFILES_DIR"
-  echo
-
   echo "Re-symlinking packages..."
   source "$DOTFILES_DIR/lib/symlink.sh"
   symlink_all_packages "$DOTFILES_DIR/packages"
-
-  # On Linux, set up PipeWire virtual mic if pipewire is installed
-  if [[ "$(detect_os)" == "linux" ]] && has_cmd pipewire; then
-    setup_pipewire_voice
-  fi
-}
-
-setup_pipewire_voice() {
-  echo ""
-  echo "Setting up PipeWire virtual mic..."
-
-  # Enable lingering so user services survive logout
-  sudo loginctl enable-linger "$USER"
-
-  # Enable and start PipeWire services
-  systemctl --user enable --now pipewire.socket pipewire-pulse.socket wireplumber.service
-
-  # Create the FIFO if it doesn't exist
-  local fifo="/tmp/claude-voice-fifo"
-  if [[ ! -p "$fifo" ]]; then
-    rm -f "$fifo"
-    mkfifo "$fifo"
-  fi
-
-  # Wait for the virtual mic source to appear
-  local attempts=0
-  while ! pactl list sources short 2>/dev/null | grep -q claude-voice-mic; do
-    attempts=$((attempts + 1))
-    if [[ $attempts -ge 10 ]]; then
-      echo "Warning: claude-voice-mic source did not appear within 5s"
-      return 0
-    fi
-    sleep 0.5
-  done
-
-  pactl set-default-source claude-voice-mic
-  echo "PipeWire virtual mic ready (default source: claude-voice-mic)"
 }
 
 cmd_install_tools() {
