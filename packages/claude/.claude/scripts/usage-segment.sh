@@ -16,27 +16,14 @@ CREDS_FILE="$HOME/.claude/.credentials.json"
 API_URL="https://api.anthropic.com/api/oauth/usage"
 
 # ANSI colors
-RED=$'\033[0;31m'
-BOLD_RED=$'\033[1;31m'
-YELLOW=$'\033[0;33m'
 GREEN=$'\033[0;32m'
 DIM=$'\033[2m'
 RESET=$'\033[0m'
 
-# Color a utilization percentage by severity threshold.
-#   <50% green, 50-74% yellow, 75-89% red, >=90% bold red
+# Color a utilization percentage — always green.
 color_util() {
-    local pct=$1 color
-    if (( pct >= 90 )); then
-        color=$BOLD_RED
-    elif (( pct >= 75 )); then
-        color=$RED
-    elif (( pct >= 50 )); then
-        color=$YELLOW
-    else
-        color=$GREEN
-    fi
-    printf '%s' "${color}${pct}%${RESET}"
+    local pct=$1
+    printf '%s' "${GREEN}${pct}%${RESET}"
 }
 
 # Format seconds as a Go-style duration string (e.g., 5d 3h 24m).
