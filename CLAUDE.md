@@ -14,14 +14,8 @@ Personal dotfiles repo. Shell scripts that symlink config files from `packages/`
 
 ```bash
 ./install.sh              # Full bootstrap: install zsh, mise, symlink everything, install tools
-dotfiles sync             # Pull latest + re-run install.sh
+dotfiles sync             # Pull latest, install platform packages, re-symlink, configure services
 dotfiles status           # Git status of this repo
-```
-
-Platform packages are installed separately:
-```bash
-brew bundle --file=platform/macos/Brewfile   # macOS
-xargs -a platform/linux/packages.txt sudo apt install -y  # Linux
 ```
 
 ## Architecture
@@ -44,7 +38,7 @@ Sensitive data lives in `~/.secrets` (never committed). Both `.zshrc` and `.bash
 
 ### lib/ Modules
 
-- `platform.sh` -- OS detection (`detect_os`), command existence check (`has_cmd`), installers for zsh and mise
+- `platform.sh` -- OS detection (`detect_os`), command existence check (`has_cmd`), installers for zsh and mise, `install_platform_packages` for brew/apt
 - `symlink.sh` -- Symlink creation with backup, interactive prompting, conflict resolution
 
 ### Tool Management
@@ -60,6 +54,10 @@ Sensitive data lives in `~/.secrets` (never committed). Both `.zshrc` and `.bash
 ### Remote Browser / OAuth (`ssh-opener`)
 
 [ssh-opener](https://github.com/vicyap/ssh-opener) opens URLs on a local machine's browser from headless remotes and sets up reverse SSH tunnels for OAuth callbacks. Installed via `mise run setup:ssh-opener` (downloads to `~/.local/bin/`). Set as `$BROWSER` on headless Linux machines via `.zshrc`. See the ssh-opener README for full setup instructions.
+
+### Voice Pipe
+
+`voice-pipe` forwards macOS microphone audio over SSH to a PipeWire virtual mic on headless Linux, enabling Claude Code `/voice`. Run `voice-pipe` on macOS (captures with sox, streams raw PCM), and `/voice` works on the remote. The PipeWire config lives in `packages/pipewire/` and `dotfiles sync` handles service setup on Linux.
 
 ## Shell Conventions
 
