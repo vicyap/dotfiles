@@ -51,6 +51,11 @@ main() {
   symlink_all_packages "$DOTFILES_DIR/packages"
   echo
 
+  # Install Ghostty terminfo (needed on remotes without Ghostty installed)
+  echo "=== Installing terminfo ==="
+  tic -x "$DOTFILES_DIR/lib/xterm-ghostty.terminfo"
+  echo
+
   # Install tools via mise (after symlinks so config.toml is in place)
   if has_cmd mise; then
     echo "=== Installing mise tools (Go, Node, Python) ==="
