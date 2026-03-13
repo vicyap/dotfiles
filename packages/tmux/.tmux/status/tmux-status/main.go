@@ -20,10 +20,10 @@ func main() {
 
 	collectors := []collector{
 		{0, "CPU", collectCPU},
-		{1, "MEM", collectMemory},
-		{2, "DSK", collectDisk},
-		{3, "NET", collectNetwork},
-		{4, "GPU", collectGPU},
+		{1, "GPU", collectGPU},
+		{2, "MEM", collectMemory},
+		{3, "DSK", collectDisk},
+		{4, "NET", collectNetwork},
 		{5, "BAT", collectBattery},
 		{6, "", collectClock},
 	}
