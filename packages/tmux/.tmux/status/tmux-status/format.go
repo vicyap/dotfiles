@@ -3,14 +3,14 @@ package main
 import "fmt"
 
 func formatRate(rate int64) string {
+	const mb = 1_000_000
+	const gb = 1_000_000_000
 	switch {
-	case rate >= 1<<30:
-		return fmt.Sprintf("%5.1fG", float64(rate)/float64(1<<30))
-	case rate >= 1<<20:
-		return fmt.Sprintf("%5.1fM", float64(rate)/float64(1<<20))
-	case rate >= 1<<10:
-		return fmt.Sprintf("%5.1fK", float64(rate)/float64(1<<10))
+	case rate >= gb:
+		return " >999M"
+	case rate >= mb:
+		return fmt.Sprintf("%5.1fM", float64(rate)/float64(mb))
 	default:
-		return fmt.Sprintf("%5.1fB", float64(rate))
+		return "   <1M"
 	}
 }
