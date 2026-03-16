@@ -2,3 +2,6 @@ working-directory = home
 window-inherit-working-directory = true
 tab-inherit-working-directory = true
 split-inherit-working-directory = true
+
+# Toggle mouse reporting so Cmd+click URLs work in tmux
+keybind = cmd+shift+m=toggle_mouse_reporting
