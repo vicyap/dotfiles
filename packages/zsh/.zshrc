@@ -25,10 +25,6 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # Key bindings (emacs style)
 bindkey -e
-bindkey '^[[A' history-search-backward
-bindkey '^[[B' history-search-forward
-bindkey '^[OA' history-search-backward
-bindkey '^[OB' history-search-forward
 
 # Environment
 export EDITOR=vim
@@ -66,6 +62,12 @@ command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
 # fzf
 [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
 [[ -f /usr/share/doc/fzf/examples/completion.zsh ]] && source /usr/share/doc/fzf/examples/completion.zsh
+
+# Prefix history search (after fzf so these aren't overridden)
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+bindkey '^[OA' history-search-backward
+bindkey '^[OB' history-search-forward
 
 # uv
 [[ -s "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
