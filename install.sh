@@ -68,6 +68,7 @@ main() {
     mise run setup:ask
     mise run setup:ssh-opener
     mise run setup:pyright
+    mise run setup:typescript-lsp
     echo
   fi
 
