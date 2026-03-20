@@ -35,9 +35,34 @@ if [ -n "$ctx" ]; then
     printf ' \033[01;35m[ctx %.0f%%]\033[00m' "$ctx"
 fi
 
-# --- Claude Code rate limit usage (managed by /setup-statusline) ---
-usage_segment=$("$HOME/.claude/scripts/usage-segment.sh" 2>/dev/null)
-if [ -n "$usage_segment" ]; then
-    printf ' %s' "$usage_segment"
+# Rate limit usage from built-in rate_limits field (available for Claude.ai subscribers)
+IFS=$'\t' read -r five_pct five_resets seven_pct seven_resets < <(
+    echo "$input" | jq -r '[
+        (.rate_limits.five_hour.used_percentage // ""),
+        (.rate_limits.five_hour.resets_at // ""),
+        (.rate_limits.seven_day.used_percentage // ""),
+        (.rate_limits.seven_day.resets_at // "")
+    ] | @tsv' 2>/dev/null
+)
+if [ -n "$five_pct" ] && [ -n "$seven_pct" ]; then
+    now=$(date +%s)
+    format_duration() {
+        local s=$1
+        ((s <= 0)) && {
+            printf '0m'
+            return
+        }
+        local d=$((s / 86400)) h=$(((s % 86400) / 3600)) m=$(((s % 3600) / 60))
+        local r=""
+        ((d > 0)) && r="${d}d "
+        ((h > 0)) && r="${r}${h}h "
+        printf '%s' "${r}${m}m"
+    }
+    five_rem=$((${five_resets%.*} - now))
+    ((five_rem < 0)) && five_rem=0
+    seven_rem=$((${seven_resets%.*} - now))
+    ((seven_rem < 0)) && seven_rem=0
+    printf ' 5h: \033[0;32m%.0f%%\033[0m \033[2m(%s)\033[0m 7d: \033[0;32m%.0f%%\033[0m \033[2m(%s)\033[0m' \
+        "$five_pct" "$(format_duration "$five_rem")" \
+        "$seven_pct" "$(format_duration "$seven_rem")"
 fi
-# --- end rate limit usage ---
