@@ -15,24 +15,6 @@
 * Proactively use Context7 (via `resolve-library-id` then `query-docs`) to look up library/framework documentation when writing or debugging code that uses external dependencies. Don't rely on training data for API details -- fetch current docs instead.
 * Shell aliases `rm='rm -i'`, `cp='cp -i'`, and `mv='mv -i'` are set for user safety. These cause interactive prompts that hang Bash tool execution. When using these commands, pass `-f` to override (e.g., `rm -f`, `cp -f`, `mv -f`). Double-check targets before using `-f` -- the safety aliases exist for a reason.
 
-# Git Worktrees
-
-Worktrees live in `.worktrees/` inside the repo root:
-```
-repo-name/
-├── .worktrees/         # Feature worktrees here
-│   └── feat-name/
-├── src/
-└── .gitignore          # Must include .worktrees/
-```
-
-Commands:
-- Create: `git worktree add .worktrees/<name> -b <name>`
-- List: `git worktree list`
-- Remove: `git worktree remove .worktrees/<name>`
-
-Prefer naming using kebab-case, do not use "/" in names.
-
 # Helpful Programs
 
 ## web
