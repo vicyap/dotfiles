@@ -29,3 +29,5 @@ command -v mise &>/dev/null && eval "$(mise activate bash)"
 
 # Secrets
 [[ -f ~/.secrets ]] && source ~/.secrets
+
+. "$HOME/.posthog/env"
