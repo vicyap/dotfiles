@@ -5,7 +5,6 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "model": "opus[1m]",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
@@ -17,9 +16,12 @@
     "typescript-lsp@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "posthog@claude-plugins-official": true,
     "temi-skills@usetemi-skills": true,
-    "linear@claude-plugins-official": true
+    "linear@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "explanatory-output-style@claude-plugins-official": true
   },
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",
