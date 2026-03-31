@@ -4,3 +4,9 @@ model_reasoning_effort = "medium"
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp"
 http_headers = { "CONTEXT7_API_KEY" = "YOUR_CONTEXT7_API_KEY" }
+
+[projects."/home/victor/code/usetemi/headcount"]
+trust_level = "trusted"
+
+[notice.model_migrations]
+"gpt-5.3-codex" = "gpt-5.4"
