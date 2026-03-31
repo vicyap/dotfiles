@@ -80,4 +80,4 @@ if [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" && "$(uname)" != "Darwin" ]]; then
   command -v ssh-opener &>/dev/null && export BROWSER="ssh-opener"
 fi
 
-. "$HOME/.posthog/env"
+[[ -f "$HOME/.posthog/env" ]] && . "$HOME/.posthog/env"
