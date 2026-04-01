@@ -1,4 +1,4 @@
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "never"
@@ -9,8 +9,3 @@ web_search = "live"
 url = "https://mcp.context7.com/mcp"
 http_headers = { "CONTEXT7_API_KEY" = "YOUR_CONTEXT7_API_KEY" }
 
-[projects."/home/victor/code/usetemi/headcount"]
-trust_level = "trusted"
-
-[notice.model_migrations]
-"gpt-5.3-codex" = "gpt-5.4"
