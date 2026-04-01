@@ -10,6 +10,8 @@ paths:
 
 ## Ecto Guidelines
 
+Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
+
 - **Always** preload Ecto associations in queries when they'll be accessed in templates, ie a message that needs to reference the `message.user.email`
 - Remember `import Ecto.Query` and other supporting modules when you write `seeds.exs`
 - `Ecto.Schema` fields always use the `:string` type, even for `:text`, columns, ie: `field :name, :string`

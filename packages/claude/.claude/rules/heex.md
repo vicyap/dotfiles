@@ -8,6 +8,8 @@ paths:
 
 ## Phoenix HTML guidelines
 
+Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
+
 - Phoenix templates **always** use `~H` or .html.heex files (known as HEEx), **never** use `~E`
 - **Always** use the imported `Phoenix.Component.form/1` and `Phoenix.Component.inputs_for/1` function to build forms. **Never** use `Phoenix.HTML.form_for` or `Phoenix.HTML.inputs_for` as they are outdated
 - When building forms **always** use the already imported `Phoenix.Component.to_form/2` (`assign(socket, form: to_form(...))` and `<.form for={@form} id="msg-form">`), then access those forms in the template via `@form[:field]`

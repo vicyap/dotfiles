@@ -1,7 +1,8 @@
-# Python Tooling
+# Python Language
 
-Always use these tools for Python work. No exceptions.
-
-- **uv** — project and package management. `uv init` for new projects, `uv add`/`uv remove` for deps, `uv run` to execute, `uv sync` to install. Never use pip, poetry, or pipenv.
-- **ruff** — formatting (`ruff format`) and linting (`ruff check`). Always enable isort rules (`I`) in ruff config.
-- **ty** — type checking. Use instead of mypy or pyright.
+- **Never** use mutable objects (lists, dicts) as default argument values. Use `None` and create inside the function.
+- Use `isinstance(obj, list)` not `type(obj) == list` for type checking.
+- Compare to `None` with `is`/`is not`, never `==`/`!=`.
+- Never use bare `except:` -- always catch specific exceptions.
+- Use `from __future__ import annotations` for forward references in type hints (Python < 3.12).
+- Predicate functions should return `bool` and be named with question-style verbs (`is_valid`, `has_access`, `can_edit`).

@@ -15,6 +15,22 @@
 * Proactively use Context7 (via `resolve-library-id` then `query-docs`) to look up library/framework documentation when writing or debugging code that uses external dependencies. Don't rely on training data for API details -- fetch current docs instead.
 * Shell aliases `rm='rm -i'`, `cp='cp -i'`, and `mv='mv -i'` are set for user safety. These cause interactive prompts that hang Bash tool execution. When using these commands, pass `-f` to override (e.g., `rm -f`, `cp -f`, `mv -f`). Double-check targets before using `-f` -- the safety aliases exist for a reason.
 
+# Anti-Hallucination and Code Quality
+
+Sources: github.com/obra/dotfiles, github.com/trailofbits/claude-code-config
+
+* NEVER invent technical details. If you don't know an environment variable name, API endpoint, CLI flag, or configuration option -- stop and research it or explicitly state you don't know. Do not fabricate.
+* NEVER document, validate, or reference features that aren't implemented. Don't add config keys, CLI flags, or API parameters that don't exist in the current codebase.
+* NEVER write tests that assert mocked behavior. If a test mocks a function and then asserts the mock returns what the mock was configured to return, the test is worthless. Flag such tests.
+* NEVER implement mocks in end-to-end tests. E2E tests use real data and real APIs.
+* NEVER throw away or rewrite existing implementations without explicit permission. If an implementation seems wrong, ask before replacing it.
+* NEVER use `git add -A` or `git add .` without running `git status` first. These can commit test artifacts, temp files, or secrets.
+* Match the style and formatting of surrounding code, even if it differs from standard style guides. Consistency within a file trumps external standards. Do not change whitespace that doesn't affect execution.
+* Use plain, factual language in PRs and commits. A bug fix is a bug fix, not a "critical stability improvement." Avoid inflated words: critical, crucial, essential, significant, comprehensive, robust, elegant.
+* Complete all workflow steps (review, test, verify) even for small changes. Never skip process steps because a task seems trivial.
+* Don't abandon a working repetitive approach mid-task. Tedious, systematic work is often the correct solution.
+* When a new implementation replaces an old one, remove the old one entirely. No backward-compatible shims, dual config formats, or migration paths unless explicitly requested.
+
 # Helpful Programs
 
 ## web

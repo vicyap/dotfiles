@@ -6,6 +6,8 @@ paths:
 
 ## Elixir guidelines
 
+Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
+
 - Elixir lists **do not support index based access via the access syntax**
 
   **Never do this (invalid)**:
