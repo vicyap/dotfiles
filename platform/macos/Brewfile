@@ -27,6 +27,7 @@ brew "starship"
 brew "tldr"
 
 # Formatters & linters
+brew "gitleaks"
 brew "shfmt"
 brew "shellcheck"
 brew "typos-cli"

@@ -77,6 +77,23 @@ go build -ldflags="-s -w" -o "$HOME/.local/bin/tmux-status" .
 echo "✓ tmux-status installed to ~/.local/bin/tmux-status"
 """
 
+[tasks."setup:gitleaks"]
+description = "Install gitleaks (secret scanner for git)"
+run = """
+#!/usr/bin/env bash
+set -e
+mkdir -p "$HOME/.local/bin"
+version="$(curl -fsSL https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)"
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+arch="$(uname -m)"
+case "$arch" in
+  x86_64) arch="x64" ;;
+  aarch64|arm64) arch="arm64" ;;
+esac
+curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/${version}/gitleaks_${version#v}_${os}_${arch}.tar.gz" | tar xz -C "$HOME/.local/bin/" gitleaks
+echo "✓ gitleaks ${version} installed to ~/.local/bin/gitleaks"
+"""
+
 [tasks."update:tools"]
-description = "Update all CLI tools (web, ask, ssh-opener, pyright, tmux-status)"
-depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright", "setup:typescript-lsp", "setup:tmux-status"]
+description = "Update all CLI tools (web, ask, ssh-opener, pyright, tmux-status, gitleaks)"
+depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright", "setup:typescript-lsp", "setup:tmux-status", "setup:gitleaks"]
