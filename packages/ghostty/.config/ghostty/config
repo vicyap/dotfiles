@@ -1,3 +1,5 @@
+theme = TokyoNight Night
+
 working-directory = home
 window-inherit-working-directory = true
 tab-inherit-working-directory = true
