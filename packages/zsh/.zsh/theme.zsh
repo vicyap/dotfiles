@@ -1,12 +1,38 @@
 #!/usr/bin/env zsh
 # Theme switching: `light` / `dark`
-# Switches Ghostty, Claude Code, and Tmux themes together.
+# Switches Ghostty, Claude Code, Tmux, and shell tool themes together.
 
 GHOSTTY_CONFIG="$(readlink -f "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config" 2>/dev/null || echo "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config")"
+
+_apply_theme_env() {
+    local mode="$1"
+    export THEME_MODE="$mode"
+    if [[ "$mode" == "light" ]]; then
+        export BAT_THEME="GitHub"
+        export FZF_DEFAULT_OPTS="--color=light"
+    else
+        export BAT_THEME="TwoDark"
+        export FZF_DEFAULT_OPTS="--color=dark"
+    fi
+}
+
+# Apply saved theme on shell startup
+if [[ -f ~/.theme-mode ]]; then
+    _apply_theme_env "$(< ~/.theme-mode)"
+else
+    _apply_theme_env dark
+fi
 
 _set_theme() {
     local mode="$1" ghostty_theme="$2"
     local switched=()
+
+    # Persist mode for new shells
+    echo "$mode" > ~/.theme-mode
+
+    # Shell env (bat, fzf, vim)
+    _apply_theme_env "$mode"
+    switched+=("bat, fzf, vim")
 
     # Ghostty
     if [[ -f "$GHOSTTY_CONFIG" ]]; then

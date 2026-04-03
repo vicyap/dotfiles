@@ -56,3 +56,10 @@ nnoremap <leader><space> :nohlsearch<CR>
 " Syntax
 syntax enable
 filetype plugin indent on
+
+" Theme: follow THEME_MODE env var set by `dark`/`light` shell commands
+if $THEME_MODE == "light"
+  set background=light
+else
+  set background=dark
+endif
