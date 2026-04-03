@@ -43,3 +43,6 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[filter "ghostty-theme"]
+	clean = sed 's/^theme = .*/theme = TokyoNight Night/'
+	smudge = cat

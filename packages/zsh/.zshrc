@@ -50,7 +50,7 @@ dotfiles() {
 # Aliases
 [[ -f ~/.aliases ]] && source ~/.aliases
 [[ -f ~/.zsh/alias-suggest.zsh ]] && source ~/.zsh/alias-suggest.zsh
-[[ -f ~/.zsh/ghostty-theme.zsh ]] && source ~/.zsh/ghostty-theme.zsh
+[[ -f ~/.zsh/theme.zsh ]] && source ~/.zsh/theme.zsh
 
 # mise (manages Go, Node, Python, Bun)
 command -v mise &>/dev/null && eval "$(mise activate zsh)"

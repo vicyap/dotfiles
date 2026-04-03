@@ -1,6 +1,6 @@
 #!/usr/bin/env zsh
 # Theme switching: `light` / `dark`
-# Switches Ghostty theme and Claude Code theme together.
+# Switches Ghostty, Claude Code, and Tmux themes together.
 
 GHOSTTY_CONFIG="$(readlink -f "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config" 2>/dev/null || echo "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config")"
 
@@ -23,6 +23,15 @@ _set_theme() {
     if [[ -f ~/.claude.json ]] && command -v jq &>/dev/null; then
         jq --arg t "$mode" '.theme = $t' ~/.claude.json > ~/.claude.json.tmp && mv -f ~/.claude.json.tmp ~/.claude.json
         switched+=("Claude Code: ${mode}")
+    fi
+
+    # Tmux
+    if command -v tmux &>/dev/null && [[ -n "$TMUX" ]]; then
+        local tmux_theme="$HOME/.tmux/themes/tokyonight-${mode}.conf"
+        if [[ -f "$tmux_theme" ]]; then
+            tmux source-file "$tmux_theme"
+            switched+=("Tmux: ${mode}")
+        fi
     fi
 
     if (( ${#switched[@]} )); then
