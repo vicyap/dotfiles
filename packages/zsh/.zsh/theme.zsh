@@ -41,5 +41,5 @@ _set_theme() {
     fi
 }
 
-light() { _set_theme light "TokyoNight Day"; }
+light() { _set_theme light "GitHub Light High Contrast"; }
 dark() { _set_theme dark "TokyoNight Night"; }
