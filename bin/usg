@@ -9,6 +9,7 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -399,11 +400,20 @@ def provider_result(fetcher):
         return "unavailable"
 
 
-def main():
-    rows = [
-        ("Claude", provider_result(fetch_claude_windows)),
-        ("Codex", provider_result(fetch_codex_windows)),
+def fetch_rows():
+    providers = [
+        ("Claude", fetch_claude_windows),
+        ("Codex", fetch_codex_windows),
     ]
+    # Fetch providers concurrently so total latency stays close to the slowest
+    # upstream request as more usage backends are added.
+    with ThreadPoolExecutor(max_workers=len(providers)) as executor:
+        results = list(executor.map(lambda item: provider_result(item[1]), providers))
+    return [(name, result) for (name, _), result in zip(providers, results)]
+
+
+def main():
+    rows = fetch_rows()
     lines = []
     for idx, (name, windows) in enumerate(rows):
         lines.extend(render_provider(name, windows))
