@@ -51,10 +51,11 @@ _set_theme() {
         switched+=("Claude Code: ${mode}")
     fi
 
-    # Tmux
-    if command -v tmux &>/dev/null && [[ -n "$TMUX" ]]; then
+    # Tmux: reload the active server even when invoked outside a tmux client.
+    # This targets the default tmux server/socket, not custom `tmux -L` or `tmux -S` servers.
+    if command -v tmux &>/dev/null; then
         local tmux_theme="$HOME/.tmux/themes/tokyonight-${mode}.conf"
-        if [[ -f "$tmux_theme" ]]; then
+        if [[ -f "$tmux_theme" ]] && tmux ls &>/dev/null; then
             tmux source-file "$tmux_theme"
             switched+=("Tmux: ${mode}")
         fi
