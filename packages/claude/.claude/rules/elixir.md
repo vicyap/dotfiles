@@ -44,6 +44,63 @@ Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
 - Elixir's builtin OTP primitives like `DynamicSupervisor` and `Registry`, require names in the child spec, such as `{DynamicSupervisor, name: MyApp.MyDynamicSup}`, then you can use `DynamicSupervisor.start_child(MyApp.MyDynamicSup, child_spec)`
 - Use `Task.async_stream(collection, callback, options)` for concurrent enumeration with back-pressure. The majority of times you will want to pass `timeout: :infinity` as option
 
+## Anti-patterns
+
+- **`with` else blocks**: Don't flatten errors into a single complex `else` block. Instead, normalize error returns in private helper functions so `with` needs no `else` at all:
+
+      # Avoid: complex else mapping errors back to their source
+      with {:ok, encoded} <- File.read(path),
+           {:ok, decoded} <- Base.decode64(encoded) do
+        {:ok, String.trim(decoded)}
+      else
+        {:error, _} -> {:error, :badfile}
+        :error -> {:error, :badencoding}
+      end
+
+      # Prefer: normalize errors at the source, drop the else
+      with {:ok, encoded} <- file_read(path),
+           {:ok, decoded} <- base_decode64(encoded) do
+        {:ok, String.trim(decoded)}
+      end
+
+- **Use `and`/`or`/`not` when operands are booleans**, not `&&`/`||`/`!`. The strict operators assert their first argument is boolean, catching bugs where `:error` or `:undefined` would be truthy under `&&`:
+
+      # Avoid
+      if is_binary(name) && is_integer(age), do: ...
+      # Prefer
+      if is_binary(name) and is_integer(age), do: ...
+
+- **Match specific patterns in `case`, not catch-all `_`**. When the possible return values are known, match each explicitly. Catch-all `_` hides bugs when new return values are added:
+
+      # Avoid
+      case File.read(path) do
+        {:ok, data} -> data
+        _ -> nil
+      end
+
+      # Prefer
+      case File.read(path) do
+        {:ok, data} -> data
+        {:error, _reason} -> nil
+      end
+
+- **Use `map.key` for required keys, `map[:key]` for optional keys** -- even on plain maps, not just structs. Bracket access on a required key hides missing-key bugs as `nil` propagation
+
+- **Prefer tuple-returning functions over `try`/`rescue`**. Use `File.read/1` + `case`, not `File.read!/1` + `try/rescue`. Reserve bang functions for scripts, tests, and fire-and-forget calls where crashing is the right response
+
+- **Extract data before sending to processes**. Closures capture entire bindings, so `spawn(fn -> log(conn.remote_ip) end)` copies all of `conn`. Bind the needed value first:
+
+      ip = conn.remote_ip
+      spawn(fn -> log(ip) end)
+
+- **Centralize process interfaces** -- all `GenServer.call/cast` and `Agent` interactions for a process belong in that process's module. Don't scatter `GenServer.call(pid, ...)` across multiple modules
+
+- **Functions over macros** -- don't use `defmacro` when `def` suffices
+
+- **Keep structs under 32 fields** -- the BEAM switches from flat map (shared key tuple) to hash map at 32 fields. Nest optional or rarely-accessed fields if needed
+
+- **Replace overlapping booleans with atoms** -- when multiple boolean fields have dependent states (e.g., `admin: true` makes `editor: true` meaningless), use a single atom field like `role: :admin`
+
 ## Mix guidelines
 
 - Read the docs and options before using tasks (by using `mix help task_name`)
