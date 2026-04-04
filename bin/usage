@@ -1,0 +1,397 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+python3 - <<'PY'
+import json
+import os
+import subprocess
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+
+CODEX_REFRESH_URL = "https://auth.openai.com/oauth/token"
+CODEX_REFRESH_CLIENT_ID = "app_EMoamEEZ73f0CkXaXp7hrann"
+CODEX_DEFAULT_USAGE_URL = "https://chatgpt.com/backend-api/wham/usage"
+
+CLAUDE_USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
+CLAUDE_REFRESH_URL = "https://platform.claude.com/v1/oauth/token"
+CLAUDE_REFRESH_CLIENT_ID = "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
+
+
+class AuthRequired(Exception):
+    pass
+
+
+class ProviderUnavailable(Exception):
+    pass
+
+
+def http_json(url, *, method="GET", headers=None, body=None, timeout=20):
+    req = urllib.request.Request(url, data=body, headers=headers or {}, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return resp.status, json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        payload = exc.read().decode("utf-8", errors="replace")
+        try:
+            data = json.loads(payload)
+        except json.JSONDecodeError:
+            data = payload
+        return exc.code, data
+
+
+def parse_iso8601(value):
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def format_reset(value):
+    if value is None:
+        return "unknown"
+    if isinstance(value, (int, float)):
+        dt = datetime.fromtimestamp(value, tz=timezone.utc).astimezone()
+    else:
+        dt = parse_iso8601(value)
+        if dt is None:
+            return str(value)
+        dt = dt.astimezone()
+    return dt.strftime("%b %d %H:%M %Z").replace(" 0", " ")
+
+
+def format_windows(windows):
+    if windows is None:
+        return None
+    if windows == "unavailable":
+        return "unavailable"
+    ordered = {label: (used, resets_at) for label, used, resets_at in windows}
+    parts = []
+    for label in ("5h", "7d"):
+        used, resets_at = ordered.get(label, (None, None))
+        used_text = "?" if used is None else f"{int(round(float(used))):>3}%"
+        part = f"{label:>2} {used_text} used, resets {format_reset(resets_at)}"
+        parts.append(part)
+    return parts
+
+
+def render_rows(rows):
+    window_rows = [parts for _, parts in rows if isinstance(parts, list)]
+    col1_width = max((len(parts[0]) for parts in window_rows), default=0)
+
+    lines = []
+    for name, parts in rows:
+        if parts is None:
+            lines.append(f"{name:<8} login required")
+        elif parts == "unavailable":
+            lines.append(f"{name:<8} unavailable")
+        else:
+            lines.append(f"{name:<8} {parts[0]:<{col1_width}} | {parts[1]}")
+    return lines
+
+
+def codex_home():
+    raw = os.environ.get("CODEX_HOME")
+    if raw:
+        return Path(raw).expanduser()
+    return Path.home() / ".codex"
+
+
+def load_codex_credentials():
+    auth_path = codex_home() / "auth.json"
+    if not auth_path.exists():
+        raise AuthRequired()
+    try:
+        data = json.loads(auth_path.read_text())
+    except Exception as exc:
+        raise ProviderUnavailable(f"invalid auth file: {exc}") from exc
+
+    tokens = data.get("tokens") or {}
+    access_token = (
+        tokens.get("access_token")
+        or tokens.get("accessToken")
+        or data.get("OPENAI_API_KEY")
+    )
+    refresh_token = tokens.get("refresh_token") or tokens.get("refreshToken") or ""
+    account_id = tokens.get("account_id") or tokens.get("accountId")
+    last_refresh = parse_iso8601(data.get("last_refresh"))
+
+    if not access_token:
+        raise AuthRequired()
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "account_id": account_id,
+        "last_refresh": last_refresh,
+    }
+
+
+def load_codex_usage_url():
+    config_path = codex_home() / "config.toml"
+    if not config_path.exists():
+        return CODEX_DEFAULT_USAGE_URL
+    try:
+        for raw_line in config_path.read_text().splitlines():
+            line = raw_line.split("#", 1)[0].strip()
+            if not line or "=" not in line:
+                continue
+            key, value = [part.strip() for part in line.split("=", 1)]
+            if key != "chatgpt_base_url":
+                continue
+            if value[:1] in {"'", '"'} and value[-1:] == value[:1]:
+                value = value[1:-1].strip()
+            if not value:
+                break
+            base = value.rstrip("/")
+            if base.startswith("https://chatgpt.com") or base.startswith("https://chat.openai.com"):
+                if "/backend-api" not in base:
+                    base += "/backend-api"
+            path = "/wham/usage" if "/backend-api" in base else "/api/codex/usage"
+            return base + path
+    except Exception:
+        pass
+    return CODEX_DEFAULT_USAGE_URL
+
+
+def refresh_codex_credentials(creds):
+    refresh_token = (creds.get("refresh_token") or "").strip()
+    if not refresh_token:
+        return creds
+
+    payload = json.dumps(
+        {
+            "client_id": CODEX_REFRESH_CLIENT_ID,
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "scope": "openid profile email",
+        }
+    ).encode("utf-8")
+    status, data = http_json(
+        CODEX_REFRESH_URL,
+        method="POST",
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        body=payload,
+    )
+    if status != 200:
+        raise AuthRequired()
+
+    refreshed = dict(creds)
+    refreshed["access_token"] = data.get("access_token") or creds["access_token"]
+    refreshed["refresh_token"] = data.get("refresh_token") or refresh_token
+    refreshed["last_refresh"] = datetime.now(timezone.utc)
+    return refreshed
+
+
+def fetch_codex_windows():
+    creds = load_codex_credentials()
+    last_refresh = creds.get("last_refresh")
+    if last_refresh is None or (datetime.now(timezone.utc) - last_refresh).total_seconds() > 8 * 24 * 60 * 60:
+        try:
+            creds = refresh_codex_credentials(creds)
+        except AuthRequired:
+            pass
+
+    def do_request(token):
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json",
+            "User-Agent": "usage-script",
+        }
+        if creds.get("account_id"):
+            headers["ChatGPT-Account-Id"] = creds["account_id"]
+        return http_json(load_codex_usage_url(), headers=headers)
+
+    status, data = do_request(creds["access_token"])
+    if status in (401, 403):
+        creds = refresh_codex_credentials(creds)
+        status, data = do_request(creds["access_token"])
+    if status in (401, 403):
+        raise AuthRequired()
+    if status < 200 or status >= 300 or not isinstance(data, dict):
+        raise ProviderUnavailable("usage API unavailable")
+
+    rate_limit = data.get("rate_limit") or {}
+    primary = rate_limit.get("primary_window") or {}
+    secondary = rate_limit.get("secondary_window") or {}
+    windows = []
+    if primary.get("used_percent") is not None:
+        windows.append(("5h", primary.get("used_percent"), primary.get("reset_at")))
+    if secondary.get("used_percent") is not None:
+        windows.append(("7d", secondary.get("used_percent"), secondary.get("reset_at")))
+    if not windows:
+        raise AuthRequired()
+    return windows
+
+
+def load_claude_from_env():
+    token = os.environ.get("CODEXBAR_CLAUDE_OAUTH_TOKEN", "").strip()
+    if not token:
+        return None
+    scopes_raw = os.environ.get("CODEXBAR_CLAUDE_OAUTH_SCOPES", "user:profile")
+    scopes = [part.strip() for part in scopes_raw.split(",") if part.strip()]
+    return {
+        "access_token": token,
+        "refresh_token": None,
+        "expires_at": None,
+        "scopes": scopes or ["user:profile"],
+    }
+
+
+def parse_claude_credential_blob(raw):
+    payload = json.loads(raw)
+    oauth = payload.get("claudeAiOauth")
+    if not isinstance(oauth, dict):
+        raise AuthRequired()
+    access_token = (oauth.get("accessToken") or "").strip()
+    if not access_token:
+        raise AuthRequired()
+    expires_at_ms = oauth.get("expiresAt")
+    expires_at = None
+    if expires_at_ms:
+        expires_at = datetime.fromtimestamp(float(expires_at_ms) / 1000.0, tz=timezone.utc)
+    return {
+        "access_token": access_token,
+        "refresh_token": oauth.get("refreshToken"),
+        "expires_at": expires_at,
+        "scopes": oauth.get("scopes") or [],
+    }
+
+
+def load_claude_from_keychain():
+    if sys.platform != "darwin":
+        return None
+    try:
+        proc = subprocess.run(
+            ["/usr/bin/security", "find-generic-password", "-s", "Claude Code-credentials", "-w"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=1.5,
+        )
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return None
+    blob = proc.stdout.strip()
+    if not blob:
+        return None
+    return parse_claude_credential_blob(blob)
+
+
+def load_claude_from_file():
+    path = Path.home() / ".claude" / ".credentials.json"
+    if not path.exists():
+        return None
+    return parse_claude_credential_blob(path.read_text())
+
+
+def load_claude_credentials():
+    creds = load_claude_from_env()
+    if creds:
+        return creds
+    for loader in (load_claude_from_keychain, load_claude_from_file):
+        try:
+            creds = loader()
+        except Exception:
+            creds = None
+        if creds:
+            return creds
+    raise AuthRequired()
+
+
+def refresh_claude_credentials(creds):
+    refresh_token = (creds.get("refresh_token") or "").strip()
+    if not refresh_token:
+        raise AuthRequired()
+    body = urllib.parse.urlencode(
+        {
+            "grant_type": "refresh_token",
+            "refresh_token": refresh_token,
+            "client_id": CLAUDE_REFRESH_CLIENT_ID,
+        }
+    ).encode("utf-8")
+    status, data = http_json(
+        CLAUDE_REFRESH_URL,
+        method="POST",
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+        },
+        body=body,
+    )
+    if status != 200 or not isinstance(data, dict):
+        raise AuthRequired()
+    refreshed = dict(creds)
+    refreshed["access_token"] = data.get("access_token") or creds["access_token"]
+    refreshed["refresh_token"] = data.get("refresh_token") or refresh_token
+    expires_in = data.get("expires_in")
+    if expires_in:
+        refreshed["expires_at"] = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(seconds=int(expires_in))
+    return refreshed
+
+
+def fetch_claude_windows():
+    creds = load_claude_credentials()
+    expires_at = creds.get("expires_at")
+    if expires_at and datetime.now(timezone.utc) >= expires_at:
+        creds = refresh_claude_credentials(creds)
+
+    if creds.get("scopes") and "user:profile" not in creds.get("scopes", []):
+        raise AuthRequired()
+
+    headers = {
+        "Authorization": f"Bearer {creds['access_token']}",
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "anthropic-beta": "oauth-2025-04-20",
+        "User-Agent": "claude-code/2.1.0",
+    }
+    status, data = http_json(CLAUDE_USAGE_URL, headers=headers)
+    if status in (401, 403):
+        if creds.get("refresh_token"):
+            creds = refresh_claude_credentials(creds)
+            headers["Authorization"] = f"Bearer {creds['access_token']}"
+            status, data = http_json(CLAUDE_USAGE_URL, headers=headers)
+    if status in (401, 403):
+        raise AuthRequired()
+    if status != 200 or not isinstance(data, dict):
+        raise ProviderUnavailable("usage API unavailable")
+
+    windows = []
+    five_hour = data.get("five_hour") or {}
+    seven_day = data.get("seven_day") or {}
+    if five_hour.get("utilization") is not None:
+        windows.append(("5h", five_hour.get("utilization"), five_hour.get("resets_at")))
+    if seven_day.get("utilization") is not None:
+        windows.append(("7d", seven_day.get("utilization"), seven_day.get("resets_at")))
+    if not windows:
+        raise AuthRequired()
+    return windows
+
+
+def provider_result(fetcher):
+    try:
+        return fetcher()
+    except AuthRequired:
+        return None
+    except Exception:
+        return "unavailable"
+
+
+def main():
+    rows = [
+        ("Claude", format_windows(provider_result(fetch_claude_windows))),
+        ("Codex", format_windows(provider_result(fetch_codex_windows))),
+    ]
+    for line in render_rows(rows):
+        print(line)
+
+
+if __name__ == "__main__":
+    main()
+PY
