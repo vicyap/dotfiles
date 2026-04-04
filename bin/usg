@@ -63,36 +63,52 @@ def format_reset(value):
         if dt is None:
             return str(value)
         dt = dt.astimezone()
-    return dt.strftime("%b %d %H:%M %Z").replace(" 0", " ")
+    month = dt.strftime("%b")
+    day = dt.day
+    hour = dt.strftime("%I").lstrip("0") or "0"
+    minute = dt.strftime("%M")
+    ampm = dt.strftime("%p").lower()
+    zone = dt.tzname() or "local"
+    if minute == "00":
+        return f"{month} {day}, {hour}{ampm} ({zone})"
+    return f"{month} {day}, {hour}:{minute}{ampm} ({zone})"
 
 
-def format_windows(windows):
+def build_bar(percent, width=50):
+    if percent is None:
+        return "?" * width
+    clamped = max(0.0, min(float(percent), 100.0))
+    units = int(round((clamped / 100.0) * width * 2))
+    full = units // 2
+    half = units % 2
+    empty = width - full - half
+    return ("█" * full) + ("▌" if half else "") + (" " * empty)
+
+
+def describe_window(label):
+    return {
+        "5h": "Current session",
+        "7d": "Current week",
+    }.get(label, label)
+
+
+def render_provider(name, windows):
+    lines = [name]
     if windows is None:
-        return None
+        lines.append("  login required")
+        return lines
     if windows == "unavailable":
-        return "unavailable"
-    ordered = {label: (used, resets_at) for label, used, resets_at in windows}
-    parts = []
-    for label in ("5h", "7d"):
-        used, resets_at = ordered.get(label, (None, None))
-        used_text = "?" if used is None else f"{int(round(float(used))):>3}%"
-        part = f"{label:>2} {used_text} used, resets {format_reset(resets_at)}"
-        parts.append(part)
-    return parts
+        lines.append("  unavailable")
+        return lines
 
-
-def render_rows(rows):
-    window_rows = [parts for _, parts in rows if isinstance(parts, list)]
-    col1_width = max((len(parts[0]) for parts in window_rows), default=0)
-
-    lines = []
-    for name, parts in rows:
-        if parts is None:
-            lines.append(f"{name:<8} login required")
-        elif parts == "unavailable":
-            lines.append(f"{name:<8} unavailable")
-        else:
-            lines.append(f"{name:<8} {parts[0]:<{col1_width}} | {parts[1]}")
+    for idx, (label, used, resets_at) in enumerate(windows):
+        percent = None if used is None else int(round(float(used)))
+        used_text = "?" if percent is None else f"{percent}%"
+        lines.append(f"  {describe_window(label)}")
+        lines.append(f"  {build_bar(used)} {used_text} used")
+        lines.append(f"  Resets {format_reset(resets_at)}")
+        if idx != len(windows) - 1:
+            lines.append("")
     return lines
 
 
@@ -385,10 +401,15 @@ def provider_result(fetcher):
 
 def main():
     rows = [
-        ("Claude", format_windows(provider_result(fetch_claude_windows))),
-        ("Codex", format_windows(provider_result(fetch_codex_windows))),
+        ("Claude", provider_result(fetch_claude_windows)),
+        ("Codex", provider_result(fetch_codex_windows)),
     ]
-    for line in render_rows(rows):
+    lines = []
+    for idx, (name, windows) in enumerate(rows):
+        lines.extend(render_provider(name, windows))
+        if idx != len(rows) - 1:
+            lines.append("")
+    for line in lines:
         print(line)
 
 
