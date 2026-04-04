@@ -24,3 +24,5 @@ Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
   the UserLive route would point to the `AppWeb.Admin.UserLive` module
 
 - `Phoenix.View` no longer is needed or included with Phoenix, don't use it
+
+- Use `Endpoint.url/0` for base URL construction instead of manually reading `Endpoint.config(:url)` and reassembling scheme/host/port. Build distinct paths from the same base rather than deriving one URL from another via `String.replace`.
