@@ -8,7 +8,7 @@ _apply_theme_env() {
     local mode="$1"
     export THEME_MODE="$mode"
     if [[ "$mode" == "light" ]]; then
-        export BAT_THEME="Catppuccin Latte"
+        export BAT_THEME="GitHub"
         export FZF_DEFAULT_OPTS="--color=light"
     else
         export BAT_THEME="Catppuccin Mocha"
@@ -54,7 +54,7 @@ _set_theme() {
     # Tmux: reload the active server even when invoked outside a tmux client.
     # This targets the default tmux server/socket, not custom `tmux -L` or `tmux -S` servers.
     if command -v tmux &>/dev/null; then
-        local tmux_theme="$HOME/.tmux/themes/catppuccin-${mode}.conf"
+        local tmux_theme="$HOME/.tmux/themes/${mode}.conf"
         if [[ -f "$tmux_theme" ]] && tmux ls &>/dev/null; then
             tmux source-file "$tmux_theme"
             switched+=("Tmux: ${mode}")
@@ -68,5 +68,5 @@ _set_theme() {
     fi
 }
 
-light() { _set_theme light "Catppuccin Latte"; }
+light() { _set_theme light "GitHub Light High Contrast"; }
 dark() { _set_theme dark "Catppuccin Mocha"; }
