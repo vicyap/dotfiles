@@ -94,6 +94,15 @@ curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/${version}/gi
 echo "✓ gitleaks ${version} installed to ~/.local/bin/gitleaks"
 """
 
+[tasks."setup:shfmt"]
+description = "Install shfmt (shell formatter)"
+run = """
+#!/usr/bin/env bash
+set -e
+go install mvdan.cc/sh/v3/cmd/shfmt@latest
+echo "✓ shfmt installed to $(which shfmt)"
+"""
+
 [tasks."update:tools"]
-description = "Update all CLI tools (web, ask, ssh-opener, pyright, tmux-status, gitleaks)"
-depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright", "setup:typescript-lsp", "setup:tmux-status", "setup:gitleaks"]
+description = "Update all CLI tools (web, ask, ssh-opener, pyright, tmux-status, gitleaks, shfmt)"
+depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright", "setup:typescript-lsp", "setup:tmux-status", "setup:gitleaks", "setup:shfmt"]
