@@ -69,4 +69,4 @@ _set_theme() {
 }
 
 light() { _set_theme light "GitHub Light High Contrast"; }
-dark() { _set_theme dark "TokyoNight Night"; }
+dark() { _set_theme dark "GitHub Dark"; }
