@@ -63,6 +63,9 @@ brew "flyctl"
 # AI tools
 brew "codex"
 
+# Security
+cask "secretive"
+
 # Shell
 brew "zsh"
 brew "zsh-completions"
