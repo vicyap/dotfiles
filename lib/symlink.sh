@@ -117,11 +117,58 @@ symlink_package() {
 
   echo "[$pkg_name]"
 
-  # Find all files (not directories) and symlink them
+  # Find all files and symlinks, then link them into $HOME
   while IFS= read -r -d '' file; do
     local rel_path="${file#$pkg_path/}"
     local target="$HOME/$rel_path"
-    create_symlink "$file" "$target"
+    if [[ -L "$file" ]]; then
+      # For symlinks: recreate the same link target at $HOME so relative
+      # paths resolve from the runtime location, not the dotfiles repo.
+      local link_target
+      link_target="$(readlink "$file")"
+      local target_dir
+      target_dir="$(dirname "$target")"
+      [[ -d "$target_dir" ]] || mkdir -p "$target_dir"
+      if [[ -L "$target" ]]; then
+        local current
+        current="$(readlink "$target")"
+        if [[ "$current" == "$link_target" ]]; then
+          echo "  ✓ $target (already linked)"
+          continue
+        fi
+        if is_force; then
+          rm "$target"
+        elif is_interactive; then
+          if ! prompt_user "Replace $target (currently → $current)?"; then
+            echo "  ⊘ Skipped: $target"
+            continue
+          fi
+          rm "$target"
+        else
+          echo "  ⊘ Skipped (non-interactive): $target"
+          continue
+        fi
+      elif [[ -e "$target" ]]; then
+        if is_force; then
+          mkdir -p "$BACKUP_DIR"
+          mv "$target" "$BACKUP_DIR/"
+        elif is_interactive; then
+          if ! prompt_user "Backup and replace $target?"; then
+            echo "  ⊘ Skipped: $target"
+            continue
+          fi
+          mkdir -p "$BACKUP_DIR"
+          mv "$target" "$BACKUP_DIR/"
+        else
+          echo "  ⊘ Skipped (non-interactive): $target"
+          continue
+        fi
+      fi
+      ln -s "$link_target" "$target"
+      echo "  ✓ $target → $link_target"
+    else
+      create_symlink "$file" "$target"
+    fi
   done < <(find "$pkg_path" \( -type f -o -type l \) -print0)
 }
 
