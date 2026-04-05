@@ -1,4 +1,4 @@
-theme = GitHub Dark
+theme = Catppuccin Mocha
 
 working-directory = home
 window-inherit-working-directory = true

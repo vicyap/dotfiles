@@ -43,5 +43,5 @@
 	process = git-lfs filter-process
 	required = true
 [filter "ghostty-theme"]
-	clean = sed 's/^theme = .*/theme = GitHub Dark/'
+	clean = sed 's/^theme = .*/theme = Catppuccin Mocha/'
 	smudge = cat
