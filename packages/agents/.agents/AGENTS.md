@@ -44,6 +44,8 @@ Subdirectories can have their own AGENTS.md + CLAUDE.md pairs for progressive di
 ## PRs and Commits
 
 * Write PR titles and descriptions like git commit messages. Skip test plans.
+* For `usetemi/` repos, PRs are always squash-merged. Write the PR title as the commit subject and the description as the commit body -- the result should read as a single well-formed commit message.
+* Don't include meta-commentary (test counts, CI status, tool versions) in commit messages or PR descriptions.
 * NEVER add AI co-authorship attribution to commit messages.
 * NEVER add AI-generated badges or watermarks to PR descriptions.
 * Use plain, factual language. Avoid inflated words: critical, crucial, essential, significant, comprehensive, robust, elegant.
