@@ -122,7 +122,7 @@ symlink_package() {
     local rel_path="${file#$pkg_path/}"
     local target="$HOME/$rel_path"
     create_symlink "$file" "$target"
-  done < <(find "$pkg_path" -type f -print0)
+  done < <(find "$pkg_path" \( -type f -o -type l \) -print0)
 }
 
 # Symlink all packages in a directory
