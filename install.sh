@@ -50,6 +50,15 @@ setup_claude_plugins() {
     for plugin in "${plugins[@]}"; do
         claude plugin install "$plugin" || true
     done
+
+    # Plugins to keep installed but disabled (install auto-enables)
+    local disabled=(
+        "explanatory-output-style@claude-plugins-official"
+    )
+
+    for plugin in "${disabled[@]}"; do
+        claude plugin disable "$plugin" || true
+    done
 }
 
 generate_codex_config() {
