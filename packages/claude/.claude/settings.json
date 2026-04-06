@@ -21,7 +21,22 @@
     "claude-md-management@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
-    "explanatory-output-style@claude-plugins-official": false
+    "explanatory-output-style@claude-plugins-official": false,
+    "codex@openai-codex": true
+  },
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "usetemi-skills": {
+      "source": {
+        "source": "github",
+        "repo": "usetemi/skills"
+      }
+    }
   },
   "effortLevel": "high",
   "autoUpdatesChannel": "latest",

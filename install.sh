@@ -10,6 +10,48 @@ else
     DOTFILES_DIR="$HOME/.dotfiles"
 fi
 
+setup_claude_plugins() {
+    if ! has_cmd claude; then
+        echo "  Skipped: claude not installed"
+        return 0
+    fi
+
+    # Custom marketplaces (official is built-in)
+    local marketplaces=(
+        "openai/codex-plugin-cc"
+        "usetemi/skills"
+    )
+
+    for marketplace in "${marketplaces[@]}"; do
+        claude plugin marketplace add "$marketplace" || true
+    done
+
+    # All plugins to install (enable/disable controlled by settings.json)
+    local plugins=(
+        "commit-commands@claude-plugins-official"
+        "code-review@claude-plugins-official"
+        "feature-dev@claude-plugins-official"
+        "code-simplifier@claude-plugins-official"
+        "playwright@claude-plugins-official"
+        "typescript-lsp@claude-plugins-official"
+        "context7@claude-plugins-official"
+        "pr-review-toolkit@claude-plugins-official"
+        "pyright-lsp@claude-plugins-official"
+        "posthog@claude-plugins-official"
+        "linear@claude-plugins-official"
+        "claude-md-management@claude-plugins-official"
+        "skill-creator@claude-plugins-official"
+        "claude-code-setup@claude-plugins-official"
+        "explanatory-output-style@claude-plugins-official"
+        "codex@openai-codex"
+        "temi-skills@usetemi-skills"
+    )
+
+    for plugin in "${plugins[@]}"; do
+        claude plugin install "$plugin" || true
+    done
+}
+
 generate_codex_config() {
     local codex_dir="$HOME/.codex"
     local base="$DOTFILES_DIR/packages/codex/.codex/config.base.toml"
@@ -77,6 +119,11 @@ main() {
     # Generate codex config from base + local parts
     echo "=== Generating codex config ==="
     generate_codex_config
+    echo
+
+    # Install Claude Code plugins
+    echo "=== Installing Claude Code plugins ==="
+    setup_claude_plugins
     echo
 
     # Install Ghostty terminfo (needed on remotes without Ghostty installed)
