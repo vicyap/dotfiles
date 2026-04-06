@@ -22,7 +22,11 @@
     "skill-creator@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
     "explanatory-output-style@claude-plugins-official": false,
-    "codex@openai-codex": true
+    "codex@openai-codex": true,
+    "code-review@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "posthog@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {

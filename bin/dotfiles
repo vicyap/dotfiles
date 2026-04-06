@@ -25,6 +25,15 @@ cmd_sync() {
   echo "Re-symlinking packages..."
   source "$DOTFILES_DIR/lib/symlink.sh"
   symlink_all_packages "$DOTFILES_DIR/packages"
+  echo
+  # Source helpers for generate_codex_config and setup_claude_plugins
+  source "$DOTFILES_DIR/lib/platform.sh"
+  source "$DOTFILES_DIR/install.sh"
+  echo "Generating codex config..."
+  generate_codex_config
+  echo
+  echo "Installing Claude Code plugins..."
+  setup_claude_plugins
 }
 
 cmd_install_tools() {
@@ -59,7 +68,7 @@ cmd_local() {
       echo "Created $local_file from template"
     else
       mkdir -p "$rules_dir"
-      echo "# Local Rules" > "$local_file"
+      echo "# Local Rules" >"$local_file"
       echo "Created $local_file"
     fi
   fi
@@ -71,18 +80,18 @@ main() {
   local cmd="${1:-help}"
 
   case "$cmd" in
-    sync)   cmd_sync ;;
-    install-tools) cmd_install_tools ;;
-    status) cmd_status ;;
-    edit)   cmd_edit ;;
-    local)  cmd_local ;;
-    cd)     cmd_cd ;;
-    help)   usage ;;
-    *)
-      echo "Unknown command: $cmd"
-      usage
-      exit 1
-      ;;
+  sync) cmd_sync ;;
+  install-tools) cmd_install_tools ;;
+  status) cmd_status ;;
+  edit) cmd_edit ;;
+  local) cmd_local ;;
+  cd) cmd_cd ;;
+  help) usage ;;
+  *)
+    echo "Unknown command: $cmd"
+    usage
+    exit 1
+    ;;
   esac
 }
 
