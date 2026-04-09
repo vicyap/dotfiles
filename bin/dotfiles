@@ -34,6 +34,9 @@ cmd_sync() {
   echo
   echo "Installing Claude Code plugins..."
   setup_claude_plugins
+  echo
+  echo "Installing Codex skills..."
+  install_codex_skills
 }
 
 cmd_install_tools() {

@@ -61,6 +61,31 @@ setup_claude_plugins() {
     done
 }
 
+install_codex_skills() {
+    if ! has_cmd npx; then
+        echo "  Skipped: npx not installed"
+        return 0
+    fi
+
+    local skills=(
+        "agent-skill-designer"
+        "daisyui"
+        "google-drive"
+        "google-search-console"
+        "harness-engineering"
+        "nwra"
+        "tailwind-plus"
+        "web-scrape"
+        "youtube-to-skill"
+    )
+
+    npx --yes skills add usetemi/skills \
+        --skill "${skills[@]}" \
+        --agent codex \
+        --global \
+        --yes
+}
+
 generate_codex_config() {
     local codex_dir="$HOME/.codex"
     local base="$DOTFILES_DIR/packages/codex/.codex/config.base.toml"
@@ -156,6 +181,11 @@ main() {
         mise run setup:shfmt
         echo
     fi
+
+    # Install Codex skills after mise tools so Node/npx is available on fresh machines.
+    echo "=== Installing Codex skills ==="
+    install_codex_skills
+    echo
 
     # Set default shell (only prompt if running interactively)
     if [[ -t 0 ]]; then
