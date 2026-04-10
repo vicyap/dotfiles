@@ -74,6 +74,68 @@ set_default_shell() {
   echo "✓ Default shell changed to zsh (restart terminal to apply)"
 }
 
+# Set vim/vi as the default system editor on Linux
+set_default_editor() {
+  if [[ "$(detect_os)" != "linux" ]]; then
+    return 0
+  fi
+
+  if ! has_cmd update-alternatives; then
+    echo "  Skipped: update-alternatives not found"
+    return 0
+  fi
+
+  local current
+  current="$(update-alternatives --query editor 2>/dev/null | awk -F': ' '/^Value: /{print $2}')"
+  if [[ "$current" == *vim* || "$current" == */vi ]]; then
+    echo "✓ default editor already set to $current"
+    return 0
+  fi
+
+  local alternatives candidate
+  alternatives="$(update-alternatives --list editor 2>/dev/null || true)"
+  for candidate in /usr/bin/vim.basic /usr/bin/vim /usr/bin/vim.tiny /bin/vim /usr/bin/vi /bin/vi; do
+    if grep -qxF "$candidate" <<<"$alternatives"; then
+      echo "Setting default editor to $candidate..."
+      sudo update-alternatives --set editor "$candidate"
+      echo "✓ Default editor set to $candidate"
+      return 0
+    fi
+  done
+
+  echo "  Skipped: no vim/vi editor alternative found"
+}
+
+# Install vim on Linux so editor prompts do not fall back to nano/vim.tiny
+install_vim() {
+  if [[ "$(detect_os)" != "linux" ]]; then
+    return 0
+  fi
+
+  if has_cmd vim; then
+    echo "✓ vim already installed"
+    return 0
+  fi
+
+  echo "Installing vim..."
+  case "$(detect_os)" in
+    linux)
+      if has_cmd apt; then
+        sudo apt update && sudo apt install -y vim
+      elif has_cmd dnf; then
+        sudo dnf install -y vim
+      elif has_cmd yum; then
+        sudo yum install -y vim
+      elif has_cmd pacman; then
+        sudo pacman -S --noconfirm vim
+      else
+        echo "⚠ Unknown package manager, please install vim manually"
+        return 1
+      fi
+      ;;
+  esac
+}
+
 # Install mise version manager
 install_mise() {
   if has_cmd mise; then

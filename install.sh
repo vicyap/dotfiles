@@ -3,6 +3,43 @@ set -e
 
 DOTFILES_REPO="https://github.com/vicyap/dotfiles.git"
 
+# Check if a command exists before lib/platform.sh is available.
+has_cmd() {
+    command -v "$1" &>/dev/null
+}
+
+prepend_path() {
+    case ":$PATH:" in
+        *":$1:"*) ;;
+        *) export PATH="$1:$PATH" ;;
+    esac
+}
+
+install_bootstrap_packages() {
+    case "$(uname -s)" in
+        Linux)
+            if ! has_cmd apt; then
+                return 0
+            fi
+
+            local packages=()
+            [[ -f /etc/ssl/certs/ca-certificates.crt ]] || packages+=(ca-certificates)
+            has_cmd curl || packages+=(curl)
+            has_cmd git || packages+=(git)
+            has_cmd zsh || packages+=(zsh)
+
+            if ((${#packages[@]} == 0)); then
+                return 0
+            fi
+
+            echo "Installing bootstrap packages..."
+            sudo apt update
+            sudo apt install -y "${packages[@]}"
+            echo
+            ;;
+    esac
+}
+
 # Auto-detect location: use script's directory if running locally, otherwise ~/.dotfiles
 if [[ -n "${BASH_SOURCE[0]}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
     DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -83,7 +120,10 @@ install_codex_skills() {
         --skill "${skills[@]}" \
         --agent codex \
         --global \
-        --yes
+        --yes || {
+        echo "  Skipped: Codex skills install failed (GitHub auth may be missing)"
+        return 0
+    }
 }
 
 generate_codex_config() {
@@ -113,6 +153,10 @@ main() {
     echo "=== Dotfiles Installer ==="
     echo
 
+    prepend_path "$HOME/go/bin"
+    prepend_path "$HOME/.local/bin"
+    install_bootstrap_packages
+
     # If running via curl pipe, clone the repo
     if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
         if [[ -d "$DOTFILES_DIR" ]]; then
@@ -138,6 +182,15 @@ main() {
 
     # Install zsh
     install_zsh
+    echo
+
+    # Install vim before setting it as the default system editor
+    install_vim
+    echo
+
+    # Prefer vim/vi for system editor prompts on Linux
+    echo "=== Configuring default editor ==="
+    set_default_editor
     echo
 
     # Install mise and dev tools
