@@ -45,11 +45,13 @@ import (
 	"time"
 )
 
+const netWindow = 5 * time.Second
+
 func collectNetwork() string {
 	bytes := C.get_net_bytes()
 	rxBytes := int64(bytes.rx)
 	txBytes := int64(bytes.tx)
-	now := time.Now().Unix()
+	nowMs := time.Now().UnixMilli()
 
 	cache := cachePath("net")
 	var rxRate, txRate int64
@@ -58,17 +60,21 @@ func collectNetwork() string {
 	if err == nil {
 		parts := strings.Fields(string(data))
 		if len(parts) == 3 {
-			prevTime, _ := strconv.ParseInt(parts[0], 10, 64)
+			prevMs, _ := strconv.ParseInt(parts[0], 10, 64)
 			prevRx, _ := strconv.ParseInt(parts[1], 10, 64)
 			prevTx, _ := strconv.ParseInt(parts[2], 10, 64)
-			elapsed := now - prevTime
-			if elapsed > 0 {
-				rxRate = (rxBytes - prevRx) / elapsed
-				txRate = (txBytes - prevTx) / elapsed
+			elapsedMs := nowMs - prevMs
+			if elapsedMs > 0 {
+				rxRate = (rxBytes - prevRx) * 1000 / elapsedMs
+				txRate = (txBytes - prevTx) * 1000 / elapsedMs
 			}
+			if elapsedMs >= netWindow.Milliseconds() {
+				os.WriteFile(cache, []byte(fmt.Sprintf("%d %d %d", nowMs, rxBytes, txBytes)), 0644)
+			}
+			return fmt.Sprintf("↑%s ↓%s", formatRate(txRate), formatRate(rxRate))
 		}
 	}
 
-	os.WriteFile(cache, []byte(fmt.Sprintf("%d %d %d", now, rxBytes, txBytes)), 0644)
+	os.WriteFile(cache, []byte(fmt.Sprintf("%d %d %d", nowMs, rxBytes, txBytes)), 0644)
 	return fmt.Sprintf("↑%s ↓%s", formatRate(txRate), formatRate(rxRate))
 }
