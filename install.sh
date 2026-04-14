@@ -126,6 +126,81 @@ install_codex_skills() {
     }
 }
 
+sync_claude_skills() {
+    local claude_skills="$HOME/.claude/skills"
+    local agents_skills="$HOME/.agents/skills"
+    local lock_file="$HOME/.agents/.skill-lock.json"
+
+    if ! has_cmd jq; then
+        echo "  Skipped: jq not installed"
+        return 0
+    fi
+
+    if [[ ! -d "$agents_skills" ]]; then
+        echo "  Skipped: $agents_skills does not exist"
+        return 0
+    fi
+
+    # Convert directory symlink to real directory
+    if [[ -L "$claude_skills" ]]; then
+        rm -f "$claude_skills"
+    fi
+    mkdir -p "$claude_skills"
+
+    # Build list of plugin-provided skill names to skip
+    local -a skip_skills=()
+    if [[ -f "$lock_file" ]]; then
+        while IFS= read -r name; do
+            skip_skills+=("$name")
+        done < <(jq -r '.skills | to_entries[] | select(.value.pluginName != null) | .key' "$lock_file")
+    fi
+
+    # Create per-skill symlinks, skipping plugin-provided and .system
+    local name skip
+    for entry in "$agents_skills"/*/; do
+        [[ -d "$entry" ]] || continue
+        name="$(basename "$entry")"
+
+        # Skip hidden dirs (.system is Codex-only)
+        [[ "$name" == .* ]] && continue
+
+        local target="$claude_skills/$name"
+
+        # Check if plugin-provided
+        skip=false
+        for skill in "${skip_skills[@]}"; do
+            if [[ "$skill" == "$name" ]]; then
+                skip=true
+                break
+            fi
+        done
+
+        if $skip; then
+            [[ -L "$target" ]] && rm -f "$target"
+            continue
+        fi
+
+        # Create or verify symlink
+        if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$agents_skills/$name" ]]; then
+            echo "  ok $name"
+        else
+            rm -f "$target"
+            ln -s "$agents_skills/$name" "$target"
+            echo "  + $name"
+        fi
+    done
+
+    # Remove stale symlinks
+    for entry in "$claude_skills"/*; do
+        [[ -L "$entry" ]] || continue
+        name="$(basename "$entry")"
+        if [[ ! -d "$agents_skills/$name" ]]; then
+            rm -f "$entry"
+            echo "  - $name (stale)"
+        fi
+    done
+}
+
 generate_codex_config() {
     local codex_dir="$HOME/.codex"
     local base="$DOTFILES_DIR/packages/codex/.codex/config.base.toml"
@@ -238,6 +313,11 @@ main() {
     # Install Codex skills after mise tools so Node/npx is available on fresh machines.
     echo "=== Installing Codex skills ==="
     install_codex_skills
+    echo
+
+    # Sync skills to Claude Code, skipping plugin-provided duplicates
+    echo "=== Syncing Claude Code skills ==="
+    sync_claude_skills
     echo
 
     # Set default shell (only prompt if running interactively)
