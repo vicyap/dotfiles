@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# WorktreeCreate hook for Claude Code (`claude -w`).
+#
+# Replaces the default worktree creation logic entirely.
+# Receives JSON on stdin with: name, cwd, session_id, transcript_path, hook_event_name
+# Must print ONLY the worktree path to stdout on exit 0.
+#
+# After creating the git worktree, this hook copies gitignored .env* files.
+# Dependencies are NOT installed here — Claude handles that on first use.
+
+input=$(cat)
+
+name=$(echo "$input" | jq -r '.name')
+cwd=$(echo "$input" | jq -r '.cwd')
+
+# Resolve the git repo root from cwd
+git_repo_path=$(git -C "$cwd" rev-parse --show-toplevel)
+worktree_path="$git_repo_path/.claude/worktrees/$name"
+git_branch="worktree-$name"
+
+# Base from origin/HEAD (the remote default branch)
+base_ref=$(git -C "$git_repo_path" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null || echo "")
+if [[ -z "$base_ref" ]]; then
+    base_ref="HEAD"
+fi
+
+# --- Create worktree ---
+mkdir -p "$(dirname "$worktree_path")"
+git -C "$git_repo_path" worktree add "$worktree_path" -b "$git_branch" "$base_ref" \
+    >/dev/null 2>&1
+
+# --- Copy gitignored .env* files ---
+while IFS= read -r -d '' env_file; do
+    rel_path="${env_file#"$git_repo_path"/}"
+    if git -C "$git_repo_path" check-ignore -q "$rel_path" 2>/dev/null; then
+        target="$worktree_path/$rel_path"
+        mkdir -p "$(dirname "$target")"
+        cp "$env_file" "$target"
+    fi
+done < <(find "$git_repo_path" -maxdepth 4 \
+    \( -name node_modules -o -name .worktrees -o -name .next -o -name .venv -o -name .git \
+    -o -path "$git_repo_path/.claude/worktrees" \) -prune \
+    -o -name ".env*" \
+    -not -name ".env.example" \
+    -not -name ".env.template" \
+    -type f -print0)
+
+# --- Output ONLY the worktree path (contract) ---
+echo "$worktree_path"
