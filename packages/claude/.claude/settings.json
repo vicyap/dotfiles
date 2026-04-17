@@ -1,6 +1,10 @@
 {
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
+  "permissions": {
+    "defaultMode": "bypassPermissions"
   },
   "hooks": {
     "WorktreeCreate": [
@@ -15,9 +19,6 @@
         ]
       }
     ]
-  },
-  "permissions": {
-    "defaultMode": "bypassPermissions"
   },
   "statusLine": {
     "type": "command",
@@ -56,8 +57,9 @@
       }
     }
   },
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "autoUpdatesChannel": "latest",
+  "tui": "default",
   "skipDangerousModePermissionPrompt": true,
   "voiceEnabled": true
 }
