@@ -3,6 +3,7 @@ go = "1.26"
 node = "24"
 python = "3.14"
 bun = "latest"
+uv = "latest"
 erlang = "28"
 elixir = "1.19"
 starship = "latest"
@@ -100,7 +101,7 @@ run = """
 #!/usr/bin/env bash
 set -e
 go install mvdan.cc/sh/v3/cmd/shfmt@latest
-echo "✓ shfmt installed to $(which shfmt)"
+echo "✓ shfmt installed to $(go env GOPATH)/bin/shfmt"
 """
 
 [tasks."update:tools"]

@@ -3,6 +3,43 @@ set -e
 
 DOTFILES_REPO="https://github.com/vicyap/dotfiles.git"
 
+# Check if a command exists before lib/platform.sh is available.
+has_cmd() {
+    command -v "$1" &>/dev/null
+}
+
+prepend_path() {
+    case ":$PATH:" in
+        *":$1:"*) ;;
+        *) export PATH="$1:$PATH" ;;
+    esac
+}
+
+install_bootstrap_packages() {
+    case "$(uname -s)" in
+        Linux)
+            if ! has_cmd apt; then
+                return 0
+            fi
+
+            local packages=()
+            [[ -f /etc/ssl/certs/ca-certificates.crt ]] || packages+=(ca-certificates)
+            has_cmd curl || packages+=(curl)
+            has_cmd git || packages+=(git)
+            has_cmd zsh || packages+=(zsh)
+
+            if ((${#packages[@]} == 0)); then
+                return 0
+            fi
+
+            echo "Installing bootstrap packages..."
+            sudo apt update
+            sudo apt install -y "${packages[@]}"
+            echo
+            ;;
+    esac
+}
+
 # Auto-detect location: use script's directory if running locally, otherwise ~/.dotfiles
 if [[ -n "${BASH_SOURCE[0]}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
     DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -61,6 +98,109 @@ setup_claude_plugins() {
     done
 }
 
+install_codex_skills() {
+    if ! has_cmd npx; then
+        echo "  Skipped: npx not installed"
+        return 0
+    fi
+
+    local skills=(
+        "agent-skill-designer"
+        "daisyui"
+        "google-drive"
+        "google-search-console"
+        "harness-engineering"
+        "nwra"
+        "tailwind-plus"
+        "web-scrape"
+        "youtube-to-skill"
+    )
+
+    npx --yes skills add usetemi/skills \
+        --skill "${skills[@]}" \
+        --agent codex \
+        --global \
+        --yes || {
+        echo "  Skipped: Codex skills install failed (GitHub auth may be missing)"
+        return 0
+    }
+}
+
+sync_claude_skills() {
+    local claude_skills="$HOME/.claude/skills"
+    local agents_skills="$HOME/.agents/skills"
+    local lock_file="$HOME/.agents/.skill-lock.json"
+
+    if ! has_cmd jq; then
+        echo "  Skipped: jq not installed"
+        return 0
+    fi
+
+    if [[ ! -d "$agents_skills" ]]; then
+        echo "  Skipped: $agents_skills does not exist"
+        return 0
+    fi
+
+    # Convert directory symlink to real directory
+    if [[ -L "$claude_skills" ]]; then
+        rm -f "$claude_skills"
+    fi
+    mkdir -p "$claude_skills"
+
+    # Build list of plugin-provided skill names to skip
+    local -a skip_skills=()
+    if [[ -f "$lock_file" ]]; then
+        while IFS= read -r name; do
+            skip_skills+=("$name")
+        done < <(jq -r '.skills | to_entries[] | select(.value.pluginName != null) | .key' "$lock_file")
+    fi
+
+    # Create per-skill symlinks, skipping plugin-provided and .system
+    local name skip
+    for entry in "$agents_skills"/*/; do
+        [[ -d "$entry" ]] || continue
+        name="$(basename "$entry")"
+
+        # Skip hidden dirs (.system is Codex-only)
+        [[ "$name" == .* ]] && continue
+
+        local target="$claude_skills/$name"
+
+        # Check if plugin-provided
+        skip=false
+        for skill in "${skip_skills[@]}"; do
+            if [[ "$skill" == "$name" ]]; then
+                skip=true
+                break
+            fi
+        done
+
+        if $skip; then
+            [[ -L "$target" ]] && rm -f "$target"
+            continue
+        fi
+
+        # Create or verify symlink
+        if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$agents_skills/$name" ]]; then
+            echo "  ok $name"
+        else
+            rm -f "$target"
+            ln -s "$agents_skills/$name" "$target"
+            echo "  + $name"
+        fi
+    done
+
+    # Remove stale symlinks
+    for entry in "$claude_skills"/*; do
+        [[ -L "$entry" ]] || continue
+        name="$(basename "$entry")"
+        if [[ ! -d "$agents_skills/$name" ]]; then
+            rm -f "$entry"
+            echo "  - $name (stale)"
+        fi
+    done
+}
+
 generate_codex_config() {
     local codex_dir="$HOME/.codex"
     local base="$DOTFILES_DIR/packages/codex/.codex/config.base.toml"
@@ -88,6 +228,10 @@ main() {
     echo "=== Dotfiles Installer ==="
     echo
 
+    prepend_path "$HOME/go/bin"
+    prepend_path "$HOME/.local/bin"
+    install_bootstrap_packages
+
     # If running via curl pipe, clone the repo
     if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
         if [[ -d "$DOTFILES_DIR" ]]; then
@@ -113,6 +257,15 @@ main() {
 
     # Install zsh
     install_zsh
+    echo
+
+    # Install vim before setting it as the default system editor
+    install_vim
+    echo
+
+    # Prefer vim/vi for system editor prompts on Linux
+    echo "=== Configuring default editor ==="
+    set_default_editor
     echo
 
     # Install mise and dev tools
@@ -156,6 +309,16 @@ main() {
         mise run setup:shfmt
         echo
     fi
+
+    # Install Codex skills after mise tools so Node/npx is available on fresh machines.
+    echo "=== Installing Codex skills ==="
+    install_codex_skills
+    echo
+
+    # Sync skills to Claude Code, skipping plugin-provided duplicates
+    echo "=== Syncing Claude Code skills ==="
+    sync_claude_skills
+    echo
 
     # Set default shell (only prompt if running interactively)
     if [[ -t 0 ]]; then

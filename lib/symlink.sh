@@ -119,7 +119,7 @@ symlink_package() {
 
     # Find all files and symlinks, then link them into $HOME
     while IFS= read -r -d '' file; do
-        local rel_path="${file#$pkg_path/}"
+        local rel_path="${file#"$pkg_path"/}"
         local target="$HOME/$rel_path"
         if [[ -L "$file" ]]; then
             # For symlinks: recreate the same link target at $HOME so relative

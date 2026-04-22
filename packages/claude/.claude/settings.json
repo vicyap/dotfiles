@@ -1,9 +1,24 @@
 {
   "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "permissions": {
     "defaultMode": "bypassPermissions"
+  },
+  "hooks": {
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-worktree-create",
+            "timeout": 300,
+            "statusMessage": "Setting up worktree (env, deps, hooks)..."
+          }
+        ]
+      }
+    ]
   },
   "statusLine": {
     "type": "command",
@@ -45,6 +60,7 @@
   },
   "effortLevel": "xhigh",
   "autoUpdatesChannel": "latest",
+  "tui": "default",
   "skipDangerousModePermissionPrompt": true,
   "voiceEnabled": true
 }

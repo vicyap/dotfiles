@@ -2,6 +2,10 @@
 
 These instructions apply to all AI coding agents.
 
+## Who Am I
+
+I am Victor Yap.
+
 ## Per-Project Convention
 
 ```
@@ -40,6 +44,13 @@ Subdirectories can have their own AGENTS.md + CLAUDE.md pairs for progressive di
 * Avoid overuse of emojis.
 * NEVER estimate implementation timelines.
 * NEVER delete production databases or data files without explicit approval. Offer non-destructive alternatives first.
+
+## Dotfiles
+
+My personal config lives in `~/.dotfiles` with per-file symlinks into `$HOME`, created by `~/.dotfiles/install.sh` (see `~/.dotfiles/lib/symlink.sh`).
+
+* When modifying files under `~/.claude/`, `~/.agents/`, `~/.config/`, etc., always edit through `~/.dotfiles/packages/<pkg>/`. Editing an existing symlinked target flows through automatically; new files must be created under `~/.dotfiles/packages/<pkg>/` first, then symlinked back (or re-run `~/.dotfiles/install.sh`).
+* Before creating a new config file under `$HOME`, check whether its parent directory is dotfiles-managed — `ls -la` for sibling symlinks pointing into `~/.dotfiles` is the quickest tell.
 
 ## PRs and Commits
 

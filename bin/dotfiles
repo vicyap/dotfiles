@@ -2,12 +2,14 @@
 # Dotfiles CLI
 
 DOTFILES_DIR="$HOME/.dotfiles"
+export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
 
 usage() {
   cat <<EOF
 Usage: dotfiles <command>
 
 Commands:
+  bootstrap       Install bootstrap packages, then run install.sh
   sync            Pull latest changes and re-symlink
   install-tools   Re-install all CLI tools
   status          Show git status of dotfiles repo
@@ -16,6 +18,11 @@ Commands:
   cd              Print dotfiles directory (use: cd \$(dotfiles cd))
   help            Show this help message
 EOF
+}
+
+cmd_bootstrap() {
+  echo "Bootstrapping dotfiles..."
+  "$DOTFILES_DIR/install.sh"
 }
 
 cmd_sync() {
@@ -34,6 +41,9 @@ cmd_sync() {
   echo
   echo "Installing Claude Code plugins..."
   setup_claude_plugins
+  echo
+  echo "Installing Codex skills..."
+  install_codex_skills
 }
 
 cmd_install_tools() {
@@ -80,6 +90,7 @@ main() {
   local cmd="${1:-help}"
 
   case "$cmd" in
+  bootstrap) cmd_bootstrap ;;
   sync) cmd_sync ;;
   install-tools) cmd_install_tools ;;
   status) cmd_status ;;

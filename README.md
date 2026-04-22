@@ -21,6 +21,14 @@ git clone https://github.com/vicyap/dotfiles.git ~/.dotfiles
 ~/.dotfiles/install.sh
 ```
 
+On a fresh Linux machine, use the bootstrap command after cloning. It installs
+missing bootstrap packages such as `git`, `curl`, and `zsh`, then runs the
+installer:
+
+```bash
+~/.dotfiles/bin/dotfiles bootstrap
+```
+
 ## Structure
 
 ```
@@ -47,6 +55,7 @@ After installation, use the `dotfiles` CLI:
 
 ```bash
 dotfiles sync     # Pull latest changes and re-symlink
+dotfiles bootstrap # Install bootstrap packages, then run install.sh
 dotfiles status   # Show git status of dotfiles repo
 dotfiles edit     # Open dotfiles in $EDITOR
 ```
