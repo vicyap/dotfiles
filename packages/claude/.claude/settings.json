@@ -48,8 +48,7 @@
       "source": {
         "source": "github",
         "repo": "openai/codex-plugin-cc"
-      },
-      "autoUpdate": true
+      }
     },
     "usetemi-skills": {
       "source": {
