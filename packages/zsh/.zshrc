@@ -82,3 +82,6 @@ if [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" && "$(uname)" != "Darwin" ]]; then
 fi
 
 [[ -f "$HOME/.posthog/env" ]] && . "$HOME/.posthog/env"
+
+# Resend CLI
+export PATH="$HOME/.resend/bin:$PATH"

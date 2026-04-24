@@ -98,6 +98,24 @@ setup_claude_plugins() {
     done
 }
 
+install_agent_skills() {
+    if ! has_cmd npx; then
+        echo "  Skipped: npx not installed"
+        return 0
+    fi
+
+    # Registries installed in full (no --skill filter → auto-picks up new upstream skills)
+    local registries=(
+        "resend/resend-skills"
+    )
+
+    for registry in "${registries[@]}"; do
+        npx --yes skills add "$registry" \
+            --global \
+            --yes || echo "  Skipped: $registry install failed"
+    done
+}
+
 install_codex_skills() {
     if ! has_cmd npx; then
         echo "  Skipped: npx not installed"
@@ -309,6 +327,11 @@ main() {
         mise run setup:shfmt
         echo
     fi
+
+    # Install agent skills (shared across Claude and Codex via ~/.agents/skills).
+    echo "=== Installing agent skills ==="
+    install_agent_skills
+    echo
 
     # Install Codex skills after mise tools so Node/npx is available on fresh machines.
     echo "=== Installing Codex skills ==="
