@@ -122,20 +122,8 @@ install_codex_skills() {
         return 0
     fi
 
-    local skills=(
-        "agent-skill-designer"
-        "daisyui"
-        "google-drive"
-        "google-search-console"
-        "harness-engineering"
-        "nwra"
-        "tailwind-plus"
-        "web-scrape"
-        "youtube-to-skill"
-    )
-
+    # Install the full usetemi/skills registry (no --skill filter → picks up new skills).
     npx --yes skills add usetemi/skills \
-        --skill "${skills[@]}" \
         --agent codex \
         --global \
         --yes || {
