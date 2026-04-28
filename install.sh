@@ -57,6 +57,7 @@ setup_claude_plugins() {
     local marketplaces=(
         "openai/codex-plugin-cc"
         "usetemi/skills"
+        "usetemi/skills-private"
     )
 
     for marketplace in "${marketplaces[@]}"; do
@@ -81,6 +82,7 @@ setup_claude_plugins() {
         "claude-code-setup@claude-plugins-official"
         "explanatory-output-style@claude-plugins-official"
         "codex@openai-codex"
+        "skills@usetemi"
         "temi-skills@usetemi-skills"
     )
 
@@ -207,6 +209,35 @@ sync_claude_skills() {
     done
 }
 
+migrate_skill_configs() {
+    # Move config dirs created by the old internal layout to the new public layout.
+    # Idempotent: only moves when old exists and new does not.
+    local migrations=(
+        "$HOME/.config/usetemi/skills/google-drive:$HOME/.config/gdrive"
+        "$HOME/.config/usetemi/skills/google-search-console:$HOME/.config/gsc"
+    )
+
+    local entry old new
+    for entry in "${migrations[@]}"; do
+        old="${entry%%:*}"
+        new="${entry##*:}"
+
+        if [[ -d "$old" && ! -e "$new" ]]; then
+            mkdir -p "$(dirname "$new")"
+            mv "$old" "$new"
+            echo "  + moved $(basename "$old") → $new"
+        elif [[ -d "$old" && -d "$new" ]]; then
+            echo "  ! $old and $new both exist — manual review needed"
+        else
+            echo "  ok $(basename "$new")"
+        fi
+    done
+
+    # Clean up the now-empty Temi-branded parent directories.
+    rmdir "$HOME/.config/usetemi/skills" 2>/dev/null || true
+    rmdir "$HOME/.config/usetemi" 2>/dev/null || true
+}
+
 generate_codex_config() {
     local codex_dir="$HOME/.codex"
     local base="$DOTFILES_DIR/packages/codex/.codex/config.base.toml"
@@ -282,6 +313,11 @@ main() {
     # Symlink packages
     echo "=== Symlinking packages ==="
     symlink_all_packages "$DOTFILES_DIR/packages"
+    echo
+
+    # Migrate skill config dirs from old internal paths to current public paths
+    echo "=== Migrating skill config directories ==="
+    migrate_skill_configs
     echo
 
     # Generate codex config from base + local parts

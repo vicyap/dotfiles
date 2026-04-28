@@ -33,9 +33,12 @@ cmd_sync() {
   source "$DOTFILES_DIR/lib/symlink.sh"
   symlink_all_packages "$DOTFILES_DIR/packages"
   echo
-  # Source helpers for generate_codex_config and setup_claude_plugins
+  # Source helpers for migrate_skill_configs, generate_codex_config, setup_claude_plugins
   source "$DOTFILES_DIR/lib/platform.sh"
   source "$DOTFILES_DIR/install.sh"
+  echo "Migrating skill config directories..."
+  migrate_skill_configs
+  echo
   echo "Generating codex config..."
   generate_codex_config
   echo
