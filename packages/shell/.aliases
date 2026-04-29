@@ -165,7 +165,7 @@ ${git_log}"
       return 1
       ;;
     COMMIT)
-      tail -n +2 <<<"$response" | git commit -F - && git log -1 --stat
+      tail -n +2 <<<"$response" | git commit -F - >/dev/null && git log -1 --stat
       ;;
     *)
       echo "Unexpected response from claude:" >&2
