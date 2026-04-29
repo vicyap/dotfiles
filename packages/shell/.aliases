@@ -82,47 +82,110 @@ alias gstp='git stash pop'
 # Claude
 alias cc='claude'
 function ccc {
-  local prompt
-  prompt=$(cat <<'PROMPT'
-Create a git commit from the currently staged files only.
+  # Bail early if nothing is staged.
+  local staged
+  staged=$(git diff --cached --name-only)
+  if [[ -z "$staged" ]]; then
+    echo "No staged changes."
+    return 0
+  fi
 
-Workflow:
-1. Gather all context in ONE bash call by running this single chained command:
-       git diff --cached --name-only; echo ===STATUS===; git status -s; echo ===DIFF===; git diff --cached; echo ===LOG===; git log -5 --oneline
+  # Gather all git context locally — no model round-trips needed.
+  local git_status git_diff git_log
+  git_status=$(git status -s)
+  git_diff=$(git diff --cached)
+  git_log=$(git log -5 --oneline 2>/dev/null || true)
 
-   - If the section before ===STATUS=== is empty, print "No staged changes." and exit without committing.
-   - If the ===STATUS=== section shows unstaged or untracked files that look like they should be part of this commit (paired source/test files, related files in the same package, files referenced by the staged diff), print which files appear to belong and exit WITHOUT committing. Do NOT git add anything yourself.
+  local instructions
+  instructions=$(cat <<'INSTRUCTIONS'
+You will receive git context below. Decide between two outputs.
 
-2. Otherwise, write the commit message and commit + show the result in ONE bash call:
-       git commit -F - <<'MSG' && git log -1 --stat
-       <subject line>
-       <blank line and body, if any>
-       MSG
+CASE A: If any UNSTAGED or UNTRACKED files in STATUS look like they should
+be part of this commit (paired source/test files, related files in the same
+package, files referenced by the staged diff), output exactly:
 
-   Print the git log -1 --stat output verbatim.
+RELATED_UNSTAGED
+<one filename per line>
+
+CASE B: Otherwise, output exactly:
+
+COMMIT
+<subject line>
+<optional blank line + body wrapped at 72 cols>
 
 Output rules:
-- Output plain text only. Never use markdown code fences, backticks, or any markdown formatting.
+- Plain text only. No markdown, no code fences, no backticks.
+- The first line MUST be exactly "RELATED_UNSTAGED" or "COMMIT".
 
 Message style:
 - Imperative mood: "add", "fix", "remove" (never "added", "fixes")
-- Lowercase first word in the subject
+- Lowercase first word of subject
 - Subject <=72 characters, no trailing period
 - Subject-only for trivial or obvious changes
-- Add a body (blank line, then text wrapped at 72) only when the *why* is not obvious from the diff; explain motivation and context, not what the diff already shows
-- Plain, factual language; avoid inflated words (critical, crucial, essential, significant, comprehensive, robust, elegant)
+- Add a body (blank line, then text wrapped at 72) only when the *why* is
+  not obvious from the diff; explain motivation, not what the diff shows
+- Plain, factual language; avoid inflated words (critical, crucial,
+  essential, significant, comprehensive, robust, elegant)
 - No meta-commentary (test counts, CI status, tool versions)
 - No AI co-authorship attribution or trailers
-PROMPT
+INSTRUCTIONS
 )
-  # Run claude in the background so we can forward SIGINT to it on Ctrl+C.
-  claude -p --model sonnet --effort low --disable-slash-commands "$prompt" &
+
+  local prompt="${instructions}
+
+==STATUS==
+${git_status}
+
+==STAGED DIFF==
+${git_diff}
+
+==RECENT COMMITS==
+${git_log}"
+
+  # Single LLM call with no tools and no agent loop.
+  # Background so Ctrl+C forwards via the trap below.
+  local output_file
+  output_file=$(mktemp)
+  claude -p \
+    --model sonnet \
+    --effort low \
+    --tools "" \
+    --disable-slash-commands \
+    --no-session-persistence \
+    "$prompt" >"$output_file" &
   local pid=$!
   trap 'kill -INT $pid 2>/dev/null' INT
   wait $pid
   local code=$?
   trap - INT
-  return $code
+
+  if ((code != 0)); then
+    rm -f "$output_file"
+    return $code
+  fi
+
+  local response marker
+  response=$(<"$output_file")
+  rm -f "$output_file"
+  marker=$(head -n 1 <<<"$response")
+
+  case "$marker" in
+    RELATED_UNSTAGED)
+      echo "Possibly related unstaged files:"
+      tail -n +2 <<<"$response"
+      echo
+      echo "Stage them with 'git add' if they belong, then re-run ccc."
+      return 1
+      ;;
+    COMMIT)
+      tail -n +2 <<<"$response" | git commit -F - && git log -1 --stat
+      ;;
+    *)
+      echo "Unexpected response from claude:" >&2
+      printf '%s\n' "$response" >&2
+      return 1
+      ;;
+  esac
 }
 
 # Dev
