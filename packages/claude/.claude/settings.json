@@ -41,7 +41,8 @@
     "feature-dev@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "posthog@claude-plugins-official": true,
-    "usetemi@usetemi": true
+    "usetemi@usetemi": true,
+    "usetemi-private@usetemi-private": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -54,6 +55,12 @@
       "source": {
         "source": "github",
         "repo": "usetemi/skills"
+      }
+    },
+    "usetemi-private": {
+      "source": {
+        "source": "github",
+        "repo": "usetemi/skills-private"
       }
     }
   },
