@@ -82,7 +82,8 @@ alias gstp='git stash pop'
 # Claude
 alias cc='claude'
 function ccc {
-  claude -p --model sonnet --effort low --disable-slash-commands "$(cat <<'PROMPT'
+  local prompt
+  prompt=$(cat <<'PROMPT'
 Create a git commit from the currently staged files only.
 
 Workflow:
@@ -113,7 +114,15 @@ Message style:
 - No meta-commentary (test counts, CI status, tool versions)
 - No AI co-authorship attribution or trailers
 PROMPT
-)"
+)
+  # Run claude in the background so we can forward SIGINT to it on Ctrl+C.
+  claude -p --model sonnet --effort low --disable-slash-commands "$prompt" &
+  local pid=$!
+  trap 'kill -INT $pid 2>/dev/null' INT
+  wait $pid
+  local code=$?
+  trap - INT
+  return $code
 }
 
 # Dev
