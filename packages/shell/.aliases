@@ -143,30 +143,17 @@ ${git_diff}
 ${git_log}"
 
   # Single LLM call with no tools and no agent loop.
-  # Background so Ctrl+C forwards via the trap below.
-  local output_file
-  output_file=$(mktemp)
-  claude -p \
+  # Foreground so Ctrl+C from the terminal hits claude directly.
+  local response
+  response=$(claude -p \
     --model sonnet \
     --effort low \
     --tools "" \
     --disable-slash-commands \
     --no-session-persistence \
-    "$prompt" >"$output_file" &
-  local pid=$!
-  trap 'kill -INT $pid 2>/dev/null' INT
-  wait $pid
-  local code=$?
-  trap - INT
+    "$prompt") || return $?
 
-  if ((code != 0)); then
-    rm -f "$output_file"
-    return $code
-  fi
-
-  local response marker
-  response=$(<"$output_file")
-  rm -f "$output_file"
+  local marker
   marker=$(head -n 1 <<<"$response")
 
   case "$marker" in
