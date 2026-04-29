@@ -31,8 +31,6 @@
     "typescript-lsp@claude-plugins-official": true,
     "pr-review-toolkit@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "skills@usetemi": true,
-    "temi-skills@usetemi-skills": true,
     "linear@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
@@ -42,7 +40,8 @@
     "code-review@claude-plugins-official": true,
     "feature-dev@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
-    "posthog@claude-plugins-official": true
+    "posthog@claude-plugins-official": true,
+    "usetemi@usetemi": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -55,12 +54,6 @@
       "source": {
         "source": "github",
         "repo": "usetemi/skills"
-      }
-    },
-    "usetemi-skills": {
-      "source": {
-        "source": "github",
-        "repo": "usetemi/skills-private"
       }
     }
   },
