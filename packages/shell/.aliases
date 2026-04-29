@@ -82,14 +82,26 @@ alias gstp='git stash pop'
 # Claude
 alias cc='claude'
 function ccc {
-  claude -p --model sonnet --effort low "$(cat <<'PROMPT'
+  claude -p --model sonnet --effort low --disable-slash-commands "$(cat <<'PROMPT'
 Create a git commit from the currently staged files only.
 
 Workflow:
-1. Run `git diff --cached --name-only`. If no files are staged, print "No staged changes." and exit without committing.
-2. Run `git status -s` to check for unstaged or untracked files. If any look like they should be part of this commit (paired source/test files, related files in the same package, files referenced by the staged diff), print which files appear to belong and exit WITHOUT committing. Do NOT `git add` anything yourself.
-3. Otherwise, read the staged diff with `git diff --cached` and recent commits with `git log -5 --oneline` to match the project's style.
-4. Run `git commit -m "..."` (use `-F -` for multi-line), then run `git log -1 --stat` and print the full output verbatim.
+1. Gather all context in ONE bash call by running this single chained command:
+       git diff --cached --name-only; echo ===STATUS===; git status -s; echo ===DIFF===; git diff --cached; echo ===LOG===; git log -5 --oneline
+
+   - If the section before ===STATUS=== is empty, print "No staged changes." and exit without committing.
+   - If the ===STATUS=== section shows unstaged or untracked files that look like they should be part of this commit (paired source/test files, related files in the same package, files referenced by the staged diff), print which files appear to belong and exit WITHOUT committing. Do NOT git add anything yourself.
+
+2. Otherwise, write the commit message and commit + show the result in ONE bash call:
+       git commit -F - <<'MSG' && git log -1 --stat
+       <subject line>
+       <blank line and body, if any>
+       MSG
+
+   Print the git log -1 --stat output verbatim.
+
+Output rules:
+- Output plain text only. Never use markdown code fences, backticks, or any markdown formatting.
 
 Message style:
 - Imperative mood: "add", "fix", "remove" (never "added", "fixes")
