@@ -66,9 +66,6 @@ setup_claude_plugins() {
 
     # All plugins to install (enable/disable controlled by settings.json)
     local plugins=(
-        "commit-commands@claude-plugins-official"
-        "code-review@claude-plugins-official"
-        "feature-dev@claude-plugins-official"
         "code-simplifier@claude-plugins-official"
         "playwright@claude-plugins-official"
         "typescript-lsp@claude-plugins-official"

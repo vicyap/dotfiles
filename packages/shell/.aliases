@@ -81,7 +81,28 @@ alias gstp='git stash pop'
 
 # Claude
 alias cc='claude'
-alias ccc='claude --model sonnet --effort low /commit-commands:commit'
+function ccc {
+  claude -p --model sonnet --effort low "$(cat <<'PROMPT'
+Create a git commit from the currently staged files only.
+
+Workflow:
+1. Run `git diff --cached --name-only`. If no files are staged, print "No staged changes." and exit without committing.
+2. Run `git status -s` to check for unstaged or untracked files. If any look like they should be part of this commit (paired source/test files, related files in the same package, files referenced by the staged diff), print which files appear to belong and exit WITHOUT committing. Do NOT `git add` anything yourself.
+3. Otherwise, read the staged diff with `git diff --cached` and recent commits with `git log -5 --oneline` to match the project's style.
+4. Run `git commit -m "..."` (use `-F -` for multi-line) and print the resulting hash and subject.
+
+Message style:
+- Imperative mood: "add", "fix", "remove" (never "added", "fixes")
+- Lowercase first word in the subject
+- Subject <=72 characters, no trailing period
+- Subject-only for trivial or obvious changes
+- Add a body (blank line, then text wrapped at 72) only when the *why* is not obvious from the diff; explain motivation and context, not what the diff already shows
+- Plain, factual language; avoid inflated words (critical, crucial, essential, significant, comprehensive, robust, elegant)
+- No meta-commentary (test counts, CI status, tool versions)
+- No AI co-authorship attribution or trailers
+PROMPT
+)"
+}
 
 # Dev
 alias nr='npm run'
