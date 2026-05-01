@@ -32,3 +32,6 @@ common_subcommands = [
   "mise",
   "claude",
 ]
+
+[ai]
+enabled = true
