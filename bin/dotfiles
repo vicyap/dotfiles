@@ -10,8 +10,7 @@ Usage: dotfiles <command>
 
 Commands:
   bootstrap       Install bootstrap packages, then run install.sh
-  sync            Pull latest changes and re-symlink
-  install-tools   Re-install all CLI tools
+  sync            Pull latest, re-symlink, and install/update tools
   status          Show git status of dotfiles repo
   edit            Open dotfiles directory in \$EDITOR
   local           Edit ~/.claude/rules/local.md (machine-specific rules)
@@ -45,6 +44,17 @@ cmd_sync() {
   echo "Installing Claude Code plugins..."
   setup_claude_plugins
   echo
+  if command -v mise &>/dev/null; then
+    echo "Installing mise tools..."
+    mise install --yes
+    echo
+    echo "Updating CLI tools..."
+    mise run update:tools
+    echo
+  else
+    echo "Skipped tool install: mise not found"
+    echo
+  fi
   echo "Installing agent skills..."
   install_agent_skills
   echo
@@ -53,15 +63,6 @@ cmd_sync() {
   echo
   echo "Syncing Claude Code skills..."
   sync_claude_skills
-}
-
-cmd_install_tools() {
-  if ! command -v mise &>/dev/null; then
-    echo "Error: mise not found"
-    exit 1
-  fi
-  echo "Installing CLI tools..."
-  mise run update:tools
 }
 
 cmd_status() {
@@ -101,7 +102,6 @@ main() {
   case "$cmd" in
   bootstrap) cmd_bootstrap ;;
   sync) cmd_sync ;;
-  install-tools) cmd_install_tools ;;
   status) cmd_status ;;
   edit) cmd_edit ;;
   local) cmd_local ;;
