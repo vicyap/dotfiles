@@ -35,3 +35,13 @@ common_subcommands = [
 
 [ai]
 enabled = true
+
+# Send CWD and last command on first turn for better suggestions.
+[ai.opening]
+send_cwd = true
+send_last_command = true
+
+# Background daemon: history writes don't block the shell.
+[daemon]
+enabled = true
+autostart = true
