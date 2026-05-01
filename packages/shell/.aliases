@@ -74,6 +74,13 @@ alias gst='git status'
 alias gsta='git stash'
 alias gstp='git stash pop'
 
+# TUIs
+alias lg='lazygit'
+alias lzd='lazydocker'
+
+# Cheatsheet — themed via glow (markdown renderer)
+alias oma='glow ~/.dotfiles/CHEATSHEET.md'
+
 # Claude
 alias cc='claude'
 function ccc {

@@ -12,7 +12,7 @@ Personal dotfiles repo. Shell scripts that symlink config files from `packages/`
 
 ## Philosophy: Omakase Dotfiles
 
-This repo is curated, not configurable. Choices are intentional and integrated — modern CLI replacements (`rg`/`fd`/`bat`/`eza`/`dust`/`procs`/`sd` over classic equivalents), TUIs (`lazygit`/`lazydocker`/`atuin`/`fastfetch`), Catppuccin Mocha theming with a `light`/`dark` switcher applied across ghostty, bat, fzf, tmux, and claude. See [`MANUAL.md`](./MANUAL.md) for the full toolkit and the README's Philosophy section for the rationale.
+This repo is curated, not configurable. Choices are intentional and integrated — modern CLI replacements (`rg`/`fd`/`bat`/`eza`/`dust`/`procs`/`sd` over classic equivalents), TUIs (`lazygit`/`lazydocker`/`atuin`/`fastfetch`), Catppuccin Mocha theming with a `light`/`dark` switcher applied across ghostty, bat, fzf, tmux, and claude. See [`CHEATSHEET.md`](./CHEATSHEET.md) for the full toolkit and the README's Philosophy section for the rationale.
 
 When proposing changes, prefer cohesion with the existing curation over adding net-new options. Don't silently swap a chosen tool for an alternative ("rg is fine, but ag…"); discuss the trade and let the user decide. Don't propose tools that the repo already manages via `mise`/Brewfile/`packages.txt`. Match the existing aesthetic (Catppuccin, bracketed starship modules, vim-mode tmux) when adding configs.
 

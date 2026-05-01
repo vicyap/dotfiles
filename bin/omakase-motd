@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# omakase-motd — printed on shell login to keep the curated toolkit in muscle memory.
+# Disable per-shell with OMAKASE_MOTD_OFF=1; remove the call from .zprofile/.bash_profile to disable globally.
+
+[[ -t 1 && "${TERM:-}" != "dumb" && -z "${OMAKASE_MOTD_OFF:-}" ]] || exit 0
+
+bold=$(tput bold 2> /dev/null || true)
+dim=$(tput dim 2> /dev/null || true)
+reset=$(tput sgr0 2> /dev/null || true)
+
+cat << EOF
+
+  ${bold}omakase${reset}  ${dim}— type${reset} ${bold}oma${reset} ${dim}for the full cheatsheet${reset}
+
+  ${bold}TUIs      ${reset}  lg=lazygit   lzd=lazydocker   atuin ${dim}(Ctrl+R)${reset}   btop   fastfetch
+  ${bold}Search    ${reset}  rg ${dim}(grep)${reset}    fd ${dim}(find)${reset}        ff ${dim}(fzf → vim)${reset}
+  ${bold}View      ${reset}  bat ${dim}(cat)${reset}    eza ${dim}(ls)${reset}         glow ${dim}(md)${reset}    chafa ${dim}(img)${reset}
+  ${bold}Disk/Proc ${reset}  dust ${dim}(du)${reset}    duf ${dim}(df)${reset}         procs ${dim}(ps)${reset}
+  ${bold}Edit      ${reset}  sd ${dim}(sed)${reset}
+  ${bold}Net       ${reset}  gping ${dim}(ping)${reset} dog ${dim}(dig)${reset}        mosh ${dim}(ssh)${reset}
+  ${bold}Data      ${reset}  jq           yq ${dim}(yaml)${reset}      jless ${dim}(json TUI)${reset}
+  ${bold}Build     ${reset}  just ${dim}(make)${reset}  entr ${dim}(watch)${reset}     hyperfine    cloc
+  ${bold}Funcs     ${reset}  try  compress  decompress  img2{jpg,png}  transcode-video-*  fip dip lip
+
+EOF

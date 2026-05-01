@@ -1,6 +1,6 @@
-# Manual
+# Cheatsheet
 
-Cheatsheet for the curated tools, aliases, functions, and keybindings in this dotfiles repo. See [README.md](./README.md) for philosophy and install instructions.
+Quick reference for the curated tools, aliases, functions, and keybindings in this dotfiles repo. Run `oma` from any shell to view it themed via `glow`. See [README.md](./README.md) for philosophy and install instructions.
 
 ## Modern CLI tools
 
@@ -63,6 +63,9 @@ From [`packages/shell/.aliases`](./packages/shell/.aliases). All work in zsh and
 | `glg`, `glog`  | pretty git log graphs                                   |
 | `gf`, `gl`     | `git fetch`, `git pull`                                 |
 | `grb`, `grh`   | `git rebase`, `git reset HEAD`                          |
+| `lg`           | `lazygit`                                               |
+| `lzd`          | `lazydocker` (`ld` is the GNU linker, kept clear)       |
+| `oma`          | `glow ~/.dotfiles/CHEATSHEET.md` (this page, themed)    |
 | `cc`           | `claude` (Claude Code CLI)                              |
 | `nr`           | `npm run`                                               |
 | `c`            | `clear`                                                 |

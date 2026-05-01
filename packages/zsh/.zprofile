@@ -6,3 +6,6 @@ if [[ -f /opt/homebrew/bin/brew ]]; then
 elif [[ -f /usr/local/bin/brew ]]; then
   eval "$(/usr/local/bin/brew shellenv)"
 fi
+
+# Omakase tool reminder (login-shell only; not run per tmux pane).
+[[ -x "$HOME/.dotfiles/bin/omakase-motd" ]] && "$HOME/.dotfiles/bin/omakase-motd"

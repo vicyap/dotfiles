@@ -4,3 +4,6 @@
 [[ -f ~/.bashrc ]] && source ~/.bashrc
 
 . "$HOME/.posthog/env"
+
+# Omakase tool reminder (login-shell only).
+[[ -x "$HOME/.dotfiles/bin/omakase-motd" ]] && "$HOME/.dotfiles/bin/omakase-motd"
