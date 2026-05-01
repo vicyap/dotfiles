@@ -35,6 +35,15 @@ cmd_sync() {
   # Source helpers for migrate_skill_configs, generate_codex_config, setup_claude_plugins
   source "$DOTFILES_DIR/lib/platform.sh"
   source "$DOTFILES_DIR/install.sh"
+  case "$(uname -s)" in
+  Darwin)
+    if command -v brew &>/dev/null; then
+      echo "Installing Brewfile entries..."
+      brew bundle --file="$DOTFILES_DIR/platform/macos/Brewfile"
+      echo
+    fi
+    ;;
+  esac
   echo "Migrating skill config directories..."
   migrate_skill_configs
   echo

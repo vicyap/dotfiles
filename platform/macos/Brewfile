@@ -61,7 +61,7 @@ brew "awscli"
 brew "flyctl"
 
 # AI tools
-brew "codex"
+cask "codex"
 
 # Tools mise can't manage (system / GUI deps)
 brew "mosh"
