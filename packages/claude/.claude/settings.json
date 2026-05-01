@@ -64,6 +64,7 @@
   "tui": "default",
   "skipDangerousModePermissionPrompt": true,
   "preferredNotifChannel": "ghostty",
+  "autoCompactEnabled": true,
   "teammateMode": "auto",
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": true,
