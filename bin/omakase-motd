@@ -16,7 +16,6 @@ cat << EOF
   ${bold}Search    ${reset}  rg ${dim}(grep)${reset}    fd ${dim}(find)${reset}        ff ${dim}(fzf → vim)${reset}
   ${bold}View      ${reset}  bat ${dim}(cat)${reset}    eza ${dim}(ls)${reset}         glow ${dim}(md)${reset}    chafa ${dim}(img)${reset}
   ${bold}Disk/Proc ${reset}  dust ${dim}(du)${reset}    duf ${dim}(df)${reset}         procs ${dim}(ps)${reset}
-  ${bold}Edit      ${reset}  sd ${dim}(sed)${reset}
   ${bold}Net       ${reset}  gping ${dim}(ping)${reset} dog ${dim}(dig)${reset}        mosh ${dim}(ssh)${reset}
   ${bold}Data      ${reset}  jq           yq ${dim}(yaml)${reset}      jless ${dim}(json TUI)${reset}
   ${bold}Build     ${reset}  just ${dim}(make)${reset}  entr ${dim}(watch)${reset}     hyperfine    cloc
