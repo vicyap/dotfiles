@@ -1,0 +1,9 @@
+# glow — terminal markdown renderer.
+# https://github.com/charmbracelet/glow
+
+# auto: adapts to terminal background (works with the light/dark switcher).
+style: auto
+mouse: true
+pager: true
+local: false
+all: false

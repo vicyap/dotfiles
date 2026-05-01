@@ -35,20 +35,15 @@ if command -v eza &>/dev/null; then
     [[ -n "$sort_flag" ]] && args+=("$sort_flag")
     command eza "${args[@]}"
   }
-  alias ll='eza -la --git'
-  alias la='eza -a'
-  alias l='eza -F'
-  alias ltree='eza --tree --level=2'
+  alias ll='eza -la --git --icons --group-directories-first'
+  alias la='eza -a --icons'
+  alias l='eza -F --icons'
+  alias ltree='eza --tree --level=2 --icons'
 else
   alias ll='ls -alF'
   alias la='ls -A'
   alias l='ls -CF'
 fi
-
-# Safety
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
 
 # Git
 alias g='git'
@@ -173,6 +168,19 @@ ${git_log}"
       return 1
       ;;
   esac
+}
+
+# Fuzzy file finder — pick a file with fzf and open in $EDITOR
+function ff {
+  local fd_cmd
+  if command -v fd &>/dev/null; then
+    fd_cmd='fd --type f --hidden --follow --exclude .git'
+  else
+    fd_cmd='fdfind --type f --hidden --follow --exclude .git'
+  fi
+  local file
+  file="$(eval "$fd_cmd" | fzf --preview 'bat --style=numbers --color=always --line-range=:200 {} 2>/dev/null || batcat --style=numbers --color=always --line-range=:200 {}' --preview-window=right:60%:wrap)"
+  [[ -n "$file" ]] && "${EDITOR:-vim}" "$file"
 }
 
 # Dev

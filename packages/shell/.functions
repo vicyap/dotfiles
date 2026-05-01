@@ -1,0 +1,227 @@
+# shellcheck shell=bash
+# ~/.functions — multi-line shell helpers (sourced by zsh and bash)
+# Style: omarchy-inspired ergonomic wrappers around tar/imagemagick/ffmpeg/ssh.
+
+# ---------------------------------------------------------------------------
+# Compression
+# ---------------------------------------------------------------------------
+
+# compress <path> — create <path>.tar.gz from a file or directory
+function compress {
+    if [[ $# -lt 1 ]]; then
+        echo "usage: compress <path>" >&2
+        return 1
+    fi
+    if [[ ! -e "$1" ]]; then
+        echo "compress: '$1' does not exist" >&2
+        return 1
+    fi
+    tar -czf "$1.tar.gz" "$1"
+}
+
+# decompress <archive> — expand tar.gz, tgz, tar.bz2, tar.xz, tar, zip, gz, bz2, xz
+function decompress {
+    if [[ $# -lt 1 ]]; then
+        echo "usage: decompress <archive>" >&2
+        return 1
+    fi
+    if [[ ! -f "$1" ]]; then
+        echo "decompress: '$1' is not a file" >&2
+        return 1
+    fi
+    case "$1" in
+        *.tar.gz | *.tgz) tar -xzf "$1" ;;
+        *.tar.bz2 | *.tbz2) tar -xjf "$1" ;;
+        *.tar.xz | *.txz) tar -xJf "$1" ;;
+        *.tar) tar -xf "$1" ;;
+        *.zip) unzip "$1" ;;
+        *.gz) gunzip "$1" ;;
+        *.bz2) bunzip2 "$1" ;;
+        *.xz) unxz "$1" ;;
+        *)
+            echo "decompress: don't know how to extract '$1'" >&2
+            return 1
+            ;;
+    esac
+}
+
+# ---------------------------------------------------------------------------
+# Image conversion (ImageMagick)
+# ---------------------------------------------------------------------------
+
+# Pick `magick` (ImageMagick 7) or `convert` (ImageMagick 6).
+function _magick_cmd {
+    if command -v magick &>/dev/null; then
+        echo magick
+    elif command -v convert &>/dev/null; then
+        echo convert
+    else
+        return 1
+    fi
+}
+
+# img2jpg <input> — near-full-quality JPG (quality 92)
+function img2jpg {
+    local cmd
+    cmd="$(_magick_cmd)" || {
+        echo "img2jpg: ImageMagick not installed" >&2
+        return 1
+    }
+    [[ $# -lt 1 ]] && {
+        echo "usage: img2jpg <input>" >&2
+        return 1
+    }
+    "$cmd" "$1" -quality 92 "${1%.*}.jpg"
+}
+
+# img2jpg-small <input> — JPG capped at 1920x1080 (preserves aspect)
+function img2jpg-small {
+    local cmd
+    cmd="$(_magick_cmd)" || {
+        echo "img2jpg-small: ImageMagick not installed" >&2
+        return 1
+    }
+    [[ $# -lt 1 ]] && {
+        echo "usage: img2jpg-small <input>" >&2
+        return 1
+    }
+    "$cmd" "$1" -resize '1920x1080>' -quality 92 "${1%.*}-small.jpg"
+}
+
+# img2jpg-medium <input> — JPG capped at 3200x1800
+function img2jpg-medium {
+    local cmd
+    cmd="$(_magick_cmd)" || {
+        echo "img2jpg-medium: ImageMagick not installed" >&2
+        return 1
+    }
+    [[ $# -lt 1 ]] && {
+        echo "usage: img2jpg-medium <input>" >&2
+        return 1
+    }
+    "$cmd" "$1" -resize '3200x1800>' -quality 92 "${1%.*}-medium.jpg"
+}
+
+# img2png <input> — compressed-but-lossless PNG
+function img2png {
+    local cmd
+    cmd="$(_magick_cmd)" || {
+        echo "img2png: ImageMagick not installed" >&2
+        return 1
+    }
+    [[ $# -lt 1 ]] && {
+        echo "usage: img2png <input>" >&2
+        return 1
+    }
+    "$cmd" "$1" -define png:compression-level=9 "${1%.*}.png"
+}
+
+# ---------------------------------------------------------------------------
+# Video transcoding (ffmpeg)
+# ---------------------------------------------------------------------------
+
+# transcode-video-1080p <input> — H.264 1080p MP4, AAC 192k
+function transcode-video-1080p {
+    command -v ffmpeg &>/dev/null || {
+        echo "ffmpeg not installed" >&2
+        return 1
+    }
+    [[ $# -lt 1 ]] && {
+        echo "usage: transcode-video-1080p <input>" >&2
+        return 1
+    }
+    ffmpeg -i "$1" \
+        -vf "scale='min(1920,iw)':-2" \
+        -c:v libx264 -crf 20 -preset slow \
+        -c:a aac -b:a 192k \
+        "${1%.*}-1080p.mp4"
+}
+
+# transcode-video-4K <input> — H.264 4K MP4, AAC 256k
+function transcode-video-4K {
+    command -v ffmpeg &>/dev/null || {
+        echo "ffmpeg not installed" >&2
+        return 1
+    }
+    [[ $# -lt 1 ]] && {
+        echo "usage: transcode-video-4K <input>" >&2
+        return 1
+    }
+    ffmpeg -i "$1" \
+        -vf "scale='min(3840,iw)':-2" \
+        -c:v libx264 -crf 18 -preset slow \
+        -c:a aac -b:a 256k \
+        "${1%.*}-4K.mp4"
+}
+
+# ---------------------------------------------------------------------------
+# SSH port forwarding
+# ---------------------------------------------------------------------------
+
+# fip <host> <port> [<port>...] — forward remote ports to localhost via ssh -fN
+function fip {
+    if [[ $# -lt 2 ]]; then
+        echo "usage: fip <host> <port> [<port>...]" >&2
+        return 1
+    fi
+    local host=$1
+    shift
+    local args=()
+    local port
+    for port in "$@"; do
+        args+=(-L "${port}:localhost:${port}")
+    done
+    if ssh -fN "${args[@]}" "$host"; then
+        echo "forwarded $* from $host to localhost"
+    else
+        echo "fip: failed to forward $* from $host" >&2
+        return 1
+    fi
+}
+
+# dip <port> [<port>...] — disconnect forwards for given local ports
+function dip {
+    if [[ $# -lt 1 ]]; then
+        echo "usage: dip <port> [<port>...]" >&2
+        return 1
+    fi
+    local port pids found=0
+    for port in "$@"; do
+        pids="$(pgrep -f "ssh -fN.*-L ${port}:" 2>/dev/null || true)"
+        if [[ -n "$pids" ]]; then
+            echo "$pids" | xargs kill
+            echo "disconnected port $port (pids: $(echo "$pids" | tr '\n' ' '))"
+            found=1
+        else
+            echo "no forward found for port $port" >&2
+        fi
+    done
+    [[ $found -eq 1 ]]
+}
+
+# lip — list active ssh -fN port forwards
+function lip {
+    if pgrep -af 'ssh -fN.*-L ' >/dev/null 2>&1; then
+        pgrep -af 'ssh -fN.*-L '
+    else
+        echo "no active ssh port forwards"
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# Scratch directories
+# ---------------------------------------------------------------------------
+
+# try [name] — cd into a date-stamped scratch dir under ~/Work/tries
+function try {
+    local base="$HOME/Work/tries"
+    local stamp
+    stamp="$(date +%F)"
+    local dir
+    if [[ $# -ge 1 ]]; then
+        dir="${base}/${stamp}-${1}"
+    else
+        dir="${base}/${stamp}"
+    fi
+    mkdir -p "$dir" && cd "$dir" || return
+}

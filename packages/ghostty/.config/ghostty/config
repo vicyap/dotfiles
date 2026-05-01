@@ -1,5 +1,8 @@
 theme = Catppuccin Mocha
 
+font-family = JetBrainsMono Nerd Font Mono
+font-size = 14
+
 working-directory = home
 window-inherit-working-directory = true
 tab-inherit-working-directory = true

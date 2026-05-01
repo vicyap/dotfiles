@@ -47,8 +47,9 @@ dotfiles() {
   fi
 }
 
-# Aliases
+# Aliases and functions
 [[ -f ~/.aliases ]] && source ~/.aliases
+[[ -f ~/.functions ]] && source ~/.functions
 [[ -f ~/.zsh/alias-suggest.zsh ]] && source ~/.zsh/alias-suggest.zsh
 [[ -f ~/.zsh/theme.zsh ]] && source ~/.zsh/theme.zsh
 
@@ -59,6 +60,8 @@ command -v mise &>/dev/null && eval "$(mise activate zsh)"
 command -v starship &>/dev/null && eval "$(starship init zsh)"
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 command -v direnv &>/dev/null && eval "$(direnv hook zsh)"
+# atuin owns Ctrl+R; --disable-up-arrow keeps history-search-backward on UP
+command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow)"
 
 # fzf
 [[ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]] && source /usr/share/doc/fzf/examples/key-bindings.zsh
@@ -69,6 +72,18 @@ bindkey '^[[A' history-search-backward
 bindkey '^[[B' history-search-forward
 bindkey '^[OA' history-search-backward
 bindkey '^[OB' history-search-forward
+
+# Zsh trio: fzf-tab (after compinit), then highlighting, then autosuggestions
+[[ -f $HOME/.zsh/plugins/fzf-tab/fzf-tab.plugin.zsh ]] \
+  && source $HOME/.zsh/plugins/fzf-tab/fzf-tab.plugin.zsh
+[[ -f $HOME/.zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh ]] \
+  && source $HOME/.zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+[[ -f $HOME/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] \
+  && source $HOME/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# fzf-tab Catppuccin Mocha colors + cd preview
+zstyle ':fzf-tab:*' fzf-flags --color=fg:-1,bg:-1,hl:#f5c2e7,fg+:-1,bg+:#313244,hl+:#f5c2e7
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 --color=always --icons $realpath'
 
 # uv
 [[ -s "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"

@@ -1,4 +1,5 @@
 [tools]
+# Languages
 go = "1.26"
 node = "24"
 python = "3.14"
@@ -6,8 +7,33 @@ bun = "latest"
 uv = "latest"
 erlang = "28"
 elixir = "1.19"
+
+# Shell prompt / history / git pager
 starship = "latest"
 delta = "latest"
+atuin = "latest"
+
+# TUIs
+lazygit = "latest"
+lazydocker = "latest"
+fastfetch = "latest"
+
+# Modern CLI replacements
+dust = "latest"
+"aqua:dalance/procs" = "latest"
+sd = "latest"
+
+# Network
+gping = "latest"
+"aqua:ogham/dog" = "latest"
+
+# Data inspection
+yq = "latest"
+jless = "latest"
+
+# Build / watch / markdown
+just = "latest"
+glow = "latest"
 
 [tasks."setup:web"]
 description = "Install web CLI from source (requires Go)"

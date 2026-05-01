@@ -2,6 +2,15 @@
 
 Personal dotfiles managed with a simple shell script. No dependencies required.
 
+## Philosophy
+
+Curated, opinionated, chef's-choice defaults — productivity and aesthetics over a gentle learning curve.
+
+1. **Curated > optional.** Every tool, alias, and theme is picked deliberately to compose with the rest. Modern CLI replacements (`rg`, `fd`, `bat`, `eza`, `dust`, `procs`, `sd`) over their classic counterparts. TUIs (`lazygit`, `lazydocker`, `atuin`, `btop`, `fastfetch`) for the workflows that benefit. Catppuccin Mocha + a `light`/`dark` switcher across ghostty, bat, fzf, tmux, and claude. One coherent menu, not a buffet.
+2. **Productivity + aesthetics > ease-of-learning.** New keybindings and unfamiliar tools are fine if they pay off long-term. See [`MANUAL.md`](./MANUAL.md) for the cheatsheet.
+
+Swap any single piece without abandoning the rest — the modular Linux/macOS ecosystem makes that cheap — but the curation is the value.
+
 ## Install
 
 ```bash

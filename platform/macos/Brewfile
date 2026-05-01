@@ -63,6 +63,15 @@ brew "flyctl"
 # AI tools
 brew "codex"
 
+# Tools mise can't manage (system / GUI deps)
+brew "mosh"
+brew "entr"
+brew "chafa"
+brew "cloc"
+
+# Fonts
+cask "font-jetbrains-mono-nerd-font"
+
 # Security
 cask "secretive"
 

@@ -15,8 +15,9 @@ shopt -s checkwinsize
 # Prompt
 PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
-# Source shared aliases
+# Source shared aliases and functions
 [[ -f ~/.aliases ]] && source ~/.aliases
+[[ -f ~/.functions ]] && source ~/.functions
 
 # PATH
 export PATH="$HOME/.dotfiles/bin:$PATH"

@@ -1,0 +1,34 @@
+# atuin — magical shell history.
+# https://docs.atuin.sh
+
+# Locale-aware date parsing.
+dialect = "us"
+
+# Local-only by default; opt into cloud sync later via `atuin login`.
+auto_sync = false
+update_check = false
+
+# Theme follows terminal background (matches the light/dark switcher).
+style = "auto"
+
+# Full-screen TUI on Ctrl+R.
+inline_height = 0
+show_preview = true
+
+# Pressing Esc from the search returns the original line you were typing.
+exit_mode = "return-original"
+
+# Vim-mode insert keymap matches the rest of the workflow (vim editor, vi tmux mode).
+keymap_mode = "vim-insert"
+
+[stats]
+common_subcommands = [
+  "cargo",
+  "git",
+  "go",
+  "npm",
+  "docker",
+  "kubectl",
+  "mise",
+  "claude",
+]

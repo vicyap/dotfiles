@@ -47,6 +47,48 @@ else
     DOTFILES_DIR="$HOME/.dotfiles"
 fi
 
+import_atuin_history() {
+    if ! has_cmd atuin; then
+        echo "  Skipped: atuin not installed"
+        return 0
+    fi
+
+    local db="${XDG_DATA_HOME:-$HOME/.local/share}/atuin/history.db"
+    if [[ -f "$db" ]]; then
+        echo "  ok history already imported"
+        return 0
+    fi
+
+    if [[ -f "$HOME/.zsh_history" ]]; then
+        atuin import zsh && echo "  + imported zsh history"
+    else
+        echo "  ok no zsh history to import"
+    fi
+}
+
+install_zsh_plugins() {
+    local plugin_dir="$HOME/.zsh/plugins"
+    mkdir -p "$plugin_dir"
+
+    local repos=(
+        "Aloxaf/fzf-tab"
+        "zsh-users/zsh-autosuggestions"
+        "zdharma-continuum/fast-syntax-highlighting"
+    )
+
+    local repo name dest
+    for repo in "${repos[@]}"; do
+        name="${repo##*/}"
+        dest="$plugin_dir/$name"
+        if [[ -d "$dest/.git" ]]; then
+            git -C "$dest" pull --quiet --ff-only && echo "  ok $name"
+        else
+            git clone --depth=1 --quiet "https://github.com/$repo" "$dest" \
+                && echo "  + $name"
+        fi
+    done
+}
+
 setup_claude_plugins() {
     if ! has_cmd claude; then
         echo "  Skipped: claude not installed"
@@ -312,6 +354,11 @@ main() {
     symlink_all_packages "$DOTFILES_DIR/packages"
     echo
 
+    # Clone zsh trio plugins (fzf-tab, autosuggestions, fast-syntax-highlighting)
+    echo "=== Installing zsh plugins ==="
+    install_zsh_plugins
+    echo
+
     # Migrate skill config dirs from old internal paths to current public paths
     echo "=== Migrating skill config directories ==="
     migrate_skill_configs
@@ -346,6 +393,10 @@ main() {
         mise run setup:pyright
         mise run setup:typescript-lsp
         mise run setup:shfmt
+        echo
+
+        echo "=== Importing atuin history ==="
+        import_atuin_history
         echo
     fi
 

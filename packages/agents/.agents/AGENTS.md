@@ -115,3 +115,61 @@ Get markdown from websites. Run `web --help` for usage.
 web https://example.com
 web https://example.com --truncate-after 5000
 ```
+
+### CLI tools available
+
+These are installed across both lima (macOS) and rhinestone (Linux) via the dotfiles manifests. Prefer them over their classic equivalents:
+
+| Tool        | Replaces / does                              |
+|-------------|----------------------------------------------|
+| `rg`        | `grep` (recursive content search)            |
+| `fd`        | `find` (`fdfind` on Linux apt)               |
+| `bat`       | `cat` with syntax highlighting (`batcat` on Linux apt) |
+| `eza`       | `ls` (icons, git status, tree)               |
+| `dust`      | `du` (visual disk usage)                     |
+| `procs`     | `ps` (modern, colored, sortable)             |
+| `sd`        | `sed` (intuitive find/replace)               |
+| `delta`     | `git diff` pager (configured in `.gitconfig`)|
+| `duf`       | `df` (disk free)                             |
+| `jq`        | JSON query/transform                         |
+| `yq`        | YAML query (jq for YAML)                     |
+| `jless`     | Interactive JSON pager                       |
+| `gping`     | `ping` with graph                            |
+| `dog`       | `dig` (modern DNS lookup)                    |
+| `mosh`      | `ssh` (mobile-resilient; recovers tunnels)   |
+| `lazygit`   | TUI git client                               |
+| `lazydocker`| TUI docker client                            |
+| `atuin`     | Shell history (Ctrl+R = TUI search)          |
+| `fastfetch` | System info banner                           |
+| `btop`      | TUI process/resource monitor                 |
+| `glow`      | Markdown renderer                            |
+| `chafa`     | Terminal image viewer                        |
+| `just`      | Modern task runner (Makefile alternative)    |
+| `entr`      | Re-run a command on file change              |
+| `cloc`      | Count lines of code by language              |
+| `hyperfine` | CLI benchmark tool                           |
+| `tldr`      | Simplified man pages                         |
+| `zoxide`    | `cd` with frecency (`z`, `zi`)               |
+| `fzf`       | Fuzzy finder (Ctrl+R, Ctrl+T, Alt+C, `ff`)   |
+| `gh`        | GitHub CLI (also git credential helper)      |
+
+### Custom shell functions
+
+Sourced from `~/.aliases` and `~/.functions` (see `packages/shell/`):
+
+| Function                                | Description                                                |
+|-----------------------------------------|------------------------------------------------------------|
+| `ff`                                    | fuzzy file finder, opens selection in `$EDITOR` (vim)      |
+| `ccc`                                   | AI-driven git commit (uses `claude -p`)                    |
+| `compress <path>`                       | create `<path>.tar.gz`                                     |
+| `decompress <archive>`                  | expand tar.gz/tgz/tar.bz2/tar.xz/tar/zip/gz/bz2/xz         |
+| `img2jpg`, `img2jpg-{small,medium}`     | convert image to JPG (full / 1080p / 1800p)                |
+| `img2png`                               | convert image to compressed-but-lossless PNG               |
+| `transcode-video-{1080p,4K}`            | ffmpeg H.264 transcode with sane defaults                  |
+| `fip <host> <port>...`                  | forward remote port to localhost via `ssh -fN`             |
+| `dip <port>...`                         | disconnect a forwarded port                                |
+| `lip`                                   | list active ssh port forwards                              |
+| `try [name]`                            | cd into `~/Work/tries/YYYY-MM-DD-name` (creates if missing)|
+| `light` / `dark`                        | switch ghostty/bat/fzf/tmux/claude themes live             |
+
+Don't propose installing tools that already appear above — they're managed via `mise` (`packages/mise/.config/mise/config.toml`), Brewfile, or apt manifest.

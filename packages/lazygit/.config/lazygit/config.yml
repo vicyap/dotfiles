@@ -1,0 +1,40 @@
+# lazygit — TUI git client.
+# https://github.com/jesseduffield/lazygit
+
+gui:
+  # Catppuccin Mocha palette.
+  theme:
+    activeBorderColor:
+      - "#a6e3a1"
+      - bold
+    inactiveBorderColor:
+      - "#cdd6f4"
+    optionsTextColor:
+      - "#89b4fa"
+    selectedLineBgColor:
+      - "#313244"
+    cherryPickedCommitBgColor:
+      - "#94e2d5"
+    cherryPickedCommitFgColor:
+      - "#1e1e2e"
+    unstagedChangesColor:
+      - "#f38ba8"
+    defaultFgColor:
+      - "#cdd6f4"
+    searchingActiveBorderColor:
+      - "#f9e2af"
+  authorColors:
+    "*": "#b4befe"
+  showFileTree: true
+  showRandomTip: false
+  nerdFontsVersion: "3"
+
+git:
+  paging:
+    colorArg: always
+    pager: delta --paging=never
+  commit:
+    signOff: false
+
+os:
+  editPreset: vim
