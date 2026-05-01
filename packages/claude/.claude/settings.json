@@ -1,8 +1,62 @@
 {
-  "agentPushNotifEnabled": true,
-  "autoCompactEnabled": true,
-  "autoUpdatesChannel": "latest",
-  "effortLevel": "high",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "atuin hook claude-code"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "atuin hook claude-code"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "atuin hook claude-code"
+          }
+        ]
+      }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-worktree-create",
+            "timeout": 300,
+            "statusMessage": "Setting up worktree (env, deps, hooks)..."
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
@@ -20,88 +74,34 @@
     "usetemi-private@usetemi-private": true,
     "usetemi@usetemi": true
   },
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
-  },
   "extraKnownMarketplaces": {
     "openai-codex": {
       "source": {
-        "repo": "openai/codex-plugin-cc",
-        "source": "github"
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
       }
     },
     "usetemi": {
       "source": {
-        "repo": "usetemi/skills",
-        "source": "github"
+        "source": "github",
+        "repo": "usetemi/skills"
       }
     },
     "usetemi-private": {
       "source": {
-        "repo": "usetemi/skills-private",
-        "source": "github"
+        "source": "github",
+        "repo": "usetemi/skills-private"
       }
     }
   },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "atuin hook claude-code",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "hooks": [
-          {
-            "command": "atuin hook claude-code",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "atuin hook claude-code",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "WorktreeCreate": [
-      {
-        "hooks": [
-          {
-            "command": "claude-worktree-create",
-            "statusMessage": "Setting up worktree (env, deps, hooks)...",
-            "timeout": 300,
-            "type": "command"
-          }
-        ]
-      }
-    ]
-  },
-  "permissions": {
-    "defaultMode": "bypassPermissions"
-  },
-  "preferredNotifChannel": "ghostty",
-  "remoteControlAtStartup": true,
-  "skipDangerousModePermissionPrompt": true,
-  "statusLine": {
-    "command": "~/.claude/statusline.sh",
-    "type": "command"
-  },
-  "teammateMode": "auto",
+  "effortLevel": "xhigh",
+  "autoUpdatesChannel": "latest",
   "tui": "default",
+  "skipDangerousModePermissionPrompt": true,
+  "preferredNotifChannel": "ghostty",
+  "autoCompactEnabled": true,
+  "teammateMode": "auto",
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": true,
   "voiceEnabled": true
 }
