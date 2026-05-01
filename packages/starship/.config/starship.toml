@@ -185,8 +185,13 @@ format = '\[[$symbol$workspace]($style)\]'
 [time]
 format = '\[[$time]($style)\]'
 
+[hostname]
+ssh_only = false
+format = '\[[$hostname]($style)\]'
+style = 'bold yellow'
+
 [username]
-format = '\[[$user]($style)\]'
+disabled = true
 
 [vagrant]
 format = '\[[$symbol($version)]($style)\]'
