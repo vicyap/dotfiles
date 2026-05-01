@@ -1,72 +1,107 @@
 {
+  "agentPushNotifEnabled": true,
+  "autoCompactEnabled": true,
+  "autoUpdatesChannel": "latest",
+  "effortLevel": "high",
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "codex@openai-codex": true,
+    "context7@claude-plugins-official": true,
+    "explanatory-output-style@claude-plugins-official": false,
+    "linear@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true,
+    "posthog@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "usetemi-private@usetemi-private": true,
+    "usetemi@usetemi": true
+  },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
-  "permissions": {
-    "defaultMode": "bypassPermissions"
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "repo": "openai/codex-plugin-cc",
+        "source": "github"
+      }
+    },
+    "usetemi": {
+      "source": {
+        "repo": "usetemi/skills",
+        "source": "github"
+      }
+    },
+    "usetemi-private": {
+      "source": {
+        "repo": "usetemi/skills-private",
+        "source": "github"
+      }
+    }
   },
   "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "atuin hook claude-code",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "command": "atuin hook claude-code",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "atuin hook claude-code",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
     "WorktreeCreate": [
       {
         "hooks": [
           {
-            "type": "command",
             "command": "claude-worktree-create",
+            "statusMessage": "Setting up worktree (env, deps, hooks)...",
             "timeout": 300,
-            "statusMessage": "Setting up worktree (env, deps, hooks)..."
+            "type": "command"
           }
         ]
       }
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/statusline.sh"
+  "permissions": {
+    "defaultMode": "bypassPermissions"
   },
-  "enabledPlugins": {
-    "playwright@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
-    "linear@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true,
-    "claude-code-setup@claude-plugins-official": true,
-    "explanatory-output-style@claude-plugins-official": false,
-    "codex@openai-codex": true,
-    "context7@claude-plugins-official": true,
-    "posthog@claude-plugins-official": true,
-    "usetemi@usetemi": true,
-    "usetemi-private@usetemi-private": true
-  },
-  "extraKnownMarketplaces": {
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
-    },
-    "usetemi": {
-      "source": {
-        "source": "github",
-        "repo": "usetemi/skills"
-      }
-    },
-    "usetemi-private": {
-      "source": {
-        "source": "github",
-        "repo": "usetemi/skills-private"
-      }
-    }
-  },
-  "effortLevel": "xhigh",
-  "autoUpdatesChannel": "latest",
-  "tui": "default",
-  "skipDangerousModePermissionPrompt": true,
   "preferredNotifChannel": "ghostty",
-  "autoCompactEnabled": true,
-  "teammateMode": "auto",
   "remoteControlAtStartup": true,
-  "agentPushNotifEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
+  "statusLine": {
+    "command": "~/.claude/statusline.sh",
+    "type": "command"
+  },
+  "teammateMode": "auto",
+  "tui": "default",
   "voiceEnabled": true
 }

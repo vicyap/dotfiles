@@ -28,6 +28,9 @@ export PATH="$HOME/bin:$PATH"
 # mise
 command -v mise &>/dev/null && eval "$(mise activate bash)"
 
+# atuin owns Ctrl+R; --disable-up-arrow keeps default history search on UP
+command -v atuin &>/dev/null && eval "$(atuin init bash --disable-up-arrow)"
+
 # Secrets
 [[ -f ~/.secrets ]] && source ~/.secrets
 
