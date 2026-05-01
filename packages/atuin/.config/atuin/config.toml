@@ -4,8 +4,8 @@
 # Locale-aware date parsing.
 dialect = "us"
 
-# Local-only by default; opt into cloud sync later via `atuin login`.
-auto_sync = false
+# Cloud sync via Atuin Hub. Per-machine login with `atuin login`.
+auto_sync = true
 update_check = false
 
 # Theme follows terminal background (matches the light/dark switcher).
