@@ -37,7 +37,7 @@ Do **not** ask explicit "do you prefer X or Y" tradeoff questions. Infer it. Res
 
 ### 5. After each round, decide: another round or stop?
 
-If your prediction hit-rate is around 95% AND you judge remaining ambiguity is not load-bearing, stop. Otherwise run another round, focused on whatever the previous round didn't resolve. Cap at 3 rounds — if you're still not aligned after that, surface it to the user rather than looping indefinitely.
+If your prediction hit-rate is around 95% AND you judge remaining ambiguity is not load-bearing, stop. Otherwise run another round, focused on whatever the previous round didn't resolve. Cap at 5 rounds — if you're still not aligned after that, surface it to the user rather than looping indefinitely.
 
 ### 6. Confirm and proceed
 
@@ -48,7 +48,7 @@ When you stop, summarize in 1–3 sentences what you're now aligned on, includin
 - **Don't write code or modify project files during the interview.** The interview is read-only and conversational.
 - **Up to 4 questions per round.**
 - **Always use the `AskUserQuestion` tool.** Plain prose only when the answer can't be framed as a short choice.
-- **Cap rounds at 3.** If still not aligned, surface it to the user rather than looping.
+- **Cap rounds at 5.** If still not aligned, surface it to the user rather than looping.
 - **Don't ask questions whose answers are already in the user's brief.**
 - **Don't dump pre-written assumptions as questions.** A question is something whose answer could change the implementation.
 - **Don't ask explicit tradeoff questions.** Infer the user's tradeoff posture from their answers.
