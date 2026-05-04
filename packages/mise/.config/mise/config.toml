@@ -108,9 +108,9 @@ echo "✓ tmux-status installed to ~/.local/bin/tmux-status"
 description = "Install gitleaks (secret scanner for git)"
 run = """
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 mkdir -p "$HOME/.local/bin"
-version="$(curl -fsSL https://api.github.com/repos/gitleaks/gitleaks/releases/latest | jq -r .tag_name)"
+version="$(gh release view --repo gitleaks/gitleaks --json tagName -q .tagName)"
 os="$(uname -s | tr '[:upper:]' '[:lower:]')"
 arch="$(uname -m)"
 case "$arch" in
