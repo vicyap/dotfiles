@@ -121,8 +121,8 @@ setup_claude_plugins() {
         "claude-code-setup@claude-plugins-official"
         "explanatory-output-style@claude-plugins-official"
         "codex@openai-codex"
-        "skills@usetemi"
-        "temi-skills@usetemi-skills"
+        "usetemi@usetemi"
+        "usetemi-private@usetemi-private"
     )
 
     for plugin in "${plugins[@]}"; do
