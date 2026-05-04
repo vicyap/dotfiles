@@ -27,7 +27,7 @@ Multiple-choice when there are clear discrete options; for open-ended cases, giv
 
 ### 3. Predict before you ask
 
-For each question in the batch, write your predicted answer in your reasoning before sending. After receiving answers, note your hit rate. This is your calibration signal — vibes-based, not precise.
+For each question in the batch, write your predicted answer in your reasoning before sending. Treat the interview as an **information game**: surprises (wrong predictions) reveal where your model of the user is off and tell you where the next round should dig. A high hit rate in one area doesn't mean you're aligned overall — it just means you've mapped that area. Use the calibration signal to *guide* the next round, not to decide whether to stop.
 
 ### 4. Infer the user's tradeoffs as you go (do not ask)
 
@@ -37,7 +37,23 @@ Do **not** ask explicit "do you prefer X or Y" tradeoff questions. Infer it. Res
 
 ### 5. After each round, decide: another round or stop?
 
-If your prediction hit-rate is around 95% AND you judge remaining ambiguity is not load-bearing, stop. Otherwise run another round, focused on whatever the previous round didn't resolve. Cap at 5 rounds — if you're still not aligned after that, surface it to the user rather than looping indefinitely.
+**Default to running another round.** The threshold is alignment, not a count. You almost certainly aren't there yet, and one more round is cheap compared to building the wrong thing.
+
+The bar for "aligned" is high: you should be able to predict not just what the user wants in broad strokes, but the specific implementation choices they'd make — file layout, error-handling style, what's in scope vs out, how edge cases resolve, which tradeoffs they'd accept. If you couldn't sketch the diff in your head and have the user nod along, you aren't done.
+
+Stop only when **both** are true:
+
+- **Alignment** — you can confidently predict the user's answers to the questions that would actually change the code.
+- **Diminishing returns** — a plausible next question wouldn't meaningfully change the implementation.
+
+Things that are **not** reasons to stop:
+
+- "I've already asked a lot of questions." Irrelevant. Count isn't the threshold.
+- "My last round had a high hit rate." That tells you you've mapped one area, not that the rest is mapped.
+- "The user seems eager to start." They invoked the skill — they want to be aligned, not rushed.
+- "I think I can figure the rest out from context." This is the failure mode. Ask.
+
+**Escape valve** — only when the *user* seems unsure (not when you're tired of asking). If their answers are contradictory, hesitant, or they're clearly working it out as they go, surface it: "It sounds like the shape isn't settled yet — want to think on it, or should I propose an approach for you to react to?" Don't use this as an out for your own fatigue.
 
 ### 6. Confirm and proceed
 
@@ -48,7 +64,9 @@ When you stop, summarize in 1–3 sentences what you're now aligned on, includin
 - **Don't write code or modify project files during the interview.** The interview is read-only and conversational.
 - **Up to 4 questions per round.**
 - **Always use the `AskUserQuestion` tool.** Plain prose only when the answer can't be framed as a short choice.
-- **Cap rounds at 5.** If still not aligned, surface it to the user rather than looping.
+- **No round cap. Default to another round.** Stop on alignment + diminishing returns, never on count. Asking "a lot" is not a reason to bail.
+- **Hit-rate is a calibration signal, not a stopping gate.** Use it to steer the next round; don't use it as permission to stop.
+- **Escape valve only for genuine user ambiguity** — if the user themselves seems unsure, surface it. Never escape because you're tired of asking.
 - **Don't ask questions whose answers are already in the user's brief.**
 - **Don't dump pre-written assumptions as questions.** A question is something whose answer could change the implementation.
 - **Don't ask explicit tradeoff questions.** Infer the user's tradeoff posture from their answers.
