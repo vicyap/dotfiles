@@ -94,7 +94,6 @@
       }
     }
   },
-  "effortLevel": "xhigh",
   "autoUpdatesChannel": "latest",
   "tui": "default",
   "skipDangerousModePermissionPrompt": true,
