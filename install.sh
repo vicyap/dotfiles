@@ -157,6 +157,37 @@ install_agent_skills() {
     done
 }
 
+# Skills to remove from ~/.agents/skills after registry installs run.
+# Registries are installed in full to auto-pick up new upstream skills, so
+# opt-outs are listed here and pruned after install.
+AGENT_SKILL_EXCLUDES=(
+    agent-email-inbox
+    email-best-practices
+    resend-cli
+    template-skill
+    vercel-react-native-skills
+)
+
+prune_excluded_agent_skills() {
+    local agents_skills="$HOME/.agents/skills"
+
+    if [[ ! -d "$agents_skills" ]]; then
+        return 0
+    fi
+
+    local pruned=0
+    local name
+    for name in "${AGENT_SKILL_EXCLUDES[@]}"; do
+        if [[ -e "$agents_skills/$name" ]]; then
+            rm -rf "$agents_skills/$name"
+            echo "  - $name (excluded)"
+            pruned=$((pruned + 1))
+        fi
+    done
+
+    echo "  Pruned $pruned excluded agent skills"
+}
+
 install_codex_skills() {
     prepare_codex_skills_source_link || {
         echo "  Skipped: Codex skills install needs $HOME/.codex/skills to be managed by dotfiles"
@@ -495,6 +526,11 @@ main() {
     # and Claude both load from the same runtime tree.
     echo "=== Syncing dotfiles agent skills ==="
     sync_dotfiles_agent_skills
+    echo
+
+    # Remove skills opted out via AGENT_SKILL_EXCLUDES, after registry installs.
+    echo "=== Pruning excluded agent skills ==="
+    prune_excluded_agent_skills
     echo
 
     # Sync skills to Claude Code, skipping plugin-provided duplicates

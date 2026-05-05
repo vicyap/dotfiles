@@ -73,6 +73,9 @@ cmd_sync() {
   echo "Syncing dotfiles agent skills..."
   sync_dotfiles_agent_skills
   echo
+  echo "Pruning excluded agent skills..."
+  prune_excluded_agent_skills
+  echo
   echo "Syncing Claude Code skills..."
   sync_claude_skills
 }
