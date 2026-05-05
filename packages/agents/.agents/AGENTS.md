@@ -57,6 +57,7 @@ My personal config lives in `~/.dotfiles` with per-file symlinks into `$HOME`, c
 * Write PR titles and descriptions like git commit messages. Skip test plans.
 * For `usetemi/` repos, PRs are always squash-merged. Write the PR title as the commit subject and the description as the commit body -- the result should read as a single well-formed commit message.
 * Don't include meta-commentary (test counts, CI status, tool versions) in commit messages or PR descriptions.
+* Specifically forbidden in PR bodies: markdown H1/H2/H3 headers (`#`, `##`, `###`), "Verification" / "Testing" / "Numbers" / "Stats" sections, anything that wouldn't survive a squash. Plain paragraphs and `-` bullets only. Before submitting, ask: "Would I want this verbatim as the next squashed commit?" If not, strip it.
 * NEVER add AI co-authorship attribution to commit messages.
 * NEVER add AI-generated badges or watermarks to PR descriptions.
 * Use plain, factual language. Avoid inflated words: critical, crucial, essential, significant, comprehensive, robust, elegant.

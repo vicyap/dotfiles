@@ -158,6 +158,11 @@ install_agent_skills() {
 }
 
 install_codex_skills() {
+    prepare_codex_skills_source_link || {
+        echo "  Skipped: Codex skills install needs $HOME/.codex/skills to be managed by dotfiles"
+        return 0
+    }
+
     if ! has_cmd npx; then
         echo "  Skipped: npx not installed"
         return 0
@@ -171,6 +176,82 @@ install_codex_skills() {
         echo "  Skipped: Codex skills install failed (GitHub auth may be missing)"
         return 0
     }
+}
+
+codex_skills_source_link_target() {
+    local agents_skills="$HOME/.agents/skills"
+
+    # Relative target keeps the link valid across machines with the same HOME layout.
+    if [[ -d "$agents_skills" ]]; then
+        echo "../.agents/skills"
+    else
+        echo "$agents_skills"
+    fi
+}
+
+codex_skills_link_points_to_agents() {
+    local codex_skills="$HOME/.codex/skills"
+    local agents_skills="$HOME/.agents/skills"
+    local link_target
+
+    [[ -L "$codex_skills" ]] || return 1
+    link_target="$(readlink "$codex_skills")"
+    [[ "$link_target" == "../.agents/skills" || "$link_target" == "$agents_skills" ]]
+}
+
+prepare_codex_skills_source_link() {
+    local codex_dir="$HOME/.codex"
+    local codex_skills="$codex_dir/skills"
+    local agents_skills="$HOME/.agents/skills"
+    local marker="$codex_skills/.dotfiles-skill-mirror"
+    local link_target
+
+    mkdir -p "$codex_dir" "$agents_skills"
+
+    if codex_skills_link_points_to_agents; then
+        return 0
+    fi
+
+    if [[ -L "$codex_skills" ]]; then
+        rm -f "$codex_skills"
+    elif [[ -e "$codex_skills" ]]; then
+        if [[ -f "$marker" ]]; then
+            rm -rf "$codex_skills"
+        else
+            echo "  Skipped: $codex_skills exists and is not a dotfiles-generated mirror"
+            return 1
+        fi
+    fi
+
+    link_target="$(codex_skills_source_link_target)"
+    ln -s "$link_target" "$codex_skills"
+    echo "  + $codex_skills → $link_target"
+}
+
+sync_dotfiles_agent_skills() {
+    local source_skills="$DOTFILES_DIR/packages/agents/.agents/skills"
+    local agents_skills="$HOME/.agents/skills"
+
+    if [[ ! -d "$source_skills" ]]; then
+        echo "  Skipped: $source_skills does not exist"
+        return 0
+    fi
+
+    mkdir -p "$agents_skills"
+
+    local mirrored=0
+    local entry name
+    for entry in "$source_skills"/*/; do
+        [[ -d "$entry" ]] || continue
+        name="$(basename "$entry")"
+        [[ "$name" == .* ]] && continue
+
+        rm -rf "$agents_skills/$name"
+        cp -R -L -p "$entry" "$agents_skills/$name"
+        mirrored=$((mirrored + 1))
+    done
+
+    echo "  Synced $mirrored dotfiles agent skills into $agents_skills"
 }
 
 sync_claude_skills() {
@@ -408,6 +489,12 @@ main() {
     # Install Codex skills after mise tools so Node/npx is available on fresh machines.
     echo "=== Installing Codex skills ==="
     install_codex_skills
+    echo
+
+    # Keep dotfiles-owned skills as real files in ~/.agents/skills so Codex
+    # and Claude both load from the same runtime tree.
+    echo "=== Syncing dotfiles agent skills ==="
+    sync_dotfiles_agent_skills
     echo
 
     # Sync skills to Claude Code, skipping plugin-provided duplicates

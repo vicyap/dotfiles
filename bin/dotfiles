@@ -70,6 +70,9 @@ cmd_sync() {
   echo "Installing Codex skills..."
   install_codex_skills
   echo
+  echo "Syncing dotfiles agent skills..."
+  sync_dotfiles_agent_skills
+  echo
   echo "Syncing Claude Code skills..."
   sync_claude_skills
 }

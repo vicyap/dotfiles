@@ -1,15 +1,16 @@
 ---
 name: ask-clarifying-questions
-description: Conduct a clarification interview (up to 4 questions per round via the AskUserQuestion tool, multiple rounds as needed) to align with the user before writing any code. Use when the user invokes /ask-clarifying-questions explicitly, or when they ask to build / design / refactor something with a brief vague enough that meaningfully different implementations would all "satisfy" it. The interview output is shared understanding in the current session — no file artifact.
+description: Conduct a clarification interview before writing code, using AskUserQuestion in Claude Code or request_user_input in Codex when available. Use when the user invokes /ask-clarifying-questions, names ask-clarifying-questions, or asks to build / design / refactor something with a brief vague enough that meaningfully different implementations would all "satisfy" it. The interview output is shared understanding in the current session — no file artifact.
 ---
 
 # Ask Clarifying Questions
 
-Drive a structured interview to surface load-bearing assumptions before any code is written. Up to 4 questions per round via the `AskUserQuestion` tool, multiple rounds as needed. The "output" is shared understanding in the current session — no file artifact is produced.
+Drive a structured interview to surface load-bearing assumptions before any code is written. Use the agent's interactive question tool when available. The "output" is shared understanding in the current session — no file artifact is produced.
 
 ## When to Use
 
 - The user invokes `/ask-clarifying-questions` explicitly.
+- The user names `ask-clarifying-questions` in a Codex session.
 - The user asks to build a feature, refactor, or design something and the brief is short or leaves room for meaningfully different implementations.
 - Skip when: the request is mechanical (typo fix, obvious rename, a one-line bug fix the user has already diagnosed). Cheap requests don't earn an interview — clarification has its own cost.
 
@@ -21,9 +22,15 @@ Restate in one sentence what you understand the user wants. This anchors the int
 
 ### 2. Ask up to 4 questions per round, ranked by load-bearing-ness
 
-**Always use the `AskUserQuestion` tool** — the user prefers its clickable interface. Send up to 4 questions in a single call. Pick the 4 questions whose answers would most change the implementation — those whose two plausible answers lead to the most different code. Skip anything you can predict with high confidence.
+Use the interactive question tool for the current agent:
 
-Multiple-choice when there are clear discrete options; for open-ended cases, give a single best-guess option + let the user use "Other" for free text. Fall back to plain prose alongside the `AskUserQuestion` call only when the answer truly cannot be framed as a short choice (e.g., the user needs to paste a code snippet or write a paragraph).
+- **Claude Code:** use `AskUserQuestion`. Send up to 4 questions in a single call.
+- **Codex:** use `request_user_input` when it is available. Send up to 3 questions in a single call, because that is the tool limit.
+- **Fallback:** if the current agent does not expose an interactive question tool, ask the same questions in concise plain prose. Do not claim to have used an unavailable tool.
+
+Pick the questions whose answers would most change the implementation — those whose two plausible answers lead to the most different code. Skip anything you can predict with high confidence.
+
+Multiple-choice when there are clear discrete options. For Codex `request_user_input`, provide 2-3 mutually exclusive choices and rely on the tool's free-form "Other" option when needed. For open-ended cases, give a single best-guess option plus a reasonable alternative when the tool requires choices. Fall back to plain prose only when the answer truly cannot be framed as a short choice (e.g., the user needs to paste a code snippet or write a paragraph).
 
 ### 3. Predict before you ask
 
@@ -62,8 +69,8 @@ When you stop, summarize in 1–3 sentences what you're now aligned on, includin
 ## Constraints
 
 - **Don't write code or modify project files during the interview.** The interview is read-only and conversational.
-- **Up to 4 questions per round.**
-- **Always use the `AskUserQuestion` tool.** Plain prose only when the answer can't be framed as a short choice.
+- **Use the agent's interactive question tool when available.** Claude Code uses `AskUserQuestion`; Codex uses `request_user_input` when exposed. Plain prose is the fallback only when the tool is unavailable or the answer cannot be framed as a short choice.
+- **Respect tool limits.** Claude Code: up to 4 questions per round. Codex: up to 3 questions per round.
 - **No round cap. Default to another round.** Stop on alignment + diminishing returns, never on count. Asking "a lot" is not a reason to bail.
 - **Hit-rate is a calibration signal, not a stopping gate.** Use it to steer the next round; don't use it as permission to stop.
 - **Escape valve only for genuine user ambiguity** — if the user themselves seems unsure, surface it. Never escape because you're tired of asking.

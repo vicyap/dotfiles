@@ -121,6 +121,13 @@ symlink_package() {
     while IFS= read -r -d '' file; do
         local rel_path="${file#"$pkg_path"/}"
         local target="$HOME/$rel_path"
+
+        # Dotfiles-owned skills are copied into ~/.agents/skills by
+        # sync_dotfiles_agent_skills so Codex sees regular SKILL.md files.
+        if [[ "$pkg_name" == "agents" && "$rel_path" == .agents/skills/* ]]; then
+            continue
+        fi
+
         if [[ -L "$file" ]]; then
             # For symlinks: recreate the same link target at $HOME so relative
             # paths resolve from the runtime location, not the dotfiles repo.
