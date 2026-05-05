@@ -170,7 +170,7 @@ Sourced from `~/.aliases` and `~/.functions` (see `packages/shell/`):
 | `fip <host> <port>...`                  | forward remote port to localhost via `ssh -fN`             |
 | `dip <port>...`                         | disconnect a forwarded port                                |
 | `lip`                                   | list active ssh port forwards                              |
-| `try [name]`                            | cd into `~/Work/tries/YYYY-MM-DD-name` (creates if missing)|
+| `try [name]`                            | cd into `${TMPDIR:-/tmp}/tries/YYYY-MM-DD-name` (creates if missing)|
 | `light` / `dark`                        | switch ghostty/bat/fzf/tmux/claude themes live             |
 
 Don't propose installing tools that already appear above — they're managed via `mise` (`packages/mise/.config/mise/config.toml`), Brewfile, or apt manifest.

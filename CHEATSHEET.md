@@ -92,7 +92,7 @@ From [`packages/shell/.aliases`](./packages/shell/.aliases) and [`packages/shell
 | `fip <host> <port>...`           | forward remote port(s) to localhost via `ssh -fN`            |
 | `dip <port>...`                  | disconnect a forwarded port                                  |
 | `lip`                            | list active ssh port forwards                                |
-| `try [name]`                     | cd into `~/Work/tries/YYYY-MM-DD[-name]` (creates if missing)|
+| `try [name]`                     | cd into `${TMPDIR:-/tmp}/tries/YYYY-MM-DD[-name]` (creates if missing)|
 
 ## Keybindings
 

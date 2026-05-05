@@ -212,9 +212,10 @@ function lip {
 # Scratch directories
 # ---------------------------------------------------------------------------
 
-# try [name] — cd into a date-stamped scratch dir under ~/Work/tries
+# try [name] — cd into a date-stamped scratch dir under ${TMPDIR:-/tmp}/tries
 function try {
-    local base="$HOME/Work/tries"
+    local tmp="${TMPDIR:-/tmp}"
+    local base="${tmp%/}/tries"
     local stamp
     stamp="$(date +%F)"
     local dir
