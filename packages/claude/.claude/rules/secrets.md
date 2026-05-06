@@ -61,9 +61,9 @@ If the repo has no secret scanner, propose adding gitleaks. Free, MIT, runs in m
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.24.2
+    rev: ""
     hooks:
       - id: gitleaks
 ```
 
-Install: `pip install pre-commit && pre-commit install`.
+Install: `pip install pre-commit && pre-commit autoupdate && pre-commit install`. The `autoupdate` step fills `rev` with the latest stable tag.
