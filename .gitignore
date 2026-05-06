@@ -12,6 +12,7 @@
 **/credentials*
 **/*token*
 **/*secret*
+!packages/claude/.claude/rules/secrets.md
 **/.env
 **/.env.*
 
