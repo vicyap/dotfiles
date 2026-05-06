@@ -53,12 +53,13 @@ gcloud-key.json
 .htpasswd
 ```
 
-## Pre-commit hook (gitleaks)
+## Pre-commit hook (gitleaks) — suggest, don't auto-install
 
-If the repo has no secret scanner, propose adding gitleaks. Free, MIT, runs in milliseconds, catches secrets pasted into *tracked* files (`.gitignore` only blocks dedicated credential files).
+If the repo has no secret scanner, *mention* gitleaks as an option. Don't install it unprompted — surface it as a suggestion the user can opt into. Free, MIT, runs in milliseconds, catches secrets pasted into *tracked* files (`.gitignore` only blocks dedicated credential files).
+
+When the user opts in, add to `.pre-commit-config.yaml`:
 
 ```yaml
-# .pre-commit-config.yaml
 repos:
   - repo: https://github.com/gitleaks/gitleaks
     rev: ""
@@ -66,4 +67,4 @@ repos:
       - id: gitleaks
 ```
 
-Install: `pip install pre-commit && pre-commit autoupdate && pre-commit install`. The `autoupdate` step fills `rev` with the latest stable tag.
+Then: `pip install pre-commit && pre-commit autoupdate && pre-commit install`. The `autoupdate` step fills `rev` with the latest stable tag.
