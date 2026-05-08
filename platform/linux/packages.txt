@@ -26,6 +26,7 @@ make
 mosh
 mtr-tiny
 nethogs
+qrencode
 ripgrep
 rsync
 rustc

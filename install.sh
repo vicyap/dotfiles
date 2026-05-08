@@ -504,6 +504,7 @@ main() {
         mise run setup:ssh-opener
         mise run setup:pyright
         mise run setup:typescript-lsp
+        mise run setup:tmux-status
         mise run setup:shfmt
         echo
 
