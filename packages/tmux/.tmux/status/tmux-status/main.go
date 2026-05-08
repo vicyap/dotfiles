@@ -25,7 +25,8 @@ func main() {
 		{3, "DSK", collectDisk},
 		{4, "NET", collectNetwork},
 		{5, "BAT", collectBattery},
-		{6, "", collectClock},
+		{6, "", collectDate},
+		{7, "", collectClock},
 	}
 
 	results := make([]result, len(collectors))
