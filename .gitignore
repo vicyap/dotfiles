@@ -21,6 +21,7 @@
 .local/
 **/rules/local.md
 **/config.local.toml
+**/.vagrant/
 
 # OS junk
 .DS_Store
