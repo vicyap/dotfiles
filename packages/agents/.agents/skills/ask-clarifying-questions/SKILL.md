@@ -1,6 +1,6 @@
 ---
 name: ask-clarifying-questions
-description: Conduct a clarification interview before writing code, using AskUserQuestion in Claude Code or request_user_input in Codex when available. Use when the user invokes /ask-clarifying-questions, names ask-clarifying-questions, or asks to build / design / refactor something with a brief vague enough that meaningfully different implementations would all "satisfy" it. The interview output is shared understanding in the current session — no file artifact.
+description: Conduct a clarification interview before writing code, using AskUserQuestion in Claude Code, request_user_input in Codex when available, or plain prose questions when the interactive tool is unavailable. Use when the user invokes /ask-clarifying-questions, names ask-clarifying-questions, or asks to build / design / refactor something with a brief vague enough that meaningfully different implementations would all "satisfy" it. The interview output is shared understanding in the current session — no file artifact.
 ---
 
 # Ask Clarifying Questions
@@ -26,11 +26,22 @@ Use the interactive question tool for the current agent:
 
 - **Claude Code:** use `AskUserQuestion`. Send up to 4 questions in a single call.
 - **Codex:** use `request_user_input` when it is available. Send up to 3 questions in a single call, because that is the tool limit.
-- **Fallback:** if the current agent does not expose an interactive question tool, ask the same questions in concise plain prose. Do not claim to have used an unavailable tool.
+- **Codex fallback:** if `request_user_input` is unavailable but the user can still reply in chat, ask up to 4 load-bearing questions in concise plain prose. Say the tool is unavailable, then list the questions directly.
+- **Other fallback:** if the current agent does not expose an interactive question tool, ask up to 4 questions in concise plain prose. Do not claim to have used an unavailable tool.
 
 Pick the questions whose answers would most change the implementation — those whose two plausible answers lead to the most different code. Skip anything you can predict with high confidence.
 
-Multiple-choice when there are clear discrete options. For Codex `request_user_input`, provide 2-3 mutually exclusive choices and rely on the tool's free-form "Other" option when needed. For open-ended cases, give a single best-guess option plus a reasonable alternative when the tool requires choices. Fall back to plain prose only when the answer truly cannot be framed as a short choice (e.g., the user needs to paste a code snippet or write a paragraph).
+Multiple-choice when there are clear discrete options. Make questions easy to answer with "yes" / "no" or by choosing labeled options like `(A)`, `(B)`, `(C)`. For Codex `request_user_input`, provide 2-3 mutually exclusive choices and rely on the tool's free-form "Other" option when needed. For plain-prose fallback, include the choices inline and allow a short free-form answer when the listed options miss the user's intent. For open-ended cases, give a single best-guess option plus a reasonable alternative when the tool requires choices. Fall back to pure open-ended prose only when the answer truly cannot be framed as a short choice (e.g., the user needs to paste a code snippet or write a paragraph).
+
+Codex plain-prose fallback format:
+
+```text
+The interactive question tool isn't available in this mode, so here are the load-bearing questions:
+
+1. Should provider-authored patient messages show the sender as (A) Temi Care Team, or (B) the individual provider's First Last name?
+2. Should this change (A) drop users.signature with a DB migration, or (B) only stop using it for now and leave the column?
+3. Should existing message bodies with old auto-signatures be (A) preserved as history, or (B) scrubbed with a data migration for recognizable old sign-offs?
+```
 
 ### 3. Predict before you ask
 
@@ -69,8 +80,8 @@ When you stop, summarize in 1–3 sentences what you're now aligned on, includin
 ## Constraints
 
 - **Don't write code or modify project files during the interview.** The interview is read-only and conversational.
-- **Use the agent's interactive question tool when available.** Claude Code uses `AskUserQuestion`; Codex uses `request_user_input` when exposed. Plain prose is the fallback only when the tool is unavailable or the answer cannot be framed as a short choice.
-- **Respect tool limits.** Claude Code: up to 4 questions per round. Codex: up to 3 questions per round.
+- **Use the agent's interactive question tool when available.** Claude Code uses `AskUserQuestion`; Codex uses `request_user_input` when exposed. Plain prose is the fallback when the tool is unavailable or the answer cannot be framed as a short choice.
+- **Respect tool limits.** Claude Code: up to 4 questions per round. Codex with `request_user_input`: up to 3 questions per round. Codex without `request_user_input`: up to 4 plain-prose questions per round.
 - **No round cap. Default to another round.** Stop on alignment + diminishing returns, never on count. Asking "a lot" is not a reason to bail.
 - **Hit-rate is a calibration signal, not a stopping gate.** Use it to steer the next round; don't use it as permission to stop.
 - **Escape valve only for genuine user ambiguity** — if the user themselves seems unsure, surface it. Never escape because you're tired of asking.
