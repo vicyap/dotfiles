@@ -40,6 +40,16 @@
         ]
       }
     ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "agent-system-info"
+          }
+        ]
+      }
+    ],
     "WorktreeCreate": [
       {
         "hooks": [

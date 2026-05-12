@@ -32,6 +32,16 @@
         ],
         "matcher": "^Bash$"
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "agent-system-info",
+            "type": "command"
+          }
+        ]
+      }
     ]
   }
 }
