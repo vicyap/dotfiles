@@ -106,6 +106,10 @@
   },
   "autoUpdatesChannel": "latest",
   "tui": "default",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
   "skipDangerousModePermissionPrompt": true,
   "preferredNotifChannel": "ghostty",
   "autoCompactEnabled": true,
