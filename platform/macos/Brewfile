@@ -64,6 +64,7 @@ brew "flyctl"
 
 # AI tools
 cask "codex"
+brew "anomalyco/tap/opencode"
 
 # Tools mise can't manage (system / GUI deps)
 brew "mosh"
@@ -82,5 +83,6 @@ brew "zsh"
 brew "zsh-completions"
 
 # Taps
+tap "anomalyco/tap"
 tap "turbot/tap"
 brew "steampipe"

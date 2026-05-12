@@ -81,8 +81,10 @@ alias lzd='lazydocker'
 # Cheatsheet — themed via glow (markdown renderer)
 alias oma='glow ~/.dotfiles/CHEATSHEET.md'
 
-# Claude
+# AI agents
 alias cc='claude'
+alias cx='codex'
+alias oc='opencode'
 function ccc {
   # Bail early if nothing is staged.
   local staged
