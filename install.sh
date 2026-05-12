@@ -262,6 +262,7 @@ prepare_codex_skills_source_link() {
 sync_dotfiles_agent_skills() {
     local source_skills="$DOTFILES_DIR/packages/agents/.agents/skills"
     local agents_skills="$HOME/.agents/skills"
+    local manifest="$HOME/.agents/.dotfiles-skills.txt"
 
     if [[ ! -d "$source_skills" ]]; then
         echo "  Skipped: $source_skills does not exist"
@@ -270,19 +271,55 @@ sync_dotfiles_agent_skills() {
 
     mkdir -p "$agents_skills"
 
+    # Names sync copied here last time. Used to prune skills removed from dotfiles
+    # without touching skills installed by other means (Anthropic packs, npx skills, etc.).
+    local -a previous=()
+    if [[ -f "$manifest" ]]; then
+        while IFS= read -r name; do
+            [[ -n "$name" ]] && previous+=("$name")
+        done <"$manifest"
+    fi
+
+    # Mirror current source.
     local mirrored=0
+    local -a current=()
     local entry name
     for entry in "$source_skills"/*/; do
         [[ -d "$entry" ]] || continue
         name="$(basename "$entry")"
         [[ "$name" == .* ]] && continue
 
-        rm -rf "$agents_skills/$name"
+        rm -rf "${agents_skills:?}/$name"
         cp -R -L -p "$entry" "$agents_skills/$name"
+        current+=("$name")
         mirrored=$((mirrored + 1))
     done
 
-    echo "  Synced $mirrored dotfiles agent skills into $agents_skills"
+    # Remove dirs we copied previously that are no longer in source.
+    local prev keep removed=0
+    for prev in "${previous[@]}"; do
+        keep=false
+        for name in "${current[@]}"; do
+            if [[ "$name" == "$prev" ]]; then
+                keep=true
+                break
+            fi
+        done
+        if ! $keep && [[ -d "$agents_skills/$prev" ]]; then
+            rm -rf "${agents_skills:?}/$prev"
+            removed=$((removed + 1))
+            echo "  - $prev (removed from dotfiles)"
+        fi
+    done
+
+    # Record what we own now so the next sync can detect future removals.
+    if ((${#current[@]} > 0)); then
+        printf '%s\n' "${current[@]}" | sort >"$manifest"
+    else
+        : >"$manifest"
+    fi
+
+    echo "  Synced $mirrored dotfiles agent skills into $agents_skills (pruned $removed stale)"
 }
 
 sync_claude_skills() {
