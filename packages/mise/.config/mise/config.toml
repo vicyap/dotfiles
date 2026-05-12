@@ -36,7 +36,7 @@ just = "latest"
 glow = "latest"
 
 # AI tools
-"aqua:anomalyco/opencode" = "latest"
+opencode = "latest"
 
 [tasks."setup:web"]
 description = "Install web CLI from source (requires Go)"
