@@ -1,0 +1,20 @@
+[Unit]
+Description=Hermes Vagrant VM
+After=network.target libvirtd.service
+Requires=libvirtd.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=victor
+Group=victor
+Environment=HOME=/home/victor
+WorkingDirectory=/home/victor/.dotfiles/vms/hermes
+ExecStart=/usr/bin/vagrant up hermes
+ExecStop=/usr/bin/vagrant halt hermes
+TimeoutStartSec=300
+TimeoutStopSec=120
+
+[Install]
+WantedBy=multi-user.target

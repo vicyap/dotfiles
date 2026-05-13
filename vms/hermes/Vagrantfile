@@ -1,0 +1,38 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.define "hermes" do |node|
+    node.vm.box = "cloud-image/ubuntu-24.04"
+    node.vm.hostname = "hermes"
+
+    # Keep the host filesystem out of the agent environment. Hermes should run
+    # inside the VM, with its own home directory and workspace.
+    node.vm.synced_folder ".", "/vagrant", disabled: true
+
+    # Stable local SSH target for host-side access:
+    #   ssh -p 2229 -i .vagrant/machines/hermes/libvirt/private_key vagrant@127.0.0.1
+    node.vm.network "forwarded_port",
+      guest: 22,
+      host: 2229,
+      host_ip: "127.0.0.1",
+      id: "hermes-ssh",
+      auto_correct: false
+
+    node.vm.provider "libvirt" do |lv|
+      lv.memory = 16384
+      lv.cpus = 6
+      lv.machine_virtual_size = 100
+      lv.title = "hermes"
+      lv.default_prefix = ""
+    end
+
+    node.vm.provider "virtualbox" do |vb|
+      vb.memory = 16384
+      vb.cpus = 6
+      vb.name = "hermes"
+    end
+
+    node.vm.provision "shell", path: "provision.sh"
+  end
+end
