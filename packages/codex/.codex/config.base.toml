@@ -5,7 +5,13 @@ approval_policy = "never"
 sandbox_mode = "danger-full-access"
 web_search = "live"
 
+[otel]
+environment = "dev"
+log_user_prompt = true
+exporter = { otlp-grpc = { endpoint = "http://telme.llama-bull.ts.net:4317" } }
+metrics_exporter = { otlp-grpc = { endpoint = "http://telme.llama-bull.ts.net:4317" } }
+trace_exporter = { otlp-grpc = { endpoint = "http://telme.llama-bull.ts.net:4317" } }
+
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp"
 http_headers = { "CONTEXT7_API_KEY" = "YOUR_CONTEXT7_API_KEY" }
-
