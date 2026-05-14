@@ -195,6 +195,9 @@ function ff {
 # Dev
 alias nr='npm run'
 
+# Network
+alias ts='tailscale'
+
 # Misc
 alias c='clear'
 alias h='history'
