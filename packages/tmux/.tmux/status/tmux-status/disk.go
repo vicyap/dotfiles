@@ -15,12 +15,12 @@ func collectDisk() string {
 
 	switch {
 	case freeBytes >= 1<<40:
-		return fmt.Sprintf("%.0fTi free", float64(freeBytes)/float64(1<<40))
+		return fmt.Sprintf("%.0fTi", float64(freeBytes)/float64(1<<40))
 	case freeBytes >= 1<<30:
-		return fmt.Sprintf("%.0fGi free", float64(freeBytes)/float64(1<<30))
+		return fmt.Sprintf("%.0fGi", float64(freeBytes)/float64(1<<30))
 	case freeBytes >= 1<<20:
-		return fmt.Sprintf("%.0fMi free", float64(freeBytes)/float64(1<<20))
+		return fmt.Sprintf("%.0fMi", float64(freeBytes)/float64(1<<20))
 	default:
-		return fmt.Sprintf("%.0fKi free", float64(freeBytes)/float64(1<<10))
+		return fmt.Sprintf("%.0fKi", float64(freeBytes)/float64(1<<10))
 	}
 }
