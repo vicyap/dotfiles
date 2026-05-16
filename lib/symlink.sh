@@ -109,6 +109,8 @@ symlink_package() {
     pkg_path="${pkg_path%/}"
     local pkg_name
     pkg_name="$(basename "$pkg_path")"
+    local os_name
+    os_name="$(uname -s)"
 
     if [[ ! -d "$pkg_path" ]]; then
         echo "Package not found: $pkg_path"
@@ -121,6 +123,11 @@ symlink_package() {
     while IFS= read -r -d '' file; do
         local rel_path="${file#"$pkg_path"/}"
         local target="$HOME/$rel_path"
+
+        # Top-level Library paths are macOS home config locations.
+        if [[ "$rel_path" == Library/* && "$os_name" != "Darwin" ]]; then
+            continue
+        fi
 
         # Dotfiles-owned skills are copied into ~/.agents/skills by
         # sync_dotfiles_agent_skills so Codex sees regular SKILL.md files.
