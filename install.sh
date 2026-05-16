@@ -179,7 +179,7 @@ prune_excluded_agent_skills() {
     local name
     for name in "${AGENT_SKILL_EXCLUDES[@]}"; do
         if [[ -e "$agents_skills/$name" ]]; then
-            rm -rf "$agents_skills/$name"
+            rm -rf "${agents_skills:?}/$name"
             echo "  - $name (excluded)"
             pruned=$((pruned + 1))
         fi
@@ -322,6 +322,119 @@ sync_dotfiles_agent_skills() {
     echo "  Synced $mirrored dotfiles agent skills into $agents_skills (pruned $removed stale)"
 }
 
+sync_claude_rules() {
+    local agents_rules="$HOME/.agents/rules"
+    local claude_rules="$HOME/.claude/rules"
+    local manifest="$HOME/.claude/.dotfiles-rules.txt"
+    local old_rules="$DOTFILES_DIR/packages/claude/.claude/rules"
+
+    if [[ ! -d "$agents_rules" ]]; then
+        echo "  Skipped: $agents_rules does not exist"
+        return 0
+    fi
+
+    mkdir -p "$claude_rules"
+
+    local -a previous=()
+    if [[ -f "$manifest" ]]; then
+        local prev_name
+        while IFS= read -r prev_name; do
+            [[ -n "$prev_name" ]] && previous+=("$prev_name")
+        done <"$manifest"
+    fi
+
+    local linked=0
+    local skipped=0
+    local -a current=()
+    local entry name target current_link target_name
+    for entry in "$agents_rules"/*; do
+        [[ -f "$entry" || -L "$entry" ]] || continue
+        name="$(basename "$entry")"
+        [[ "$name" == .* ]] && continue
+
+        target="$claude_rules/$name"
+        current+=("$name")
+
+        if [[ -L "$target" ]]; then
+            current_link="$(readlink "$target")"
+            if [[ "$current_link" == "$agents_rules/$name" ]]; then
+                echo "  ok $name"
+                linked=$((linked + 1))
+                continue
+            fi
+
+            if [[ "$current_link" == "$old_rules/$name" ]]; then
+                rm -f "$target"
+            else
+                echo "  Skipped: $target points to $current_link"
+                skipped=$((skipped + 1))
+                continue
+            fi
+        elif [[ -e "$target" ]]; then
+            echo "  Skipped: $target exists and is not a dotfiles-managed symlink"
+            skipped=$((skipped + 1))
+            continue
+        fi
+
+        ln -s "$agents_rules/$name" "$target"
+        echo "  + $name"
+        linked=$((linked + 1))
+    done
+
+    local prev keep stale_removed=0
+    for prev in "${previous[@]}"; do
+        keep=false
+        for name in "${current[@]}"; do
+            if [[ "$name" == "$prev" ]]; then
+                keep=true
+                break
+            fi
+        done
+
+        target="$claude_rules/$prev"
+        if ! $keep && [[ -L "$target" ]]; then
+            current_link="$(readlink "$target")"
+            if [[ "$current_link" == "$agents_rules/$prev" || "$current_link" == "$old_rules/$prev" ]]; then
+                rm -f "$target"
+                echo "  - $prev (stale)"
+                stale_removed=$((stale_removed + 1))
+            fi
+        fi
+    done
+
+    # First migration run may not have a manifest yet. Clean up old
+    # dotfiles-owned Claude rule links whose source files moved or were folded
+    # into AGENTS.md.
+    for entry in "$claude_rules"/*; do
+        [[ -L "$entry" ]] || continue
+        name="$(basename "$entry")"
+        current_link="$(readlink "$entry")"
+        [[ "$current_link" == "$old_rules/"* ]] || continue
+
+        keep=false
+        for target_name in "${current[@]}"; do
+            if [[ "$name" == "$target_name" ]]; then
+                keep=true
+                break
+            fi
+        done
+
+        if ! $keep; then
+            rm -f "$entry"
+            echo "  - $name (legacy)"
+            stale_removed=$((stale_removed + 1))
+        fi
+    done
+
+    if ((${#current[@]} > 0)); then
+        printf '%s\n' "${current[@]}" | sort >"$manifest"
+    else
+        : >"$manifest"
+    fi
+
+    echo "  Synced $linked Claude Code rule links (skipped $skipped, pruned $stale_removed stale)"
+}
+
 sync_claude_skills() {
     local claude_skills="$HOME/.claude/skills"
     local agents_skills="$HOME/.agents/skills"
@@ -380,6 +493,10 @@ sync_claude_skills() {
         if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$agents_skills/$name" ]]; then
             echo "  ok $name"
         else
+            if [[ -e "$target" && ! -L "$target" ]]; then
+                echo "  Skipped: $target exists and is not a symlink"
+                continue
+            fi
             rm -f "$target"
             ln -s "$agents_skills/$name" "$target"
             echo "  + $name"
@@ -501,6 +618,11 @@ main() {
     # Symlink packages
     echo "=== Symlinking packages ==="
     symlink_all_packages "$DOTFILES_DIR/packages"
+    echo
+
+    # Link shared agent rules into Claude Code's native path-scoped rules dir.
+    echo "=== Syncing Claude Code rules ==="
+    sync_claude_rules
     echo
 
     # Clone zsh trio plugins (fzf-tab, autosuggestions, fast-syntax-highlighting)

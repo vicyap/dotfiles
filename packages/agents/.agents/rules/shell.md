@@ -1,5 +1,14 @@
 ---
 description: Shell script quality checks (bash, sh, zsh scripts)
+paths:
+  - "**/*.sh"
+  - "**/*.bash"
+  - "**/*.zsh"
+  - "**/.bashrc"
+  - "**/.zshrc"
+  - "**/.profile"
+  - "**/.aliases"
+  - "**/.functions"
 ---
 
 # Shell Scripts

@@ -13,10 +13,11 @@ project/
 ├── AGENTS.md                  # Shared instructions (all agents read this)
 ├── CLAUDE.md                  # @AGENTS.md + Claude Code specifics
 ├── .agents/
+│   ├── rules/                 # Shared path/domain-scoped coding rules
 │   └── skills/                # Universal agent skills
 ├── .claude/
 │   ├── skills -> ../.agents/skills  # Symlink to universal skills
-│   └── rules/                 # Claude Code path-scoped rules
+│   └── rules/                 # Per-file symlinks into ../.agents/rules
 └── subdirectory/
     ├── AGENTS.md              # Subdirectory-scoped shared instructions
     └── CLAUDE.md              # @AGENTS.md + Claude Code specifics
@@ -92,6 +93,20 @@ Sources: github.com/obra/dotfiles, github.com/trailofbits/claude-code-config
 * Simplicity over backwards compatibility: use modern language features, remove deprecated code paths.
 * Rule of Three: don't abstract until you have 3 use cases.
 
+## Code Rules
+
+Shared coding rules live in `~/.agents/rules/`. When working in a matching domain,
+read the relevant rule file before implementing changes. Claude Code may auto-load
+these through `~/.claude/rules` symlinks; other agents should open them explicitly.
+
+* Python: `~/.agents/rules/python.md` for `*.py`, `*.pyi`, `pyproject.toml`, and `uv.lock`.
+* Elixir/Phoenix: `~/.agents/rules/elixir.md` for `*.ex` and `*.exs`; add `ecto.md`, `phoenix.md`, `heex.md`, or `liveview.md` when working in schemas, repos, migrations, web modules, HEEx templates, LiveViews, or LiveView tests.
+* Frontend: `~/.agents/rules/frontend.md` for JS, TS, CSS, HTML, Vue, and Svelte; add `react-nextjs.md` for React, Next.js, `app/`, `pages/`, or `next.config.*`.
+* Go: `~/.agents/rules/go.md` for Go files and module files.
+* Shell: `~/.agents/rules/shell.md` for shell scripts and shell config.
+* Terraform: `~/.agents/rules/terraform.md` for Terraform/OpenTofu files.
+* Secrets hygiene: `~/.agents/rules/secrets.md` when editing ignore files.
+
 ## Tools
 
 ### Context7
@@ -154,6 +169,16 @@ These are installed across both lima (macOS) and rhinestone (Linux) via the dotf
 | `fzf`       | Fuzzy finder (Ctrl+R, Ctrl+T, Alt+C, `ff`)   |
 | `gh`        | GitHub CLI (also git credential helper)      |
 
+Tool usage rules:
+
+* Prefer the modern tools above in generated commands and local investigation (`rg`, `fd`, `bat`, `eza`, `dust`, `procs`, `sd`) unless portability requires classic POSIX tools.
+* On Ubuntu apt, `fd` may be installed as `fdfind`; use `fdfind` in non-interactive shells if `fd` is unavailable.
+* When piping `bat`, use `bat -p --color=always` to keep highlighting.
+* `delta` is already wired into `.gitconfig`; don't pipe `git diff` or `git log -p` through `cat` or `less`.
+* Before proposing an install, check `~/.dotfiles/packages/mise/.config/mise/config.toml`, `~/.dotfiles/platform/macos/Brewfile`, and `~/.dotfiles/platform/linux/packages.txt`. If a tool is already managed there, use `dotfiles sync` or `mise install`.
+* If a missing tool is worth adding, prefer adding it through mise first; use Brewfile or apt only when mise cannot manage it.
+* Shell history is managed by atuin. Don't edit `~/.zsh_history` directly to clean history; use `atuin search` and `atuin history`.
+
 ### Custom shell functions
 
 Sourced from `~/.aliases` and `~/.functions` (see `packages/shell/`):
@@ -173,4 +198,5 @@ Sourced from `~/.aliases` and `~/.functions` (see `packages/shell/`):
 | `try [name]`                            | cd into `${TMPDIR:-/tmp}/tries/YYYY-MM-DD-name` (creates if missing)|
 | `light` / `dark`                        | switch ghostty/bat/fzf/tmux/claude themes live             |
 
-Don't propose installing tools that already appear above — they're managed via `mise` (`packages/mise/.config/mise/config.toml`), Brewfile, or apt manifest.
+`ff` is interactive, so don't invoke it from non-interactive tool calls. Use `fd`
+or `fzf` directly when automation needs file discovery.

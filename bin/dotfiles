@@ -13,7 +13,7 @@ Commands:
   sync            Pull latest, re-symlink, and install/update tools
   status          Show git status of dotfiles repo
   edit            Open dotfiles directory in \$EDITOR
-  local           Edit ~/.claude/rules/local.md (machine-specific rules)
+  local           Edit ~/.agents/rules/local.md (machine-specific rules)
   cd              Print dotfiles directory (use: cd \$(dotfiles cd))
   help            Show this help message
 EOF
@@ -35,6 +35,9 @@ cmd_sync() {
   # Source helpers for migrate_skill_configs, generate_codex_config, setup_claude_plugins
   source "$DOTFILES_DIR/lib/platform.sh"
   source "$DOTFILES_DIR/install.sh"
+  echo "Syncing Claude Code rules..."
+  sync_claude_rules
+  echo
   case "$(uname -s)" in
   Darwin)
     if command -v brew &>/dev/null; then
@@ -93,12 +96,18 @@ cmd_cd() {
 }
 
 cmd_local() {
-  local rules_dir="$HOME/.claude/rules"
+  local rules_dir="$HOME/.agents/rules"
+  local claude_rules_dir="$HOME/.claude/rules"
   local local_file="$rules_dir/local.md"
   local example_file="$rules_dir/local.example"
+  local old_local_file="$claude_rules_dir/local.md"
 
   if [[ ! -f "$local_file" ]]; then
-    if [[ -f "$example_file" ]]; then
+    if [[ -f "$old_local_file" && ! -L "$old_local_file" ]]; then
+      mkdir -p "$rules_dir"
+      cp "$old_local_file" "$local_file"
+      echo "Created $local_file from existing Claude local rules"
+    elif [[ -f "$example_file" ]]; then
       cp "$example_file" "$local_file"
       echo "Created $local_file from template"
     else
@@ -106,6 +115,21 @@ cmd_local() {
       echo "# Local Rules" >"$local_file"
       echo "Created $local_file"
     fi
+  fi
+
+  mkdir -p "$claude_rules_dir"
+  if [[ -L "$old_local_file" ]]; then
+    if [[ "$(readlink "$old_local_file")" != "$local_file" ]]; then
+      rm -f "$old_local_file"
+      ln -s "$local_file" "$old_local_file"
+    fi
+  elif [[ ! -e "$old_local_file" ]]; then
+    ln -s "$local_file" "$old_local_file"
+  elif cmp -s "$old_local_file" "$local_file"; then
+    rm -f "$old_local_file"
+    ln -s "$local_file" "$old_local_file"
+  else
+    echo "Skipped Claude local rule link: $old_local_file already exists with different content"
   fi
 
   ${EDITOR:-vim} "$local_file"
