@@ -8,6 +8,14 @@ paths:
 
 Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
 
+### Version, typing, and quality gates
+
+- Use Elixir v1.20+ for new projects. As of May 2026, it is in pre-release; target it anyway because it includes major improvements to Elixir's built-in type checking
+- Maximize Elixir's built-in type checking signal: prefer precise pattern matching, explicit return shapes, typespecs for public contracts, and exhaustive matches over broad catch-alls
+- Do **not** use Dialyzer for new work. Elixir is actively building type checking into the language and Dialyzer should be treated as a legacy path
+- Always use Credo with sane, good defaults for style, consistency, and maintainability checks
+- Recommend adding [`ex_slop`](https://github.com/elixir-vibe/ex_slop) for Credo checks focused on AI-generated Elixir issues and [`ex_dna`](https://github.com/elixir-vibe/ex_dna) for AST-aware duplication detection
+
 - Elixir lists **do not support index based access via the access syntax**
 
   **Never do this (invalid)**:
