@@ -148,6 +148,7 @@ install_agent_skills() {
     # Registries installed in full (no --skill filter → auto-picks up new upstream skills)
     local registries=(
         "resend/resend-skills"
+        "usetemi/skills"
     )
 
     for registry in "${registries[@]}"; do
@@ -189,74 +190,8 @@ prune_excluded_agent_skills() {
 }
 
 install_codex_skills() {
-    prepare_codex_skills_source_link || {
-        echo "  Skipped: Codex skills install needs $HOME/.codex/skills to be managed by dotfiles"
-        return 0
-    }
-
-    if ! has_cmd npx; then
-        echo "  Skipped: npx not installed"
-        return 0
-    fi
-
-    # Install the full usetemi/skills registry (no --skill filter → picks up new skills).
-    npx --yes skills add usetemi/skills \
-        --agent codex \
-        --global \
-        --yes || {
-        echo "  Skipped: Codex skills install failed (GitHub auth may be missing)"
-        return 0
-    }
-}
-
-codex_skills_source_link_target() {
-    local agents_skills="$HOME/.agents/skills"
-
-    # Relative target keeps the link valid across machines with the same HOME layout.
-    if [[ -d "$agents_skills" ]]; then
-        echo "../.agents/skills"
-    else
-        echo "$agents_skills"
-    fi
-}
-
-codex_skills_link_points_to_agents() {
-    local codex_skills="$HOME/.codex/skills"
-    local agents_skills="$HOME/.agents/skills"
-    local link_target
-
-    [[ -L "$codex_skills" ]] || return 1
-    link_target="$(readlink "$codex_skills")"
-    [[ "$link_target" == "../.agents/skills" || "$link_target" == "$agents_skills" ]]
-}
-
-prepare_codex_skills_source_link() {
-    local codex_dir="$HOME/.codex"
-    local codex_skills="$codex_dir/skills"
-    local agents_skills="$HOME/.agents/skills"
-    local marker="$codex_skills/.dotfiles-skill-mirror"
-    local link_target
-
-    mkdir -p "$codex_dir" "$agents_skills"
-
-    if codex_skills_link_points_to_agents; then
-        return 0
-    fi
-
-    if [[ -L "$codex_skills" ]]; then
-        rm -f "$codex_skills"
-    elif [[ -e "$codex_skills" ]]; then
-        if [[ -f "$marker" ]]; then
-            rm -rf "$codex_skills"
-        else
-            echo "  Skipped: $codex_skills exists and is not a dotfiles-generated mirror"
-            return 1
-        fi
-    fi
-
-    link_target="$(codex_skills_source_link_target)"
-    ln -s "$link_target" "$codex_skills"
-    echo "  + $codex_skills → $link_target"
+    echo "  Codex loads shared skills from $HOME/.agents/skills"
+    echo "  Usetemi skills are installed by install_agent_skills"
 }
 
 sync_dotfiles_agent_skills() {
@@ -438,12 +373,6 @@ sync_claude_rules() {
 sync_claude_skills() {
     local claude_skills="$HOME/.claude/skills"
     local agents_skills="$HOME/.agents/skills"
-    local lock_file="$HOME/.agents/.skill-lock.json"
-
-    if ! has_cmd jq; then
-        echo "  Skipped: jq not installed"
-        return 0
-    fi
 
     if [[ ! -d "$agents_skills" ]]; then
         echo "  Skipped: $agents_skills does not exist"
@@ -456,16 +385,10 @@ sync_claude_skills() {
     fi
     mkdir -p "$claude_skills"
 
-    # Build list of plugin-provided skill names to skip
-    local -a skip_skills=()
-    if [[ -f "$lock_file" ]]; then
-        while IFS= read -r name; do
-            skip_skills+=("$name")
-        done < <(jq -r '.skills | to_entries[] | select(.value.pluginName != null) | .key' "$lock_file")
-    fi
-
-    # Create per-skill symlinks, skipping plugin-provided and .system
-    local name skip
+    # Mirror the shared skills root into Claude Code's native skills directory.
+    # skills.sh uses .skill-lock.json pluginName as package metadata (for example
+    # usetemi/skills -> pluginName=usetemi), not as Claude Code plugin ownership.
+    local name
     for entry in "$agents_skills"/*/; do
         [[ -d "$entry" ]] || continue
         name="$(basename "$entry")"
@@ -474,20 +397,6 @@ sync_claude_skills() {
         [[ "$name" == .* ]] && continue
 
         local target="$claude_skills/$name"
-
-        # Check if plugin-provided
-        skip=false
-        for skill in "${skip_skills[@]}"; do
-            if [[ "$skill" == "$name" ]]; then
-                skip=true
-                break
-            fi
-        done
-
-        if $skip; then
-            [[ -L "$target" ]] && rm -f "$target"
-            continue
-        fi
 
         # Create or verify symlink
         if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$agents_skills/$name" ]]; then
@@ -677,7 +586,7 @@ main() {
     install_agent_skills
     echo
 
-    # Install Codex skills after mise tools so Node/npx is available on fresh machines.
+    # Codex loads the shared skills installed above from ~/.agents/skills.
     echo "=== Installing Codex skills ==="
     install_codex_skills
     echo
@@ -693,7 +602,7 @@ main() {
     prune_excluded_agent_skills
     echo
 
-    # Sync skills to Claude Code, skipping plugin-provided duplicates
+    # Sync shared skills into Claude Code's native skills directory.
     echo "=== Syncing Claude Code skills ==="
     sync_claude_skills
     echo
