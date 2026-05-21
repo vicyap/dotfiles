@@ -139,6 +139,71 @@ setup_claude_plugins() {
     done
 }
 
+setup_codex_plugins() {
+    if ! has_cmd codex; then
+        echo "  Skipped: codex not installed"
+        return 0
+    fi
+
+    local marketplaces=(
+        "https://github.com/PostHog/ai-plugin.git"
+    )
+
+    local marketplace
+    for marketplace in "${marketplaces[@]}"; do
+        codex plugin marketplace add "$marketplace" \
+            || echo "  Skipped: $marketplace marketplace add failed"
+    done
+
+    local curated="$HOME/.codex/.tmp/plugins"
+    local curated_manifest="$curated/.agents/plugins/marketplace.json"
+    local curated_sha="$HOME/.codex/.tmp/plugins.sha"
+    if [[ -f "$curated_manifest" ]]; then
+        echo "  ok openai-curated marketplace"
+    else
+        mkdir -p "$(dirname "$curated")"
+        if [[ -e "$curated" && ! -d "$curated/.git" ]]; then
+            echo "  Skipped: $curated exists and is not a git checkout"
+        elif [[ -d "$curated/.git" ]]; then
+            git -C "$curated" pull --quiet --ff-only \
+                && echo "  ok openai-curated marketplace" \
+                || echo "  Skipped: openai-curated marketplace update failed"
+        else
+            git clone --depth=1 --quiet https://github.com/openai/plugins.git "$curated" \
+                && echo "  + openai-curated marketplace" \
+                || echo "  Skipped: openai-curated marketplace clone failed"
+        fi
+    fi
+    if [[ -f "$curated_manifest" && -d "$curated/.git" ]]; then
+        git -C "$curated" rev-parse HEAD >"$curated_sha" \
+            || echo "  Skipped: openai-curated marketplace sha update failed"
+    fi
+
+    local plugins=(
+        "posthog@posthog"
+        "linear@openai-curated"
+        "google-calendar@openai-curated"
+        "gmail@openai-curated"
+        "slack@openai-curated"
+        "stripe@openai-curated"
+        "vercel@openai-curated"
+        "github@openai-curated"
+        "google-drive@openai-curated"
+        "build-ios-apps@openai-curated"
+        "build-macos-apps@openai-curated"
+        "build-web-apps@openai-curated"
+        "expo@openai-curated"
+        "semrush@openai-curated"
+        "openai-developers@openai-curated"
+    )
+
+    local plugin
+    for plugin in "${plugins[@]}"; do
+        codex plugin add "$plugin" \
+            || echo "  Skipped: $plugin install failed"
+    done
+}
+
 install_agent_skills() {
     if ! has_cmd npx; then
         echo "  Skipped: npx not installed"
@@ -547,6 +612,11 @@ main() {
     # Generate codex config from base + local parts
     echo "=== Generating codex config ==="
     generate_codex_config
+    echo
+
+    # Install Codex plugins after config generation, since config.toml is rewritten above.
+    echo "=== Installing Codex plugins ==="
+    setup_codex_plugins
     echo
 
     # Install Claude Code plugins
