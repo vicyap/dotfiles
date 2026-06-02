@@ -4,6 +4,7 @@ go = "1.26"
 node = "24"
 python = "3.14"
 bun = "latest"
+deno = "latest"
 uv = "latest"
 erlang = "28"
 elixir = "1.19"
@@ -37,6 +38,9 @@ glow = "latest"
 
 # AI tools
 opencode = "latest"
+
+# Secrets / credentials (1Password CLI — `op`; auth via OP_SERVICE_ACCOUNT_TOKEN in ~/.secrets)
+op = "latest"
 
 [tasks."setup:web"]
 description = "Install web CLI from source (requires Go)"
