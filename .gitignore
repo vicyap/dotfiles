@@ -18,6 +18,8 @@
 
 # Local overrides
 *.local
+# ...except the tmux persistence config — versioned + shared across machines
+!packages/tmux/.tmux.conf.local
 .local/
 **/rules/local.md
 **/config.local.toml

@@ -1,0 +1,22 @@
+# OSC 52 clipboard support (for copying to local clipboard over SSH)
+set -g set-clipboard on
+set -g allow-passthrough on
+
+# -- plugins (TPM) -------------------------------------------------------------
+# Session persistence so a server crash/reboot no longer loses everything:
+#   resurrect = manual save (prefix+Ctrl-s) / restore (prefix+Ctrl-r)
+#   continuum = auto-save every 15 min + auto-restore when the server starts
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+
+set -g @resurrect-capture-pane-contents 'on'   # also snapshot scrollback
+# Relaunch these on restore (defaults like vim/nvim still restore too):
+#   ~X     match any pane whose command contains X
+#   ->cmd  relaunch it as a clean `cmd`, not the exact saved invocation
+set -g @resurrect-processes '"~claude->claude" "~npm run dev->npm run dev"'
+set -g @continuum-restore 'on'                  # auto-restore on tmux start
+set -g @continuum-save-interval '15'            # minutes between auto-saves
+
+# Keep this the LAST line in the file — TPM must init after all @plugin lines.
+run '~/.tmux/plugins/tpm/tpm'
