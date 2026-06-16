@@ -98,7 +98,10 @@
     "typescript-lsp@claude-plugins-official": true,
     "usetemi-private@usetemi-private": true,
     "usetemi@usetemi": true,
-    "stripe@claude-plugins-official": true
+    "stripe@claude-plugins-official": true,
+    "vercel@claude-plugins-official": true,
+    "resend@claude-plugins-official": true,
+    "slack@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -120,6 +123,7 @@
       }
     }
   },
+  "effortLevel": "xhigh",
   "autoUpdatesChannel": "latest",
   "tui": "default",
   "voice": {
