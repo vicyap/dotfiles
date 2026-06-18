@@ -112,6 +112,39 @@ install_tmux_plugins() {
     fi
 }
 
+setup_linux_system() {
+    # rhinestone-only memory-pressure hardening (zram + disk swapfile + earlyoom).
+    # Intentionally host-scoped — see platform/linux/setup-system.sh and the
+    # 2026-06-17 postmortem. A no-op on every other machine.
+    [[ "$(uname -s)" == "Linux" ]] || {
+        echo "  Skipped: not Linux"
+        return 0
+    }
+    [[ "$(hostname -s 2>/dev/null || hostname)" == "rhinestone" ]] \
+        || {
+            echo "  Skipped: not rhinestone"
+            return 0
+        }
+    has_cmd apt || {
+        echo "  Skipped: apt not available"
+        return 0
+    }
+
+    local script="$DOTFILES_DIR/platform/linux/setup-system.sh"
+    [[ -f "$script" ]] || {
+        echo "  Skipped: $script not found"
+        return 0
+    }
+
+    # Needs sudo; run automatically only when sudo won't block on a password
+    # prompt (passwordless) or when a human is present to answer it.
+    if sudo -n true 2>/dev/null || [[ -t 0 ]]; then
+        bash "$script" || echo "  Warning: setup-system.sh did not complete"
+    else
+        echo "  Skipped: needs sudo — run manually: bash $script"
+    fi
+}
+
 setup_claude_plugins() {
     if ! has_cmd claude; then
         echo "  Skipped: claude not installed"
@@ -615,6 +648,11 @@ main() {
     # Symlink packages
     echo "=== Symlinking packages ==="
     symlink_all_packages "$DOTFILES_DIR/packages"
+    echo
+
+    # rhinestone-only: graceful memory-pressure handling (zram + swapfile + earlyoom)
+    echo "=== Configuring memory safety (rhinestone) ==="
+    setup_linux_system
     echo
 
     # Link shared agent rules into Claude Code's native path-scoped rules dir.

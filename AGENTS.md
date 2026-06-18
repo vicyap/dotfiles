@@ -57,6 +57,10 @@ Sensitive data lives in `~/.secrets` (never committed). Both `.zshrc` and `.bash
 
 `mise` manages language runtimes (Go, Node, Python, Bun, Erlang, Elixir). Versions are pinned in `packages/mise/.config/mise/config.toml`. The mise config also defines setup tasks (`setup:web`, `setup:ask`, `setup:ssh-opener`) for installing CLI tools. Always prefer mise tasks for installing tools.
 
+### Host-Scoped System Setup (`platform/linux/setup-system.sh`)
+
+System-level changes that are not `$HOME` symlinks and must apply to a single host live in `platform/linux/setup-system.sh`. Currently it is `rhinestone`-only memory-pressure hardening (zram swap + a 64 GiB disk swapfile + `earlyoom`, with `vm.swappiness=0`), added after the 2026-06-17 livelock postmortem. The script is idempotent, refuses to run on any host whose hostname is not `rhinestone`, and deploys root-owned `/etc` files stashed under `platform/linux/etc/`. `install.sh` invokes it from `main()` via `setup_linux_system`, guarded by hostname plus passwordless-sudo/interactive checks, so it is a no-op on macOS and every other machine.
+
 ## Tools
 
 - `mise` manages language runtimes (versions pinned in `packages/mise/.config/mise/config.toml`)

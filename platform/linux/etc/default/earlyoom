@@ -1,0 +1,13 @@
+# earlyoom — kill the largest memory hog early instead of letting a swap-
+# exhausted moment livelock the box. See the 2026-06-17 postmortem. rhinestone-only.
+#
+# systemd splits EARLYOOM_ARGS on whitespace and does NOT honor shell quotes,
+# so the --avoid/--prefer regexes must contain no spaces.
+#
+#   -r 60     log a memory/swap report to the (persistent) journal every 60s
+#   -m 10,5   act at <10% available RAM (SIGTERM), <5% (SIGKILL)
+#   -s 10,5   ...and at <10%/<5% available swap (both conditions must hold)
+#   --avoid   never target the SSH/tmux access path or core daemons, so the
+#             box stays reachable through a kill
+#   --prefer  target the usual runaway dev processes first
+EARLYOOM_ARGS="-r 60 -m 10,5 -s 10,5 --avoid ^(sshd|systemd.*|tmux.*|mosh.*|tailscaled|dockerd|containerd|init|login)$ --prefer ^(ripgrep|rg|node|python[0-9.]*|cc1.*|ld|java|chrome.*|chromium.*|headless_shel.*)$"

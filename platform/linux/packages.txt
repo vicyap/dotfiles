@@ -10,6 +10,7 @@ delta
 direnv
 docker-ce
 duf
+earlyoom
 entr
 eza
 fd-find
@@ -32,6 +33,7 @@ rsync
 rustc
 shellcheck
 strace
+systemd-zram-generator
 tailscale
 tldr
 tmux
