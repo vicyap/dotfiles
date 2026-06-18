@@ -22,10 +22,11 @@ func main() {
 		{0, "CPU", collectCPU},
 		{1, "GPU", collectGPU},
 		{2, "MEM", collectMemory},
-		{3, "DSK", collectDisk},
-		{4, "BAT", collectBattery},
-		{5, "", collectDate},
-		{6, "", collectClock},
+		{3, "SWP", collectSwap},
+		{4, "DSK", collectDisk},
+		{5, "BAT", collectBattery},
+		{6, "", collectDate},
+		{7, "", collectClock},
 	}
 
 	results := make([]result, len(collectors))
