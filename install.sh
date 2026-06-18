@@ -89,6 +89,29 @@ install_zsh_plugins() {
     done
 }
 
+install_tmux_plugins() {
+    local tpm_dir="$HOME/.tmux/plugins/tpm"
+    if [[ -d "$tpm_dir/.git" ]]; then
+        git -C "$tpm_dir" pull --quiet --ff-only && echo "  ok tpm"
+    else
+        git clone --depth=1 --quiet https://github.com/tmux-plugins/tpm "$tpm_dir" \
+            && echo "  + tpm"
+    fi
+
+    # Clone/update the plugins declared in ~/.tmux.conf.local (resurrect,
+    # continuum). install_plugins reads @plugin from a running server, so start
+    # one and source the config into it first (both are no-ops if already up).
+    if has_cmd tmux; then
+        tmux start-server 2>/dev/null
+        tmux source-file "$HOME/.tmux.conf" 2>/dev/null
+        if "$tpm_dir/bin/install_plugins" >/dev/null 2>&1; then
+            echo "  ok tmux plugins"
+        else
+            echo "  ! tmux plugins (open tmux and press prefix+I)"
+        fi
+    fi
+}
+
 setup_claude_plugins() {
     if ! has_cmd claude; then
         echo "  Skipped: claude not installed"
@@ -602,6 +625,11 @@ main() {
     # Clone zsh trio plugins (fzf-tab, autosuggestions, fast-syntax-highlighting)
     echo "=== Installing zsh plugins ==="
     install_zsh_plugins
+    echo
+
+    # Clone TPM + tmux plugins (resurrect, continuum) declared in .tmux.conf.local
+    echo "=== Installing tmux plugins ==="
+    install_tmux_plugins
     echo
 
     # Migrate skill config dirs from old internal paths to current public paths
