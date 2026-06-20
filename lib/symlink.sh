@@ -186,12 +186,36 @@ symlink_package() {
     done < <(find "$pkg_path" \( -type f -o -type l \) -print0)
 }
 
+# Packages whose files are managed by Nix/home-manager instead of symlinks.
+# As home-manager takes ownership of a package, add it here (per-file cutover)
+# so the bash symlinker and home-manager never fight over the same path.
+#
+# `shell` (.aliases/.functions) is intentionally NOT here: home-manager bakes
+# its content into the generated zsh rc, but .bashrc still sources the symlinked
+# files, so the bash symlinker keeps them. There is no `fzf` package dir.
+NIX_OWNED_PACKAGES=(git vim zsh starship atuin bat tmux)
+
 # Symlink all packages in a directory
 # Usage: symlink_all_packages <packages_dir>
 symlink_all_packages() {
     local packages_dir="$1"
 
     for pkg in "$packages_dir"/*/; do
-        [[ -d "$pkg" ]] && symlink_package "$pkg"
+        [[ -d "$pkg" ]] || continue
+
+        local pkg_name owned skip=0
+        pkg_name="$(basename "$pkg")"
+        for owned in "${NIX_OWNED_PACKAGES[@]}"; do
+            if [[ "$pkg_name" == "$owned" ]]; then
+                skip=1
+                break
+            fi
+        done
+        if [[ "$skip" == 1 ]]; then
+            echo "[$pkg_name] managed by home-manager — skipping symlink"
+            continue
+        fi
+
+        symlink_package "$pkg"
     done
 }

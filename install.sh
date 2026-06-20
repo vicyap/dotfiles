@@ -66,50 +66,79 @@ import_atuin_history() {
     fi
 }
 
-install_zsh_plugins() {
-    local plugin_dir="$HOME/.zsh/plugins"
-    mkdir -p "$plugin_dir"
+# Hosts whose user environment is managed by Nix/home-manager. As a host is
+# migrated, add it here; install.sh activates home-manager only on these. zsh
+# plugins (fzf-tab, autosuggestions, syntax-highlighting) and tmux plugins
+# (resurrect, continuum) are now declared in the flake, so the old git-clone
+# installers are gone.
+NIX_MANAGED_HOSTS=(rhinestone)
 
-    local repos=(
-        "Aloxaf/fzf-tab"
-        "zsh-users/zsh-autosuggestions"
-        "zdharma-continuum/fast-syntax-highlighting"
-    )
+install_nix() {
+    if has_cmd nix; then
+        echo "  ok nix already installed"
+        return 0
+    fi
+    echo "  Installing Nix (NixOS installer, flakes enabled)..."
+    curl -sSfL https://artifacts.nixos.org/nix-installer \
+        | sh -s -- install --no-confirm --enable-flakes \
+        || {
+            echo "  Warning: nix install failed"
+            return 0
+        }
+    # Load nix into the current shell so the switch below can run.
+    if [[ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+        # shellcheck disable=SC1091
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+    fi
+}
 
-    local repo name dest
-    for repo in "${repos[@]}"; do
-        name="${repo##*/}"
-        dest="$plugin_dir/$name"
-        if [[ -d "$dest/.git" ]]; then
-            git -C "$dest" pull --quiet --ff-only && echo "  ok $name"
-        else
-            git clone --depth=1 --quiet "https://github.com/$repo" "$dest" \
-                && echo "  + $name"
+cleanup_relocated_nix_symlinks() {
+    # home-manager relocates some configs to XDG paths (git -> ~/.config/git,
+    # tmux -> ~/.config/tmux). Remove the old bash-symlinker links at the legacy
+    # paths so the new home-manager config isn't shadowed or, for tmux, doesn't
+    # re-trigger TPM via ~/.tmux.conf.local. Only ever touch a symlink that
+    # points into the dotfiles repo — never a user's real file.
+    local p tgt
+    for p in "$HOME/.gitconfig" "$HOME/.tmux.conf" "$HOME/.tmux.conf.local"; do
+        [[ -L "$p" ]] || continue
+        tgt="$(readlink "$p")"
+        if [[ "$tgt" == "$DOTFILES_DIR"/* ]]; then
+            rm -f "$p"
+            echo "  - removed legacy symlink $p (relocated by home-manager)"
         fi
     done
 }
 
-install_tmux_plugins() {
-    local tpm_dir="$HOME/.tmux/plugins/tpm"
-    if [[ -d "$tpm_dir/.git" ]]; then
-        git -C "$tpm_dir" pull --quiet --ff-only && echo "  ok tpm"
-    else
-        git clone --depth=1 --quiet https://github.com/tmux-plugins/tpm "$tpm_dir" \
-            && echo "  + tpm"
+setup_home_manager() {
+    local host attr managed=0 h
+    host="$(hostname -s 2>/dev/null || hostname)"
+    for h in "${NIX_MANAGED_HOSTS[@]}"; do
+        [[ "$host" == "$h" ]] && managed=1 && break
+    done
+    if ((managed == 0)); then
+        echo "  Skipped: $host is not a nix-managed host"
+        return 0
     fi
 
-    # Clone/update the plugins declared in ~/.tmux.conf.local (resurrect,
-    # continuum). install_plugins reads @plugin from a running server, so start
-    # one and source the config into it first (both are no-ops if already up).
-    if has_cmd tmux; then
-        tmux start-server 2>/dev/null
-        tmux source-file "$HOME/.tmux.conf" 2>/dev/null
-        if "$tpm_dir/bin/install_plugins" >/dev/null 2>&1; then
-            echo "  ok tmux plugins"
-        else
-            echo "  ! tmux plugins (open tmux and press prefix+I)"
-        fi
-    fi
+    install_nix
+    has_cmd nix || {
+        echo "  Skipped: nix unavailable"
+        return 0
+    }
+
+    cleanup_relocated_nix_symlinks
+
+    attr="victor@${host}"
+    echo "  Activating home-manager for $attr..."
+    # -b backup renames any pre-existing file (e.g. an old symlinked ~/.zshrc)
+    # instead of failing on the first switch.
+    NIX_CONFIG="experimental-features = nix-command flakes" \
+        nix run home-manager/release-26.05 -- \
+        switch -b backup --flake "${DOTFILES_DIR}#${attr}" \
+        || echo "  Warning: home-manager switch failed"
+
+    # Make Nix-provided tools visible to the rest of this run.
+    prepend_path "$HOME/.nix-profile/bin"
 }
 
 setup_linux_system() {
@@ -645,6 +674,12 @@ main() {
     install_mise
     echo
 
+    # Activate home-manager (Nix-managed hosts only). Owns the CLI tool set,
+    # shell, git, tmux, etc. symlink_all_packages below skips NIX_OWNED_PACKAGES.
+    echo "=== Activating home-manager ==="
+    setup_home_manager
+    echo
+
     # Symlink packages
     echo "=== Symlinking packages ==="
     symlink_all_packages "$DOTFILES_DIR/packages"
@@ -658,16 +693,6 @@ main() {
     # Link shared agent rules into Claude Code's native path-scoped rules dir.
     echo "=== Syncing Claude Code rules ==="
     sync_claude_rules
-    echo
-
-    # Clone zsh trio plugins (fzf-tab, autosuggestions, fast-syntax-highlighting)
-    echo "=== Installing zsh plugins ==="
-    install_zsh_plugins
-    echo
-
-    # Clone TPM + tmux plugins (resurrect, continuum) declared in .tmux.conf.local
-    echo "=== Installing tmux plugins ==="
-    install_tmux_plugins
     echo
 
     # Migrate skill config dirs from old internal paths to current public paths

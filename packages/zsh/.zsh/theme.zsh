@@ -1,5 +1,4 @@
-#!/usr/bin/env zsh
-# Theme switching: `light` / `dark`
+# Theme switching: `light` / `dark` (sourced into the zsh rc; no shebang)
 # Switches Ghostty, Claude Code, Tmux, and shell tool themes together.
 
 GHOSTTY_CONFIG="$(readlink -f "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config" 2>/dev/null || echo "${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config")"
