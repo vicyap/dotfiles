@@ -1,0 +1,44 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Throwaway VM for validating the Nix/home-manager migration without touching
+# the live rhinestone home. The repo is rsynced in, upstream Nix is installed,
+# and `home-manager switch` is run by hand against the rhinestone config.
+
+Vagrant.configure("2") do |config|
+  config.vm.define "nixtest" do |node|
+    node.vm.box = "cloud-image/ubuntu-24.04"
+    node.vm.hostname = "nixtest"
+
+    # The default /vagrant mount is unused. Sync the dotfiles repo into the
+    # vagrant user's home (which exists at boot); provision.sh copies it to
+    # /home/victor/.dotfiles so the flake's absolute home paths resolve.
+    node.vm.synced_folder ".", "/vagrant", disabled: true
+    node.vm.synced_folder "../..", "/home/vagrant/dotfiles-src",
+      type: "rsync",
+      rsync__exclude: [".vagrant/"]
+
+    node.vm.network "forwarded_port",
+      guest: 22,
+      host: 2230,
+      host_ip: "127.0.0.1",
+      id: "nixtest-ssh",
+      auto_correct: false
+
+    node.vm.provider "libvirt" do |lv|
+      lv.memory = 4096
+      lv.cpus = 2
+      lv.machine_virtual_size = 40
+      lv.title = "nixtest"
+      lv.default_prefix = ""
+    end
+
+    node.vm.provider "virtualbox" do |vb|
+      vb.memory = 4096
+      vb.cpus = 2
+      vb.name = "nixtest"
+    end
+
+    node.vm.provision "shell", path: "provision.sh"
+  end
+end

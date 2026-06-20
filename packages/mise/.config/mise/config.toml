@@ -9,32 +9,13 @@ uv = "latest"
 erlang = "28"
 elixir = "1.19"
 
-# Shell prompt / history / git pager
-starship = "latest"
-delta = "latest"
-atuin = "latest"
+# CLI tools (starship, delta, atuin, lazygit, lazydocker, fastfetch, dust,
+# procs, sd, gping, yq, jless, just, glow) are now provided by home-manager and
+# removed from here. mise keeps language runtimes plus the few tools without a
+# nixpkgs 26.05 home: `dog` (removed from nixpkgs), opencode, and op.
 
-# TUIs
-lazygit = "latest"
-lazydocker = "latest"
-fastfetch = "latest"
-
-# Modern CLI replacements
-dust = "latest"
-"aqua:dalance/procs" = "latest"
-sd = "latest"
-
-# Network
-gping = "latest"
+# Network — `dog` was dropped from nixpkgs 26.05, so it stays mise-managed.
 "aqua:ogham/dog" = "latest"
-
-# Data inspection
-yq = "latest"
-jless = "latest"
-
-# Build / watch / markdown
-just = "latest"
-glow = "latest"
 
 # AI tools
 opencode = "latest"

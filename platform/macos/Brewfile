@@ -1,31 +1,17 @@
 # Homebrew packages for macOS
 
-# Core tools
+# Core tools. git/vim/zsh/tmux stay brew-managed for bootstrap (needed before
+# Nix/home-manager activates; their binaries aren't Nix-managed yet). The modern
+# CLI replacements (bat, eza, delta, duf, zoxide, direnv, starship, tldr, gh,
+# ripgrep, fd, fzf, jq, tree, htop, btop, mosh, entr, chafa, cloc, git-lfs) are
+# now provided by home-manager and removed from here.
 brew "git"
-brew "git-lfs"
 brew "vim"
 brew "curl"
 brew "wget"
-brew "jq"
-brew "tree"
-brew "ripgrep"
-brew "fd"
-brew "fzf"
-brew "htop"
-brew "btop"
 brew "watch"
 brew "p7zip"
 brew "qrencode"
-
-# Modern CLI replacements
-brew "bat"
-brew "eza"
-brew "delta"
-brew "duf"
-brew "zoxide"
-brew "direnv"
-brew "starship"
-brew "tldr"
 
 # Formatters & linters
 brew "gitleaks"
@@ -38,7 +24,6 @@ brew "clang-format"
 brew "cmake"
 
 # Development
-brew "gh"
 brew "mise"
 brew "tmux"
 brew "imagemagick"
@@ -65,12 +50,6 @@ brew "flyctl"
 # AI tools
 cask "codex"
 brew "anomalyco/tap/opencode"
-
-# Tools mise can't manage (system / GUI deps)
-brew "mosh"
-brew "entr"
-brew "chafa"
-brew "cloc"
 
 # Fonts
 cask "font-jetbrains-mono-nerd-font"
