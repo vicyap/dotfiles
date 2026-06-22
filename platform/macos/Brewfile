@@ -64,6 +64,7 @@ brew "flyctl"
 
 # AI tools
 cask "codex"
+cask "lm-studio"
 brew "anomalyco/tap/opencode"
 
 # Tools mise can't manage (system / GUI deps)
