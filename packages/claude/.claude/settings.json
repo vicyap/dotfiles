@@ -101,7 +101,8 @@
     "stripe@claude-plugins-official": true,
     "vercel@claude-plugins-official": true,
     "resend@claude-plugins-official": true,
-    "slack@claude-plugins-official": true
+    "slack@claude-plugins-official": true,
+    "efecto@efecto": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -120,6 +121,12 @@
       "source": {
         "source": "github",
         "repo": "usetemi/skills-private"
+      }
+    },
+    "efecto": {
+      "source": {
+        "source": "github",
+        "repo": "pablostanley/efecto-plugin"
       }
     }
   },
