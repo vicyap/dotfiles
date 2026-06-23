@@ -27,10 +27,8 @@ Commands:
             generated config, pinned tools. Fast and repeatable. (alias: sync)
   update    pull + refresh upstream: Nix flake inputs, Homebrew/apt packages,
             mise upgrades, Claude/Codex plugins, agent-skill registries.
-  status    Show git status of the dotfiles repo.
   cd        Print the dotfiles directory (the shell wraps this to actually cd).
-  edit      Open the dotfiles directory in \$EDITOR.
-  local     Edit ~/.agents/rules/local.md (machine-specific rules).
+  agents-local  Edit ~/.agents/AGENTS.local.md (machine-specific agent notes).
   help      Show this help message.
 
 Fresh machine: run ./install.sh (or pipe it from curl); see README.
@@ -65,56 +63,20 @@ cmd_update() {
     refresh_upstream
 }
 
-cmd_status() {
-    git -C "$DOTFILES_DIR" status
-}
-
 cmd_cd() {
     echo "$DOTFILES_DIR"
 }
 
-cmd_edit() {
-    ${EDITOR:-vim} "$DOTFILES_DIR"
-}
-
-cmd_local() {
-    local rules_dir="$HOME/.agents/rules"
-    local claude_rules_dir="$HOME/.claude/rules"
-    local local_file="$rules_dir/local.md"
-    local example_file="$rules_dir/local.example"
-    local old_local_file="$claude_rules_dir/local.md"
-
-    if [[ ! -f "$local_file" ]]; then
-        if [[ -f "$old_local_file" && ! -L "$old_local_file" ]]; then
-            mkdir -p "$rules_dir"
-            cp "$old_local_file" "$local_file"
-            echo "Created $local_file from existing Claude local rules"
-        elif [[ -f "$example_file" ]]; then
-            cp "$example_file" "$local_file"
-            echo "Created $local_file from template"
-        else
-            mkdir -p "$rules_dir"
-            echo "# Local Rules" >"$local_file"
-            echo "Created $local_file"
-        fi
+cmd_agents_local() {
+    # Machine-specific agent instructions, @-imported by ~/.agents/AGENTS.md.
+    # Not tracked by git; converge() scaffolds an empty one so the import always
+    # resolves.
+    local f="$HOME/.agents/AGENTS.local.md"
+    if [[ ! -e "$f" ]]; then
+        mkdir -p "$HOME/.agents"
+        : >"$f"
     fi
-
-    mkdir -p "$claude_rules_dir"
-    if [[ -L "$old_local_file" ]]; then
-        if [[ "$(readlink "$old_local_file")" != "$local_file" ]]; then
-            rm -f "$old_local_file"
-            ln -s "$local_file" "$old_local_file"
-        fi
-    elif [[ ! -e "$old_local_file" ]]; then
-        ln -s "$local_file" "$old_local_file"
-    elif cmp -s "$old_local_file" "$local_file"; then
-        rm -f "$old_local_file"
-        ln -s "$local_file" "$old_local_file"
-    else
-        echo "Skipped Claude local rule link: $old_local_file already exists with different content"
-    fi
-
-    ${EDITOR:-vim} "$local_file"
+    ${EDITOR:-vim} "$f"
 }
 
 main() {
@@ -123,10 +85,8 @@ main() {
     case "$cmd" in
         pull | sync) cmd_pull ;;
         update) cmd_update ;;
-        status) cmd_status ;;
         cd) cmd_cd ;;
-        edit) cmd_edit ;;
-        local) cmd_local ;;
+        agents-local) cmd_agents_local ;;
         help | -h | --help) usage ;;
         *)
             echo "Unknown command: $cmd"

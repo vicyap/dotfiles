@@ -22,6 +22,7 @@
 !packages/tmux/.tmux.conf.local
 .local/
 **/rules/local.md
+**/AGENTS.local.md
 **/config.local.toml
 **/.vagrant/
 

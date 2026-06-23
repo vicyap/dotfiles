@@ -200,3 +200,11 @@ Sourced from `~/.aliases` and `~/.functions` (see `packages/shell/`):
 
 `ff` is interactive, so don't invoke it from non-interactive tool calls. Use `fd`
 or `fzf` directly when automation needs file discovery.
+
+## Machine-Specific Notes
+
+Per-machine instructions live in `~/.agents/AGENTS.local.md` — not tracked by git
+(it holds host-specific details), and scaffolded as an empty file if absent so
+this import always resolves.
+
+@~/.agents/AGENTS.local.md

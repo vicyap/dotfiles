@@ -688,6 +688,23 @@ generate_codex_config() {
     echo "  Generated $target"
 }
 
+# Scaffold the machine-local agent notes that ~/.agents/AGENTS.md @-imports.
+# Not tracked by git; migrate an old rules/local.md into it on first run, else
+# create it empty so the import always resolves.
+ensure_agents_local() {
+    local f="$HOME/.agents/AGENTS.local.md"
+    local old="$HOME/.agents/rules/local.md"
+    [[ -e "$f" ]] && return 0
+    mkdir -p "$HOME/.agents"
+    if [[ -f "$old" && ! -L "$old" ]]; then
+        mv "$old" "$f"
+        echo "  + migrated rules/local.md -> AGENTS.local.md"
+    else
+        : >"$f"
+        echo "  + created empty AGENTS.local.md"
+    fi
+}
+
 # --- Convergence: fast, idempotent local steps -----------------------------
 # Shared by a fresh install.sh run and `dotfiles apply`. No expensive upstream
 # refresh here (no brew bundle, mise upgrades, flake updates, or plugin pulls) —
@@ -720,6 +737,10 @@ converge() {
     # rhinestone-only: graceful memory-pressure handling (zram + swapfile + earlyoom)
     echo "=== Configuring memory safety (rhinestone) ==="
     setup_linux_system
+    echo
+
+    echo "=== Ensuring machine-local agent notes ==="
+    ensure_agents_local
     echo
 
     echo "=== Syncing Claude Code rules ==="
