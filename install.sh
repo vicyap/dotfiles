@@ -688,21 +688,50 @@ generate_codex_config() {
     echo "  Generated $target"
 }
 
+# Codex reads ~/.codex/AGENTS.md but does not expand @-imports, and the shared
+# ~/.agents/AGENTS.md is @-import-based. Generate a flat file = shared (minus the
+# @-import line) + machine-local notes, so Codex sees what Claude assembles via
+# @import. Replaces the old broken repo symlink.
+generate_codex_agents() {
+    local shared="$HOME/.agents/AGENTS.md"
+    local local_notes="$HOME/.agents/AGENTS.local.md"
+    local target="$HOME/.codex/AGENTS.md"
+
+    [[ -f "$shared" ]] || {
+        echo "  Skipped: $shared not found"
+        return 0
+    }
+
+    mkdir -p "$HOME/.codex"
+    rm -f "$target"
+    grep -v '^@~/.agents/AGENTS.local.md$' "$shared" >"$target" || true
+    if [[ -s "$local_notes" ]]; then
+        printf '\n' >>"$target"
+        cat "$local_notes" >>"$target"
+    fi
+    echo "  Generated $target"
+}
+
 # Scaffold the machine-local agent notes that ~/.agents/AGENTS.md @-imports.
 # Not tracked by git; migrate an old rules/local.md into it on first run, else
 # create it empty so the import always resolves.
 ensure_agents_local() {
     local f="$HOME/.agents/AGENTS.local.md"
-    local old="$HOME/.agents/rules/local.md"
     [[ -e "$f" ]] && return 0
     mkdir -p "$HOME/.agents"
-    if [[ -f "$old" && ! -L "$old" ]]; then
-        mv "$old" "$f"
-        echo "  + migrated rules/local.md -> AGENTS.local.md"
-    else
-        : >"$f"
-        echo "  + created empty AGENTS.local.md"
-    fi
+    # Migrate notes from either legacy location (the source
+    # ~/.agents/rules/local.md, or the older ~/.claude/rules/local.md regular
+    # file), else start empty.
+    local src
+    for src in "$HOME/.agents/rules/local.md" "$HOME/.claude/rules/local.md"; do
+        if [[ -f "$src" && ! -L "$src" ]]; then
+            mv "$src" "$f"
+            echo "  + migrated $src -> AGENTS.local.md"
+            return 0
+        fi
+    done
+    : >"$f"
+    echo "  + created empty AGENTS.local.md"
 }
 
 # --- Convergence: fast, idempotent local steps -----------------------------
@@ -753,6 +782,10 @@ converge() {
 
     echo "=== Generating codex config ==="
     generate_codex_config
+    echo
+
+    echo "=== Generating codex AGENTS.md (shared + local) ==="
+    generate_codex_agents
     echo
 
     # Ghostty terminfo (needed on remotes without Ghostty installed)
