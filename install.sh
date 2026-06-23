@@ -109,6 +109,32 @@ cleanup_relocated_nix_symlinks() {
     done
 }
 
+# When migrating a machine off the bash symlinker, the per-file symlinks for
+# Nix-owned packages sit at the exact paths home-manager wants and make its
+# switch fail with "would be clobbered". Drop them first — only ever a symlink
+# that points back into this repo, so no real file is ever touched.
+remove_legacy_nix_symlinks() {
+    local owned
+    if [[ -n "${NIX_OWNED_PACKAGES:-}" ]]; then
+        owned=("${NIX_OWNED_PACKAGES[@]}")
+    else
+        owned=(git vim zsh starship atuin bat tmux)
+    fi
+    local pkg base rel target f
+    for pkg in "${owned[@]}"; do
+        base="$DOTFILES_DIR/packages/$pkg"
+        [[ -d "$base" ]] || continue
+        while IFS= read -r -d '' f; do
+            rel="${f#"$base"/}"
+            target="$HOME/$rel"
+            if [[ -L "$target" && "$(readlink "$target")" == "$DOTFILES_DIR"/* ]]; then
+                rm -f "$target"
+                echo "  - removed legacy symlink $target"
+            fi
+        done < <(find "$base" \( -type f -o -type l \) -print0)
+    done
+}
+
 # Activate this host's Nix configuration. The flake is the source of truth:
 #   - a macOS host with a `darwinConfigurations.<host>` entry activates via
 #     nix-darwin (system settings + home-manager together; needs sudo);
@@ -133,6 +159,7 @@ setup_nix() {
             --apply 'builtins.attrNames' 2>/dev/null || true)"
         if [[ "$darwin_configs" == \[* && "$darwin_configs" == *"\"${host}\""* ]]; then
             cleanup_relocated_nix_symlinks
+            remove_legacy_nix_symlinks
             echo "  Activating nix-darwin for ${host} (needs sudo)..."
             if has_cmd darwin-rebuild; then
                 sudo darwin-rebuild switch --flake "${DOTFILES_DIR}#${host}" \
@@ -163,6 +190,7 @@ setup_nix() {
     fi
 
     cleanup_relocated_nix_symlinks
+    remove_legacy_nix_symlinks
 
     echo "  Activating home-manager for ${attr}..."
     # -b backup renames any pre-existing file (e.g. an old symlinked ~/.zshrc)

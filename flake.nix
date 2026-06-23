@@ -61,6 +61,9 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              # Back up (rather than fail on) any non-symlink file in the way on
+              # first activation; setup_nix removes the legacy repo symlinks.
+              home-manager.backupFileExtension = "backup";
               home-manager.users.${username} = import homeModule;
             }
           ];
