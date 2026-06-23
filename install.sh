@@ -859,22 +859,15 @@ main() {
     # (shared with `dotfiles update`).
     refresh_upstream
 
-    # Make the Nix-provided zsh the login shell when it isn't already. This is
-    # what lets fzf-tab's native module load against the matching glibc (a system
-    # zsh loading the Nix module fails and, interactively, hangs on a rebuild
-    # prompt). set_default_shell is idempotent and targets `command -v zsh` (the
-    # Nix zsh once it is first on PATH after activation).
-    local want_zsh
-    want_zsh="$(command -v zsh || true)"
-    if [[ -n "$want_zsh" && "$SHELL" != "$want_zsh" ]]; then
-        if [[ -t 0 ]]; then
-            echo
-            read -p "Set $want_zsh as your login shell? [y/N] " -n 1 -r
-            echo
-            [[ $REPLY =~ ^[Yy]$ ]] && set_default_shell
-        else
-            echo "  Login shell is $SHELL, not $want_zsh."
-            echo "  Run 'chsh -s $want_zsh' (add it to /etc/shells first) to switch."
+    # Set default shell (first run only; prompt only when the login shell is not
+    # already a zsh). fzf-tab works under the system zsh too, so there is no need
+    # to force the Nix zsh.
+    if [[ -t 0 ]] && [[ "$SHELL" != *zsh ]]; then
+        echo
+        read -p "Set zsh as default shell? [y/N] " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            set_default_shell
         fi
     fi
 

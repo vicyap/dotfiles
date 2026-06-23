@@ -50,7 +50,16 @@
     plugins = [
       {
         name = "fzf-tab";
-        src = "${pkgs.zsh-fzf-tab}/share/fzf-tab";
+        # Ship fzf-tab WITHOUT its precompiled native module. The module is built
+        # against the Nix zsh + glibc, so loading it from a system zsh (e.g.
+        # tmux's default shell on Linux) fails and, interactively, hangs on a
+        # "rebuild now?" prompt. With no module present, fzf-tab falls back to its
+        # pure-zsh implementation on every shell, Linux and macOS alike.
+        src = pkgs.runCommand "fzf-tab-no-module" { } ''
+          cp -r ${pkgs.zsh-fzf-tab}/share/fzf-tab $out
+          chmod -R u+w $out
+          rm -rf $out/modules
+        '';
         file = "fzf-tab.plugin.zsh";
       }
     ];
