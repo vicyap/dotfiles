@@ -19,10 +19,17 @@ When proposing changes, prefer cohesion with the existing curation over adding n
 ## Key Commands
 
 ```bash
-./install.sh              # Full bootstrap: install zsh, mise, symlink everything, install tools
-dotfiles sync             # Pull latest + re-run install.sh
+./install.sh              # Fresh machine: converge + upstream refresh (zsh, mise, symlinks, home-manager, tools)
+dotfiles pull             # Pull latest + converge (fast, repeatable; alias: sync)
+dotfiles update           # pull + expensive upstream refresh (flake inputs, Homebrew, mise upgrades, plugins)
 dotfiles status           # Git status of this repo
 ```
+
+`install.sh` and `dotfiles apply`/`update` share the same `converge`/`refresh_upstream`
+functions in `install.sh`: `converge` does fast local steps (symlinks, home-manager
+`switch` against the locked flake, generated config, pinned mise runtimes);
+`refresh_upstream` does the expensive network refresh (flake update, Brewfile/apt,
+mise upgrades, Claude/Codex plugins, skill registries).
 
 Platform packages are installed separately:
 ```bash

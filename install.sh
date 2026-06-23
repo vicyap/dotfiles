@@ -40,11 +40,14 @@ install_bootstrap_packages() {
     esac
 }
 
-# Auto-detect location: use script's directory if running locally, otherwise ~/.dotfiles
-if [[ -n "${BASH_SOURCE[0]}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
-    DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-else
-    DOTFILES_DIR="$HOME/.dotfiles"
+# Auto-detect location: honor an explicit DOTFILES_DIR (for worktree and
+# temp-$HOME testing), else this script's directory, else ~/.dotfiles.
+if [[ -z "${DOTFILES_DIR:-}" ]]; then
+    if [[ -n "${BASH_SOURCE[0]}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
+        DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    else
+        DOTFILES_DIR="$HOME/.dotfiles"
+    fi
 fi
 
 import_atuin_history() {
@@ -66,12 +69,9 @@ import_atuin_history() {
     fi
 }
 
-# Hosts whose user environment is managed by Nix/home-manager. As a host is
-# migrated, add it here; install.sh activates home-manager only on these. zsh
-# plugins (fzf-tab, autosuggestions, syntax-highlighting) and tmux plugins
-# (resurrect, continuum) are now declared in the flake, so the old git-clone
+# zsh plugins (fzf-tab, autosuggestions, syntax-highlighting) and tmux plugins
+# (resurrect, continuum) are declared in the flake, so the old git-clone
 # installers are gone.
-NIX_MANAGED_HOSTS=(rhinestone)
 
 install_nix() {
     if has_cmd nix; then
@@ -109,16 +109,13 @@ cleanup_relocated_nix_symlinks() {
     done
 }
 
+# Activate home-manager for this host. The flake is the source of truth: a host
+# is Nix-managed iff it has a `homeConfigurations."<user>@<host>"` entry, so
+# onboarding a host is just adding it to flake.nix — no allow-list to maintain.
 setup_home_manager() {
-    local host attr managed=0 h
+    local host attr configs
     host="$(hostname -s 2>/dev/null || hostname)"
-    for h in "${NIX_MANAGED_HOSTS[@]}"; do
-        [[ "$host" == "$h" ]] && managed=1 && break
-    done
-    if ((managed == 0)); then
-        echo "  Skipped: $host is not a nix-managed host"
-        return 0
-    fi
+    attr="$(whoami)@${host}"
 
     install_nix
     has_cmd nix || {
@@ -126,10 +123,19 @@ setup_home_manager() {
         return 0
     }
 
+    # Skip only when the flake evaluates cleanly and has no entry for this host.
+    # If the eval itself fails, fall through and let the switch surface the error.
+    configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
+        nix eval --json "${DOTFILES_DIR}#homeConfigurations" \
+        --apply 'builtins.attrNames' 2>/dev/null || true)"
+    if [[ "$configs" == \[* && "$configs" != *"\"${attr}\""* ]]; then
+        echo "  Skipped: no home-manager config for ${attr}"
+        return 0
+    fi
+
     cleanup_relocated_nix_symlinks
 
-    attr="victor@${host}"
-    echo "  Activating home-manager for $attr..."
+    echo "  Activating home-manager for ${attr}..."
     # -b backup renames any pre-existing file (e.g. an old symlinked ~/.zshrc)
     # instead of failing on the first switch.
     NIX_CONFIG="experimental-features = nix-command flakes" \
@@ -625,6 +631,140 @@ generate_codex_config() {
     echo "  Generated $target"
 }
 
+# --- Convergence: fast, idempotent local steps -----------------------------
+# Shared by a fresh install.sh run and `dotfiles apply`. No expensive upstream
+# refresh here (no brew bundle, mise upgrades, flake updates, or plugin pulls) —
+# those live in refresh_upstream and run only on a fresh install or
+# `dotfiles update`.
+converge() {
+    install_zsh
+    echo
+    install_vim
+    echo
+
+    echo "=== Configuring default editor ==="
+    set_default_editor
+    echo
+
+    echo "=== Installing mise ==="
+    install_mise
+    echo
+
+    # Activate home-manager first: it owns the CLI tool set, shell, git, tmux,
+    # etc., and symlink_all_packages below skips NIX_OWNED_PACKAGES.
+    echo "=== Activating home-manager ==="
+    setup_home_manager
+    echo
+
+    echo "=== Symlinking packages ==="
+    symlink_all_packages "$DOTFILES_DIR/packages"
+    echo
+
+    # rhinestone-only: graceful memory-pressure handling (zram + swapfile + earlyoom)
+    echo "=== Configuring memory safety (rhinestone) ==="
+    setup_linux_system
+    echo
+
+    echo "=== Syncing Claude Code rules ==="
+    sync_claude_rules
+    echo
+
+    echo "=== Migrating skill config directories ==="
+    migrate_skill_configs
+    echo
+
+    echo "=== Generating codex config ==="
+    generate_codex_config
+    echo
+
+    # Ghostty terminfo (needed on remotes without Ghostty installed)
+    echo "=== Installing terminfo ==="
+    tic -x "$DOTFILES_DIR/lib/xterm-ghostty.terminfo" \
+        || echo "  Warning: terminfo install failed"
+    echo
+
+    # Converge mise-managed runtimes to the pinned versions (no upgrades here).
+    if has_cmd mise; then
+        echo "=== Converging mise runtimes (pinned) ==="
+        mise install --yes || echo "  Warning: mise install failed"
+        echo
+
+        echo "=== Importing atuin history ==="
+        import_atuin_history
+        echo
+    fi
+
+    # Mirror dotfiles-owned skills into the shared and Claude skill trees.
+    echo "=== Installing Codex skills ==="
+    install_codex_skills
+    echo
+    echo "=== Syncing dotfiles agent skills ==="
+    sync_dotfiles_agent_skills
+    echo
+    echo "=== Pruning excluded agent skills ==="
+    prune_excluded_agent_skills
+    echo
+    echo "=== Syncing Claude Code skills ==="
+    sync_claude_skills
+    echo
+}
+
+# --- Extra CLI tools installed via mise tasks ------------------------------
+ensure_extra_tools() {
+    has_cmd mise || {
+        echo "  Skipped: mise not installed"
+        return 0
+    }
+    eval "$(mise activate bash)"
+    mise run setup:web
+    mise run setup:ask
+    mise run setup:ssh-opener
+    mise run setup:pyright
+    mise run setup:typescript-lsp
+    mise run setup:tmux-status
+    mise run setup:shfmt
+}
+
+# --- Upstream refresh: expensive, network-bound ----------------------------
+# Runs only on a fresh install.sh and `dotfiles update`. Pulls newer upstream
+# state: flake inputs, Homebrew/apt packages, mise upgrades, extra CLI tools,
+# and Claude/Codex plugins plus agent-skill registries.
+refresh_upstream() {
+    if has_cmd nix && [[ -f "$DOTFILES_DIR/flake.nix" ]]; then
+        echo "=== Updating Nix flake inputs ==="
+        (cd "$DOTFILES_DIR" \
+            && NIX_CONFIG="experimental-features = nix-command flakes" nix flake update) \
+            || echo "  Warning: nix flake update failed"
+        setup_home_manager
+        echo
+    fi
+
+    echo "=== Installing platform packages (Brewfile / apt) ==="
+    install_platform_packages "$DOTFILES_DIR"
+    echo
+
+    if has_cmd mise; then
+        echo "=== Upgrading mise tools ==="
+        mise upgrade --yes || echo "  Warning: mise upgrade failed"
+        mise run update:tools || echo "  Warning: mise update:tools failed"
+        echo
+    fi
+
+    echo "=== Installing extra CLI tools ==="
+    ensure_extra_tools
+    echo
+
+    echo "=== Installing Codex plugins ==="
+    setup_codex_plugins
+    echo
+    echo "=== Installing Claude Code plugins ==="
+    setup_claude_plugins
+    echo
+    echo "=== Installing agent skills ==="
+    install_agent_skills
+    echo
+}
+
 main() {
     echo "=== Dotfiles Installer ==="
     echo
@@ -656,120 +796,15 @@ main() {
     echo "Detected OS: $os"
     echo
 
-    # Install zsh
-    install_zsh
-    echo
+    # Fast local convergence (shared with `dotfiles apply`).
+    converge
 
-    # Install vim before setting it as the default system editor
-    install_vim
-    echo
+    # Expensive upstream refresh — a fresh machine wants the full tool/plugin set
+    # (shared with `dotfiles update`).
+    refresh_upstream
 
-    # Prefer vim/vi for system editor prompts on Linux
-    echo "=== Configuring default editor ==="
-    set_default_editor
-    echo
-
-    # Install mise and dev tools
-    echo "=== Installing development tools ==="
-    install_mise
-    echo
-
-    # Activate home-manager (Nix-managed hosts only). Owns the CLI tool set,
-    # shell, git, tmux, etc. symlink_all_packages below skips NIX_OWNED_PACKAGES.
-    echo "=== Activating home-manager ==="
-    setup_home_manager
-    echo
-
-    # Symlink packages
-    echo "=== Symlinking packages ==="
-    symlink_all_packages "$DOTFILES_DIR/packages"
-    echo
-
-    # rhinestone-only: graceful memory-pressure handling (zram + swapfile + earlyoom)
-    echo "=== Configuring memory safety (rhinestone) ==="
-    setup_linux_system
-    echo
-
-    # Link shared agent rules into Claude Code's native path-scoped rules dir.
-    echo "=== Syncing Claude Code rules ==="
-    sync_claude_rules
-    echo
-
-    # Migrate skill config dirs from old internal paths to current public paths
-    echo "=== Migrating skill config directories ==="
-    migrate_skill_configs
-    echo
-
-    # Generate codex config from base + local parts
-    echo "=== Generating codex config ==="
-    generate_codex_config
-    echo
-
-    # Install Codex plugins after config generation, since config.toml is rewritten above.
-    echo "=== Installing Codex plugins ==="
-    setup_codex_plugins
-    echo
-
-    # Install Claude Code plugins
-    echo "=== Installing Claude Code plugins ==="
-    setup_claude_plugins
-    echo
-
-    # Install Ghostty terminfo (needed on remotes without Ghostty installed)
-    echo "=== Installing terminfo ==="
-    tic -x "$DOTFILES_DIR/lib/xterm-ghostty.terminfo"
-    echo
-
-    # Install tools via mise (after symlinks so config.toml is in place)
-    if has_cmd mise; then
-        echo "=== Installing mise tools (Go, Node, Python) ==="
-        mise install --yes
-        echo
-
-        echo "=== Installing CLI tools ==="
-        eval "$(mise activate bash)"
-        mise run setup:web
-        mise run setup:ask
-        mise run setup:ssh-opener
-        mise run setup:pyright
-        mise run setup:typescript-lsp
-        mise run setup:tmux-status
-        mise run setup:shfmt
-        echo
-
-        echo "=== Importing atuin history ==="
-        import_atuin_history
-        echo
-    fi
-
-    # Install agent skills (shared across Claude and Codex via ~/.agents/skills).
-    echo "=== Installing agent skills ==="
-    install_agent_skills
-    echo
-
-    # Codex loads the shared skills installed above from ~/.agents/skills.
-    echo "=== Installing Codex skills ==="
-    install_codex_skills
-    echo
-
-    # Keep dotfiles-owned skills as real files in ~/.agents/skills so Codex
-    # and Claude both load from the same runtime tree.
-    echo "=== Syncing dotfiles agent skills ==="
-    sync_dotfiles_agent_skills
-    echo
-
-    # Remove skills opted out via AGENT_SKILL_EXCLUDES, after registry installs.
-    echo "=== Pruning excluded agent skills ==="
-    prune_excluded_agent_skills
-    echo
-
-    # Sync shared skills into Claude Code's native skills directory.
-    echo "=== Syncing Claude Code skills ==="
-    sync_claude_skills
-    echo
-
-    # Set default shell (only prompt if running interactively)
-    if [[ -t 0 ]]; then
+    # Set default shell (first run only; prompt only when not already zsh).
+    if [[ -t 0 ]] && [[ "$SHELL" != *zsh ]]; then
         echo
         read -p "Set zsh as default shell? [y/N] " -n 1 -r
         echo

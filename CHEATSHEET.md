@@ -144,7 +144,7 @@ After the first `~/.dotfiles/install.sh`:
 
 1. **GitHub CLI** — `gh auth login`. Wires up `git` credentials too.
 2. **atuin** — already imports `~/.zsh_history` once. To opt into cloud sync: `atuin register -u <username> -e <email>` then `atuin sync`.
-3. **mise tools** — `mise install` if any tool didn't install on first run (rare). Re-run `dotfiles sync` to retry the manifest.
+3. **mise tools** — `mise install` if any tool didn't install on first run (rare). Re-run `dotfiles pull` to retry the manifest.
 4. **Secrets** — write API keys to `~/.secrets`; sourced by both shells.
 5. **Set zsh as default shell** — install.sh prompts; otherwise `chsh -s "$(command -v zsh)"`.
 6. **lima only** — verify ghostty picked up "JetBrainsMono Nerd Font Mono" (Settings → Font, or check `font-family` in `~/.config/ghostty/config`).

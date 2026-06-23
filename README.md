@@ -63,11 +63,14 @@ installer:
 After installation, use the `dotfiles` CLI:
 
 ```bash
-dotfiles sync     # Pull latest changes and re-symlink
-dotfiles bootstrap # Install bootstrap packages, then run install.sh
-dotfiles status   # Show git status of dotfiles repo
+dotfiles pull     # Pull latest, then converge this machine (fast, repeatable)
+dotfiles update   # pull + refresh upstream (flake inputs, Homebrew, mise, plugins)
+dotfiles status   # Show git status of the dotfiles repo
+dotfiles cd       # cd into the dotfiles repo
 dotfiles edit     # Open dotfiles in $EDITOR
 ```
+
+For a fresh machine, run `./install.sh` (or pipe it from curl).
 
 ## Secrets
 
@@ -86,7 +89,7 @@ This file is sourced by `.zshrc` and `.bashrc` if it exists.
 2. Add your config file with the same path it would have in `$HOME`:
    - `packages/myapp/.myapprc` will be symlinked to `~/.myapprc`
    - `packages/myapp/.config/myapp/config` will be symlinked to `~/.config/myapp/config`
-3. Run `dotfiles sync` or `./install.sh` to apply
+3. Run `dotfiles pull` or `./install.sh` to apply
 
 ## Remote browser / OAuth
 
