@@ -27,6 +27,13 @@
           system = "x86_64-linux";
           module = ./nix/home/hosts/rhinestone.nix;
         };
+
+        # macOS host (Apple Silicon). Apply with:
+        #   home-manager switch --flake .#victoryap@lima
+        "victoryap@lima" = mkHome {
+          system = "aarch64-darwin";
+          module = ./nix/home/hosts/lima.nix;
+        };
       };
     };
 }
