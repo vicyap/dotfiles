@@ -109,13 +109,16 @@ cleanup_relocated_nix_symlinks() {
     done
 }
 
-# Activate home-manager for this host. The flake is the source of truth: a host
-# is Nix-managed iff it has a `homeConfigurations."<user>@<host>"` entry, so
-# onboarding a host is just adding it to flake.nix — no allow-list to maintain.
-setup_home_manager() {
-    local host attr configs
+# Activate this host's Nix configuration. The flake is the source of truth:
+#   - a macOS host with a `darwinConfigurations.<host>` entry activates via
+#     nix-darwin (system settings + home-manager together; needs sudo);
+#   - otherwise a host with `homeConfigurations."<user>@<host>"` activates the
+#     standalone home-manager config.
+# Onboarding a host is just adding it to flake.nix — no allow-list to maintain.
+setup_nix() {
+    local host os attr darwin_configs home_configs
     host="$(hostname -s 2>/dev/null || hostname)"
-    attr="$(whoami)@${host}"
+    os="$(detect_os)"
 
     install_nix
     has_cmd nix || {
@@ -123,13 +126,39 @@ setup_home_manager() {
         return 0
     }
 
-    # Skip only when the flake evaluates cleanly and has no entry for this host.
-    # If the eval itself fails, fall through and let the switch surface the error.
-    configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
+    # macOS: prefer nix-darwin when this host is declared there.
+    if [[ "$os" == "macos" ]]; then
+        darwin_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
+            nix eval --json "${DOTFILES_DIR}#darwinConfigurations" \
+            --apply 'builtins.attrNames' 2>/dev/null || true)"
+        if [[ "$darwin_configs" == \[* && "$darwin_configs" == *"\"${host}\""* ]]; then
+            cleanup_relocated_nix_symlinks
+            echo "  Activating nix-darwin for ${host} (needs sudo)..."
+            if has_cmd darwin-rebuild; then
+                sudo darwin-rebuild switch --flake "${DOTFILES_DIR}#${host}" \
+                    || echo "  Warning: darwin-rebuild switch failed"
+            else
+                # First run: bootstrap darwin-rebuild from the pinned flake input.
+                sudo NIX_CONFIG="experimental-features = nix-command flakes" \
+                    nix run "github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild" -- \
+                    switch --flake "${DOTFILES_DIR}#${host}" \
+                    || echo "  Warning: nix-darwin bootstrap switch failed"
+            fi
+            prepend_path "/run/current-system/sw/bin"
+            prepend_path "$HOME/.nix-profile/bin"
+            return 0
+        fi
+    fi
+
+    # Otherwise: standalone home-manager (Linux, or macOS with no darwin entry).
+    # Skip only when the flake evaluates cleanly and has no entry for this host;
+    # if the eval itself fails, fall through and let the switch surface the error.
+    attr="$(whoami)@${host}"
+    home_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
         nix eval --json "${DOTFILES_DIR}#homeConfigurations" \
         --apply 'builtins.attrNames' 2>/dev/null || true)"
-    if [[ "$configs" == \[* && "$configs" != *"\"${attr}\""* ]]; then
-        echo "  Skipped: no home-manager config for ${attr}"
+    if [[ "$home_configs" == \[* && "$home_configs" != *"\"${attr}\""* ]]; then
+        echo "  Skipped: no nix config for ${attr}"
         return 0
     fi
 
@@ -650,10 +679,10 @@ converge() {
     install_mise
     echo
 
-    # Activate home-manager first: it owns the CLI tool set, shell, git, tmux,
-    # etc., and symlink_all_packages below skips NIX_OWNED_PACKAGES.
-    echo "=== Activating home-manager ==="
-    setup_home_manager
+    # Activate Nix first: it owns the CLI tool set, shell, git, tmux, etc., and
+    # symlink_all_packages below skips NIX_OWNED_PACKAGES.
+    echo "=== Activating Nix ==="
+    setup_nix
     echo
 
     echo "=== Symlinking packages ==="
@@ -716,13 +745,12 @@ ensure_extra_tools() {
         return 0
     }
     eval "$(mise activate bash)"
-    mise run setup:web
-    mise run setup:ask
-    mise run setup:ssh-opener
-    mise run setup:pyright
-    mise run setup:typescript-lsp
-    mise run setup:tmux-status
-    mise run setup:shfmt
+    local task
+    for task in \
+        setup:web setup:ask setup:ssh-opener setup:pyright \
+        setup:typescript-lsp setup:tmux-status setup:shfmt; do
+        mise run "$task" || echo "  Warning: mise run $task failed"
+    done
 }
 
 # --- Upstream refresh: expensive, network-bound ----------------------------
@@ -735,7 +763,7 @@ refresh_upstream() {
         (cd "$DOTFILES_DIR" \
             && NIX_CONFIG="experimental-features = nix-command flakes" nix flake update) \
             || echo "  Warning: nix flake update failed"
-        setup_home_manager
+        setup_nix
         echo
     fi
 
