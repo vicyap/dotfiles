@@ -12,13 +12,10 @@ cat << EOF
 
   ${bold}omakase${reset}  ${dim}— type${reset} ${bold}oma${reset} ${dim}for the full cheatsheet${reset}
 
-  ${bold}TUIs      ${reset}  lg=lazygit   lzd=lazydocker   atuin ${dim}(Ctrl+R)${reset}   btop   fastfetch
-  ${bold}Search    ${reset}  rg ${dim}(grep)${reset}    fd ${dim}(find)${reset}        ff ${dim}(fzf → vim)${reset}
-  ${bold}View      ${reset}  bat ${dim}(cat)${reset}    eza ${dim}(ls)${reset}         glow ${dim}(md)${reset}    chafa ${dim}(img)${reset}
-  ${bold}Disk/Proc ${reset}  dust ${dim}(du)${reset}    duf ${dim}(df)${reset}         procs ${dim}(ps)${reset}
-  ${bold}Net       ${reset}  gping ${dim}(ping)${reset} dog ${dim}(dig)${reset}        mosh ${dim}(ssh)${reset}
-  ${bold}Data      ${reset}  jq           yq ${dim}(yaml)${reset}      jless ${dim}(json TUI)${reset}
-  ${bold}Build     ${reset}  just ${dim}(make)${reset}  entr ${dim}(watch)${reset}     hyperfine    cloc
-  ${bold}Funcs     ${reset}  try  compress  decompress  img2{jpg,png}  transcode-video-*  fip dip lip
+  ${bold}Search    ${reset}  rg ${dim}(grep)${reset}    fd ${dim}(find)${reset}
+  ${bold}View      ${reset}  bat ${dim}(cat)${reset}    eza ${dim}(ls)${reset}     chafa ${dim}(img)${reset}
+  ${bold}Inspect   ${reset}  dust ${dim}(du)${reset}    dog ${dim}(dig)${reset}    btop   fastfetch
+  ${bold}Data      ${reset}  jq           yq ${dim}(yaml)${reset}
+  ${bold}Funcs     ${reset}  try  compress  decompress  img2{jpg,png}  transcode-video-*
 
 EOF
