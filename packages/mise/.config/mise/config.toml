@@ -12,13 +12,10 @@ elixir = "1.19"
 # CLI tools (starship, delta, atuin, lazygit, lazydocker, fastfetch, dust,
 # procs, sd, gping, yq, jless, just, glow) are now provided by home-manager and
 # removed from here. mise keeps language runtimes plus the few tools without a
-# nixpkgs 26.05 home: `dog` (removed from nixpkgs), opencode, and op.
+# nixpkgs 26.05 home: `dog` (removed from nixpkgs) and op.
 
 # Network — `dog` was dropped from nixpkgs 26.05, so it stays mise-managed.
 "aqua:ogham/dog" = "latest"
-
-# AI tools
-opencode = "latest"
 
 # Secrets / credentials (1Password CLI — `op`; auth via OP_SERVICE_ACCOUNT_TOKEN in ~/.secrets)
 op = "latest"

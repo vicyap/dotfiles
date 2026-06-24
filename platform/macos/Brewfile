@@ -50,7 +50,6 @@ brew "flyctl"
 # AI tools
 cask "codex"
 cask "lm-studio"
-brew "anomalyco/tap/opencode"
 
 # Fonts
 cask "font-jetbrains-mono-nerd-font"

@@ -68,7 +68,6 @@ From [`packages/shell/.aliases`](./packages/shell/.aliases). All work in zsh and
 | `oma`          | `glow ~/.dotfiles/CHEATSHEET.md` (this page, themed)    |
 | `cc`           | `claude` (Claude Code CLI)                              |
 | `cx`           | `codex`                                                 |
-| `oc`           | `opencode`                                              |
 | `nr`           | `npm run`                                               |
 | `c`            | `clear`                                                 |
 | `h`            | `history`                                               |

@@ -115,7 +115,6 @@
       # AI agents
       cc = "claude";
       cx = "codex";
-      oc = "opencode";
 
       # Dev / network / misc
       nr = "npm run";
