@@ -1,6 +1,6 @@
 # Homebrew packages for macOS
 
-# Core tools. git/vim/zsh/tmux stay brew-managed for bootstrap (needed before
+# Core tools. git/vim/zsh stay brew-managed for bootstrap (needed before
 # Nix/home-manager activates; their binaries aren't Nix-managed yet). The modern
 # CLI replacements (bat, eza, delta, duf, zoxide, direnv, starship, tldr, gh,
 # ripgrep, fd, fzf, jq, tree, htop, btop, mosh, entr, chafa, cloc, git-lfs) are
@@ -25,7 +25,6 @@ brew "cmake"
 
 # Development
 brew "mise"
-brew "tmux"
 brew "imagemagick"
 brew "aria2"
 brew "rclone"

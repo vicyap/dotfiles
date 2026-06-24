@@ -19,7 +19,6 @@ shellcheck
 strace
 systemd-zram-generator
 tailscale
-tmux
 vim
 wget
 xvfb
