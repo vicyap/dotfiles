@@ -263,7 +263,6 @@ setup_claude_plugins() {
 
     # Custom marketplaces (official is built-in)
     local marketplaces=(
-        "openai/codex-plugin-cc"
         "usetemi/skills"
         "usetemi/skills-private"
     )
@@ -274,7 +273,6 @@ setup_claude_plugins() {
 
     # All plugins to install (enable/disable controlled by settings.json)
     local plugins=(
-        "code-simplifier@claude-plugins-official"
         "playwright@claude-plugins-official"
         "typescript-lsp@claude-plugins-official"
         "context7@claude-plugins-official"
@@ -282,11 +280,14 @@ setup_claude_plugins() {
         "pyright-lsp@claude-plugins-official"
         "posthog@claude-plugins-official"
         "linear@claude-plugins-official"
+        "stripe@claude-plugins-official"
+        "vercel@claude-plugins-official"
+        "resend@claude-plugins-official"
+        "slack@claude-plugins-official"
         "claude-md-management@claude-plugins-official"
         "skill-creator@claude-plugins-official"
         "claude-code-setup@claude-plugins-official"
         "explanatory-output-style@claude-plugins-official"
-        "codex@openai-codex"
         "usetemi@usetemi"
         "usetemi-private@usetemi-private"
     )
@@ -355,12 +356,6 @@ setup_codex_plugins() {
         "vercel@openai-curated"
         "github@openai-curated"
         "google-drive@openai-curated"
-        "build-ios-apps@openai-curated"
-        "build-macos-apps@openai-curated"
-        "build-web-apps@openai-curated"
-        "expo@openai-curated"
-        "semrush@openai-curated"
-        "openai-developers@openai-curated"
     )
 
     local plugin
@@ -393,11 +388,28 @@ install_agent_skills() {
 # Registries are installed in full to auto-pick up new upstream skills, so
 # opt-outs are listed here and pruned after install.
 AGENT_SKILL_EXCLUDES=(
+    # resend registry opt-outs
     agent-email-inbox
     email-best-practices
     resend-cli
     template-skill
     vercel-react-native-skills
+    # off-stack / one-off PostHog workflow skills (pruned 2026-06)
+    signals-scout-csp-violations
+    signals-scout-inbox-validation
+    signals-scout-surveys
+    signals-scout-session-replay
+    copying-flags-across-projects
+    finding-deleted-feature-flags
+    formatting-insight-axes
+    managing-path-cleaning-rules
+    downloading-batch-export-files
+    suggesting-data-imports
+    tuning-incremental-sync-config
+    # stale / malformed skill directories
+    posthog-cli
+    time-machine-prune
+    "ui=componentize"
 )
 
 prune_excluded_agent_skills() {

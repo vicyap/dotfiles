@@ -85,8 +85,6 @@
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true,
-    "codex@openai-codex": true,
     "context7@claude-plugins-official": true,
     "explanatory-output-style@claude-plugins-official": false,
     "linear@claude-plugins-official": true,
@@ -101,16 +99,9 @@
     "stripe@claude-plugins-official": true,
     "vercel@claude-plugins-official": true,
     "resend@claude-plugins-official": true,
-    "slack@claude-plugins-official": true,
-    "efecto@efecto": true
+    "slack@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
-    },
     "usetemi": {
       "source": {
         "source": "github",
@@ -121,12 +112,6 @@
       "source": {
         "source": "github",
         "repo": "usetemi/skills-private"
-      }
-    },
-    "efecto": {
-      "source": {
-        "source": "github",
-        "repo": "pablostanley/efecto-plugin"
       }
     }
   },
