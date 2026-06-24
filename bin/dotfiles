@@ -23,15 +23,16 @@ usage() {
 Usage: dotfiles <command>
 
 Commands:
-  pull      Pull latest, then converge this machine: symlinks, home-manager,
-            generated config, pinned tools. Fast and repeatable. (alias: sync)
-  update    pull + refresh upstream: Nix flake inputs, Homebrew/apt packages,
-            mise upgrades, Claude/Codex plugins, agent-skill registries.
-  cd        Print the dotfiles directory (the shell wraps this to actually cd).
+  pull          Pull latest, then converge this machine: symlinks, home-manager,
+                generated config, pinned tools. Fast and repeatable. Alias: sync.
+  update        Pull + refresh upstream: Nix flake inputs, Homebrew/apt packages,
+                mise upgrades, Claude/Codex plugins, agent-skill registries.
+  cd            Print the dotfiles directory (the shell wraps this to actually cd).
   agents-local  Edit ~/.agents/AGENTS.local.md (machine-specific agent notes).
-  help      Show this help message.
+  help          Show this help message.
 
-Fresh machine: run ./install.sh (or pipe it from curl); see README.
+Fresh machine:
+  Run ./install.sh (or pipe it from curl); see README.
 EOF
 }
 
