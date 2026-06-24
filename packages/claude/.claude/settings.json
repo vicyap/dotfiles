@@ -84,13 +84,11 @@
   },
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "explanatory-output-style@claude-plugins-official": false,
     "linear@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
     "posthog@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
