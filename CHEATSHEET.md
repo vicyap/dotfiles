@@ -4,7 +4,7 @@ Quick reference for the curated tools, aliases, functions, and keybindings in th
 
 ## Modern CLI tools
 
-Installed via `mise` (primary), Brewfile (macOS-only / system deps), or apt (Linux system deps).
+Installed via `mise` (primary), Brewfile (macOS-only / system deps), or apt (Ubuntu system deps).
 
 | Tool         | Replaces / does                                                  |
 |--------------|------------------------------------------------------------------|

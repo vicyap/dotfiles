@@ -42,6 +42,34 @@
           ];
         };
 
+      envUsername =
+        fallback:
+        let
+          user = builtins.getEnv "USER";
+          logname = builtins.getEnv "LOGNAME";
+        in
+        if user != "" then user else if logname != "" then logname else fallback;
+
+      envHome =
+        fallback:
+        let
+          home = builtins.getEnv "HOME";
+        in
+        if home != "" then home else fallback;
+
+      mkGenericHome =
+        {
+          system,
+          defaultUsername,
+          defaultHomeDirectory,
+        }:
+        mkHome {
+          inherit system;
+          module = ./nix/home/common.nix;
+          username = envUsername defaultUsername;
+          homeDirectory = envHome defaultHomeDirectory;
+        };
+
       # macOS system via nix-darwin, with home-manager wired in as a module so a
       # single `darwin-rebuild switch` activates both the system layer and the
       # user's home config — reusing the same host module as the standalone
@@ -71,8 +99,32 @@
     in
     {
       homeConfigurations = {
-        # Headless Ubuntu host. Apply with:
-        #   home-manager switch --flake .#victor@rhinestone
+        # Generic standalone Home Manager configs selected by install.sh from
+        # the detected OS and architecture. They are activated with --impure so
+        # USER/LOGNAME and HOME come from the current shell; defaults keep pure
+        # evaluation usable.
+        "ubuntu-x86_64-linux" = mkGenericHome {
+          system = "x86_64-linux";
+          defaultUsername = "victor";
+          defaultHomeDirectory = "/home/victor";
+        };
+        "ubuntu-aarch64-linux" = mkGenericHome {
+          system = "aarch64-linux";
+          defaultUsername = "victor";
+          defaultHomeDirectory = "/home/victor";
+        };
+        "macos-aarch64-darwin" = mkGenericHome {
+          system = "aarch64-darwin";
+          defaultUsername = "victoryap";
+          defaultHomeDirectory = "/Users/victoryap";
+        };
+        "macos-x86_64-darwin" = mkGenericHome {
+          system = "x86_64-darwin";
+          defaultUsername = "victoryap";
+          defaultHomeDirectory = "/Users/victoryap";
+        };
+
+        # Host-specific compatibility targets.
         "victor@rhinestone" = mkHome {
           system = "x86_64-linux";
           module = ./nix/home/hosts/rhinestone.nix;

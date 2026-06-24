@@ -44,16 +44,18 @@ app-mutated state has no Nix owner at all.
   Erlang, Elixir), global pins plus per-project `.mise.toml`. Nix owns the mise
   binary; mise owns versions. This split exists because per-directory runtime
   switching has no home-manager equivalent.
-- **apt (rhinestone only)** — system packages and services that need OS
+- **apt (Ubuntu only)** — system packages and services that need OS
   integration (docker, tailscale, compilers, build deps), and the root-owned
-  `/etc` memory hardening. This stays outside Nix because there is no Nix system
-  layer on a non-NixOS Linux host without converting the whole OS.
+  `/etc` memory hardening where host-scoped. This stays outside Nix because
+  there is no Nix system layer on a non-NixOS Linux host without converting the
+  whole OS.
 
 ## Repository shape — what, not how
 
-A single flake exposes two user configurations, `victor@rhinestone`
-(x86_64-linux) and `victor@lima` (aarch64-darwin), plus a darwin configuration
-for lima that embeds home-manager.
+The flake exposes generic Home Manager configurations by OS and architecture
+(`ubuntu-<nix-system>` and `macos-<nix-system>`), plus compatibility targets for
+older host-specific activations. The lima darwin configuration embeds
+home-manager for the macOS system layer.
 
 Configuration is organized as feature-scoped modules (shell, git, tmux, agents,
 packages, etc.). Each module holds shared options plus platform branches, so a

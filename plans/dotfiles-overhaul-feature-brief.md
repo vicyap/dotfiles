@@ -22,7 +22,7 @@ The current implementation has several failure modes:
   can run expensive refresh work.
 - `install.sh` and `bin/dotfiles` duplicate responsibilities instead of sharing a
   small set of composable operations.
-- The public `bootstrap` command is redundant after the repo exists because
+- The old separate first-run entrypoint is redundant after the repo exists because
   `install.sh` already handles first-run bootstrap work.
 - Some commands assume the repo lives at `~/.dotfiles`, which makes worktree
   testing and alternate checkout paths awkward.
@@ -37,8 +37,7 @@ The current implementation has several failure modes:
 - Make `dotfiles sync` the fast, safe, repeatable convergence command after the
   repo exists.
 - Add `dotfiles update` as the explicit expensive refresh command.
-- Remove `dotfiles bootstrap` from the documented command surface, or keep it as
-  a deprecated alias to `sync` for compatibility.
+- Remove the separate first-run entrypoint from the documented command surface.
 - Centralize install/sync/update behavior into reusable shell functions.
 - Support partial bootstrap from a cloned repo, including missing `zsh`, `vim`,
   and `mise`.
@@ -191,7 +190,7 @@ dependencies.
    systems.
 4. Change `dotfiles sync` to call local convergence only.
 5. Add `dotfiles update` for expensive refreshes.
-6. Deprecate or remove public `dotfiles bootstrap` docs.
+6. Deprecate or remove the old bootstrap docs.
 7. Update `README.md`, `CHEATSHEET.md`, and `AGENTS.md`.
 8. Run temp-home tests plus shell syntax/lint checks.
 9. Manually run a real `dotfiles sync` after review.

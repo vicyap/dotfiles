@@ -14,16 +14,16 @@ cd vms/nixtest
 vagrant up --provider=libvirt
 ```
 
-## Apply the rhinestone home config
+## Apply the generic Ubuntu home config
 
 ```bash
 vagrant ssh nixtest
 sudo -iu victor
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 nix run github:nix-community/home-manager/release-26.05 -- \
-  switch -b backup --flake /home/victor/.dotfiles#victor@rhinestone
+  switch -b backup --impure --flake /home/victor/.dotfiles#ubuntu-x86_64-linux
 # run it again: second run should be a no-op (idempotency check)
-home-manager switch --flake /home/victor/.dotfiles#victor@rhinestone
+home-manager switch --impure --flake /home/victor/.dotfiles#ubuntu-x86_64-linux
 ```
 
 ## Re-test after editing the flake on the host

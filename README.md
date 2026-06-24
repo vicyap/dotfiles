@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal dotfiles managed with a simple shell script. No dependencies required.
+Personal dotfiles managed with a simple shell script. Supports macOS and Ubuntu Linux.
 
 ## Philosophy
 
@@ -13,15 +13,37 @@ Swap any single piece without abandoning the rest — the modular Linux/macOS ec
 
 ## Install
 
+Fresh Ubuntu machine:
+
+```bash
+sudo apt-get update && sudo apt-get install -y ca-certificates curl git zsh && curl -fsSL https://raw.githubusercontent.com/vicyap/dotfiles/main/install.sh | bash
+```
+
+Fresh macOS machine:
+
+```bash
+xcode-select -p >/dev/null 2>&1 || (xcode-select --install; echo "Install Command Line Tools, then rerun this command."; false) && curl -fsSL https://raw.githubusercontent.com/vicyap/dotfiles/main/install.sh | bash
+```
+
+Fresh Linux machine:
+
+Linux support means Ubuntu. On Ubuntu, use the command above. Other Linux
+distributions are intentionally unsupported by the installer.
+
+Already-bootstrapped Ubuntu or macOS machine:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vicyap/dotfiles/main/install.sh | bash
 ```
 
-In non-interactive environments (e.g. piped via curl), existing files are skipped by default. Use `DOTFILES_FORCE=1` to back up and replace all conflicts:
+The installer defaults to non-interactive conflict handling: existing files are
+skipped. Use `DOTFILES_FORCE=1` to back up and replace conflicts:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/vicyap/dotfiles/main/install.sh | DOTFILES_FORCE=1 bash
 ```
+
+To prompt for conflicts instead, run with `DOTFILES_INTERACTIVE=always`.
 
 Or clone and run locally:
 
@@ -30,19 +52,23 @@ git clone https://github.com/vicyap/dotfiles.git ~/.dotfiles
 ~/.dotfiles/install.sh
 ```
 
-On a fresh Linux machine, use the bootstrap command after cloning. It installs
-missing bootstrap packages such as `git`, `curl`, and `zsh`, then runs the
-installer:
+The installer clones to `~/.dotfiles` when run through the curl pipe. It then:
 
-```bash
-~/.dotfiles/bin/dotfiles bootstrap
-```
+- installs bootstrap tools such as `git`, `curl`, `zsh`, `vim`, and `mise`
+- installs Nix and activates Home Manager
+- symlinks package files from `packages/`
+- installs platform packages from Homebrew or configured apt sources
+- installs extra mise-managed tools, agent plugins, and skills
+
+Home Manager activation is generic by OS and architecture. Ubuntu hosts use the
+`ubuntu-<nix-system>` flake output, and macOS hosts use nix-darwin when a
+host-specific Darwin config exists, otherwise `macos-<nix-system>`.
 
 ## Structure
 
 ```
 ~/.dotfiles/
-├── install.sh          # Bootstrap script
+├── install.sh          # Installer script
 ├── bin/dotfiles        # CLI tool
 ├── lib/                # Helper scripts
 ├── packages/           # Cross-platform dotfiles
@@ -70,7 +96,7 @@ dotfiles cd       # cd into the dotfiles repo
 dotfiles edit     # Open dotfiles in $EDITOR
 ```
 
-For a fresh machine, run `./install.sh` (or pipe it from curl).
+For a fresh machine, run `./install.sh` after cloning, or pipe it from curl.
 
 ## Secrets
 

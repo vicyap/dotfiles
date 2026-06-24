@@ -5,12 +5,13 @@ lands on an already-running machine. Validated in `vms/nixtest`.
 
 ## The short version
 
-On a Nix-managed host (currently just `rhinestone`), running `dotfiles sync`
-(i.e. `install.sh`) does the whole cutover:
+On a Nix-managed Ubuntu or macOS host, running `dotfiles sync` does the whole
+cutover:
 
-1. `setup_home_manager` installs Nix if missing, removes the few legacy symlinks
+1. `setup_nix` installs Nix if missing, removes the few legacy symlinks
    home-manager relocates (`cleanup_relocated_nix_symlinks`), then runs
-   `home-manager switch -b backup`.
+   `home-manager switch -b backup --impure` through the generic OS/architecture
+   flake output.
 2. `-b backup` takes over every path home-manager manages: it replaces stale
    symlinks in place and moves any real file/dir that is in the way to
    `<path>.backup` (verified for `~/.zshrc`, `~/.config/*`, the bat themes, the

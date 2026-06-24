@@ -3,7 +3,7 @@
 #
 # Throwaway VM for validating the Nix/home-manager migration without touching
 # the live rhinestone home. The repo is rsynced in, upstream Nix is installed,
-# and `home-manager switch` is run by hand against the rhinestone config.
+# and `home-manager switch` is run by hand against the generic Ubuntu config.
 
 Vagrant.configure("2") do |config|
   config.vm.define "nixtest" do |node|

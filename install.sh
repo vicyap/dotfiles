@@ -33,8 +33,8 @@ install_bootstrap_packages() {
             fi
 
             echo "Installing bootstrap packages..."
-            sudo apt update
-            sudo apt install -y "${packages[@]}"
+            sudo apt-get update
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y "${packages[@]}"
             echo
             ;;
     esac
@@ -138,13 +138,16 @@ remove_legacy_nix_symlinks() {
 # Activate this host's Nix configuration. The flake is the source of truth:
 #   - a macOS host with a `darwinConfigurations.<host>` entry activates via
 #     nix-darwin (system settings + home-manager together; needs sudo);
-#   - otherwise a host with `homeConfigurations."<user>@<host>"` activates the
-#     standalone home-manager config.
-# Onboarding a host is just adding it to flake.nix — no allow-list to maintain.
+#   - otherwise Home Manager activates via a generic OS/architecture attr using
+#     the current user and home directory from the environment.
+# New Ubuntu hosts use the generic Home Manager config automatically. macOS hosts
+# use nix-darwin only when a host-specific system config exists; otherwise they
+# fall back to the generic Home Manager config.
 setup_nix() {
-    local host os attr darwin_configs home_configs
+    local host platform nix_system attr darwin_configs home_configs
     host="$(hostname -s 2>/dev/null || hostname)"
-    os="$(detect_os)"
+    platform="$(detect_supported_platform)"
+    nix_system="$(detect_nix_system)"
 
     install_nix
     has_cmd nix || {
@@ -153,7 +156,7 @@ setup_nix() {
     }
 
     # macOS: prefer nix-darwin when this host is declared there.
-    if [[ "$os" == "macos" ]]; then
+    if [[ "$platform" == "macos" ]]; then
         darwin_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
             nix eval --json "${DOTFILES_DIR}#darwinConfigurations" \
             --apply 'builtins.attrNames' 2>/dev/null || true)"
@@ -177,27 +180,42 @@ setup_nix() {
         fi
     fi
 
-    # Otherwise: standalone home-manager (Linux, or macOS with no darwin entry).
-    # Skip only when the flake evaluates cleanly and has no entry for this host;
-    # if the eval itself fails, fall through and let the switch surface the error.
-    attr="$(whoami)@${host}"
+    case "$platform" in
+        ubuntu)
+            attr="ubuntu-${nix_system}"
+            ;;
+        macos)
+            attr="macos-${nix_system}"
+            ;;
+        *)
+            echo "  Skipped: unsupported platform for home-manager (${platform})"
+            return 0
+            ;;
+    esac
+
+    if [[ "$nix_system" == "unknown" ]]; then
+        echo "  Skipped: unsupported Nix system for $(uname -s)/$(uname -m)"
+        return 0
+    fi
+
+    # Otherwise: standalone home-manager (Ubuntu, or macOS with no darwin entry).
     home_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
         nix eval --json "${DOTFILES_DIR}#homeConfigurations" \
         --apply 'builtins.attrNames' 2>/dev/null || true)"
     if [[ "$home_configs" == \[* && "$home_configs" != *"\"${attr}\""* ]]; then
-        echo "  Skipped: no nix config for ${attr}"
+        echo "  Skipped: no generic home-manager config for ${attr}"
         return 0
     fi
 
     cleanup_relocated_nix_symlinks
     remove_legacy_nix_symlinks
 
-    echo "  Activating home-manager for ${attr}..."
+    echo "  Activating home-manager for $(whoami)@${host} via ${attr}..."
     # -b backup renames any pre-existing file (e.g. an old symlinked ~/.zshrc)
     # instead of failing on the first switch.
     NIX_CONFIG="experimental-features = nix-command flakes" \
         nix run home-manager/release-26.05 -- \
-        switch -b backup --flake "${DOTFILES_DIR}#${attr}" \
+        switch -b backup --impure --flake "${DOTFILES_DIR}#${attr}" \
         || echo "  Warning: home-manager switch failed"
 
     # Make Nix-provided tools visible to the rest of this run.
@@ -230,7 +248,7 @@ setup_linux_system() {
 
     # Needs sudo; run automatically only when sudo won't block on a password
     # prompt (passwordless) or when a human is present to answer it.
-    if sudo -n true 2>/dev/null || [[ -t 0 ]]; then
+    if sudo -n true 2>/dev/null || is_interactive; then
         bash "$script" || echo "  Warning: setup-system.sh did not complete"
     else
         echo "  Skipped: needs sudo — run manually: bash $script"
@@ -735,11 +753,13 @@ ensure_agents_local() {
 }
 
 # --- Convergence: fast, idempotent local steps -----------------------------
-# Shared by a fresh install.sh run and `dotfiles apply`. No expensive upstream
+# Shared by a fresh install.sh run and `dotfiles pull`. No expensive upstream
 # refresh here (no brew bundle, mise upgrades, flake updates, or plugin pulls) —
 # those live in refresh_upstream and run only on a fresh install or
 # `dotfiles update`.
 converge() {
+    require_supported_platform
+
     install_zsh
     echo
     install_vim
@@ -900,13 +920,14 @@ main() {
     source "$DOTFILES_DIR/lib/platform.sh"
     source "$DOTFILES_DIR/lib/symlink.sh"
 
-    # Detect platform
-    local os
-    os="$(detect_os)"
-    echo "Detected OS: $os"
+    # Detect supported platform
+    local platform
+    platform="$(detect_supported_platform)"
+    echo "Detected platform: $platform"
+    require_supported_platform
     echo
 
-    # Fast local convergence (shared with `dotfiles apply`).
+    # Fast local convergence (shared with `dotfiles pull`).
     converge
 
     # Expensive upstream refresh — a fresh machine wants the full tool/plugin set
@@ -916,7 +937,7 @@ main() {
     # Set default shell (first run only; prompt only when the login shell is not
     # already a zsh). fzf-tab works under the system zsh too, so there is no need
     # to force the Nix zsh.
-    if [[ -t 0 ]] && [[ "$SHELL" != *zsh ]]; then
+    if is_interactive && [[ "$SHELL" != *zsh ]]; then
         echo
         read -p "Set zsh as default shell? [y/N] " -n 1 -r
         echo

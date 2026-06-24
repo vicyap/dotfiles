@@ -10,16 +10,20 @@ is_force() {
     [[ "$DOTFILES_FORCE" == "1" ]]
 }
 
-# Detect if running interactively
-# DOTFILES_INTERACTIVE: auto (default), always, never
+# Detect if conflict prompts are enabled.
+# DOTFILES_INTERACTIVE: never (default), always, auto
 is_interactive() {
-    if [[ "$DOTFILES_INTERACTIVE" == "always" ]]; then
-        return 0
-    elif [[ "$DOTFILES_INTERACTIVE" == "never" ]]; then
-        return 1
-    else
-        [[ -t 0 ]] # auto: check if stdin is a terminal
-    fi
+    case "${DOTFILES_INTERACTIVE:-never}" in
+        always)
+            return 0
+            ;;
+        auto)
+            [[ -t 0 ]]
+            ;;
+        never | *)
+            return 1
+            ;;
+    esac
 }
 
 # Prompt user for y/n confirmation

@@ -8,7 +8,7 @@ NEVER commit API keys, tokens, passwords, private keys, personal emails, or any 
 
 ## What This Repo Is
 
-Personal dotfiles repo. Shell scripts that symlink config files from `packages/` into `$HOME`. No build system, no tests, no linting. Supports macOS and Linux.
+Personal dotfiles repo. Shell scripts that symlink config files from `packages/` into `$HOME`. No build system, no tests, no linting. Supports macOS and Ubuntu Linux.
 
 ## Philosophy: Omakase Dotfiles
 
@@ -25,16 +25,16 @@ dotfiles update           # pull + expensive upstream refresh (flake inputs, Hom
 dotfiles status           # Git status of this repo
 ```
 
-`install.sh` and `dotfiles apply`/`update` share the same `converge`/`refresh_upstream`
+`install.sh` and `dotfiles pull`/`update` share the same `converge`/`refresh_upstream`
 functions in `install.sh`: `converge` does fast local steps (symlinks, home-manager
 `switch` against the locked flake, generated config, pinned mise runtimes);
 `refresh_upstream` does the expensive network refresh (flake update, Brewfile/apt,
 mise upgrades, Claude/Codex plugins, skill registries).
 
-Platform packages are installed separately:
+Platform packages are installed by `install_platform_packages`:
 ```bash
 brew bundle --file=platform/macos/Brewfile   # macOS
-xargs -a platform/linux/packages.txt sudo apt install -y  # Linux
+dotfiles update                              # Ubuntu apt packages from configured sources
 ```
 
 ## Architecture
@@ -45,7 +45,7 @@ Files under `packages/<name>/` mirror `$HOME` structure and get symlinked there:
 - `packages/zsh/.zshrc` -> `~/.zshrc`
 - `packages/claude/.claude/settings.json` -> `~/.claude/settings.json`
 
-The `lib/symlink.sh` module handles this. It backs up existing files to `~/.dotfiles-backup/<timestamp>/` before replacing. In non-interactive mode, it skips conflicts rather than overwriting. Set `DOTFILES_FORCE=1` to back up and replace all conflicts without prompting.
+The `lib/symlink.sh` module handles this. It backs up existing files to `~/.dotfiles-backup/<timestamp>/` before replacing. Conflict prompts are disabled by default, so existing files are skipped unless `DOTFILES_FORCE=1` is set. Use `DOTFILES_INTERACTIVE=always` to prompt.
 
 ### Adding a New Package
 
@@ -57,7 +57,7 @@ Sensitive data lives in `~/.secrets` (never committed). Both `.zshrc` and `.bash
 
 ### lib/ Modules
 
-- `platform.sh` -- OS detection (`detect_os`), command existence check (`has_cmd`), installers for zsh and mise
+- `platform.sh` -- OS/platform detection (`detect_os`, `detect_supported_platform`), command existence check (`has_cmd`), installers for zsh and mise
 - `symlink.sh` -- Symlink creation with backup, interactive prompting, conflict resolution
 
 ### Tool Management
@@ -71,7 +71,7 @@ System-level changes that are not `$HOME` symlinks and must apply to a single ho
 ## Tools
 
 - `mise` manages language runtimes (versions pinned in `packages/mise/.config/mise/config.toml`)
-- `brew` for system packages on macOS, `apt` on Linux
+- `brew` for system packages on macOS, `apt` on Ubuntu
 - Repos live at `~/code/{org}/{repo}` on all machines
 
 ### Remote Browser / OAuth (`ssh-opener`)
@@ -82,5 +82,5 @@ System-level changes that are not `$HOME` symlinks and must apply to a single ho
 
 - All scripts use `#!/usr/bin/env bash` with `set -e`
 - Guard pattern for optional tools: `command -v tool &>/dev/null && eval "$(tool init zsh)"`
-- Interactive detection via `[[ -t 0 ]]` or `DOTFILES_INTERACTIVE` env var (auto/always/never)
+- Conflict prompts via `DOTFILES_INTERACTIVE` env var (`never` by default; `always` or `auto` opt in)
 - Force mode via `DOTFILES_FORCE=1` to replace conflicts without prompting (backs up originals first)
