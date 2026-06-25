@@ -1,6 +1,6 @@
 # Dotfiles
 
-Personal dotfiles managed with a simple shell script. Supports macOS and Ubuntu Linux.
+Personal dotfiles managed with a shell installer and Nix home-manager. Supports macOS and Ubuntu Linux.
 
 ## Philosophy
 
@@ -68,17 +68,18 @@ host-specific Darwin config exists, otherwise `macos-<nix-system>`.
 
 ```
 ~/.dotfiles/
-├── install.sh          # Installer script
+├── install.sh          # Installer (symlinks + Nix)
 ├── bin/dotfiles        # CLI tool
 ├── lib/                # Helper scripts
-├── packages/           # Cross-platform dotfiles
+├── nix/                # Nix configs
+│   ├── home/           # home-manager: shell, core programs, CLI tool set
+│   └── darwin/         # nix-darwin: macOS system settings + casks
+├── packages/           # Symlinked dotfiles
 │   ├── bash/
 │   ├── claude/
-│   ├── git/
-│   ├── shell/
-│   ├── starship/
-│   ├── vim/
-│   └── zsh/
+│   ├── codex/
+│   ├── ghostty/
+│   └── shell/
 └── platform/           # OS-specific configs
     ├── macos/
     └── linux/
@@ -91,9 +92,7 @@ After installation, use the `dotfiles` CLI:
 ```bash
 dotfiles pull     # Pull latest, then converge this machine (fast, repeatable)
 dotfiles update   # pull + refresh upstream (flake inputs, Homebrew, mise, plugins)
-dotfiles status   # Show git status of the dotfiles repo
 dotfiles cd       # cd into the dotfiles repo
-dotfiles edit     # Open dotfiles in $EDITOR
 ```
 
 For a fresh machine, run `./install.sh` after cloning, or pipe it from curl.

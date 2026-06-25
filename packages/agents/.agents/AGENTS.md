@@ -13,17 +13,15 @@ project/
 ├── AGENTS.md                  # Shared instructions (all agents read this)
 ├── CLAUDE.md                  # @AGENTS.md + Claude Code specifics
 ├── .agents/
-│   ├── rules/                 # Shared path/domain-scoped coding rules
 │   └── skills/                # Universal agent skills
 ├── .claude/
 │   ├── skills -> ../.agents/skills  # Symlink to universal skills
-│   └── rules/                 # Per-file symlinks into ../.agents/rules
 └── subdirectory/
     ├── AGENTS.md              # Subdirectory-scoped shared instructions
     └── CLAUDE.md              # @AGENTS.md + Claude Code specifics
 ```
 
-AGENTS.md is the single source of truth at each level. Agent-specific files import it and add only agent-specific overrides.
+AGENTS.md is the single source of truth at each level.
 
 Every CLAUDE.md starts with `@AGENTS.md`:
 
@@ -32,12 +30,18 @@ Every CLAUDE.md starts with `@AGENTS.md`:
 
 # Claude Code
 
-Agent-specific instructions here (or omit this section if none).
+Claude Code specific instructions here (or omit this section if none).
 ```
 
-Subdirectories can have their own AGENTS.md + CLAUDE.md pairs for progressive disclosure.
+Follow progressive disclosure: Subdirectories have their own AGENTS.md + CLAUDE.md pairs.
 
 ---
+
+## Very Important
+
+1. Ask, don't assume. If something is unclear, ask before writing a single line. Never make silent assumptions about intent, architecture, or requirements.
+2. Simplest solution first. Always implement the simplest thing that could work. Do not add abstractions or flexibility that weren't explicitly requested.
+3. Flag uncertainty explicitly. If you are not confident about an approach or technical detail, say so before proceeding. Confidence without certainty causes more damage than admitting a gap.
 
 ## General
 
@@ -48,10 +52,10 @@ Subdirectories can have their own AGENTS.md + CLAUDE.md pairs for progressive di
 
 ## Dotfiles
 
-My personal config lives in `~/.dotfiles` with per-file symlinks into `$HOME`, created by `~/.dotfiles/install.sh` (see `~/.dotfiles/lib/symlink.sh`).
+Personal config lives in `~/.dotfiles`, applied two ways: per-file symlinks from `packages/<pkg>/` into `$HOME`, and Nix home-manager (`nix/home/`), which owns the shell, several core programs, and the CLI tool set rather than symlinking them. After editing, re-apply with `dotfiles pull` (fast); `dotfiles update` adds the expensive upstream refresh. Check `~/.dotfiles` (its `AGENTS.md`, `lib/symlink.sh`) when you need to know which mechanism owns a file.
 
-* When modifying files under `~/.claude/`, `~/.agents/`, `~/.config/`, etc., always edit through `~/.dotfiles/packages/<pkg>/`. Editing an existing symlinked target flows through automatically; new files must be created under `~/.dotfiles/packages/<pkg>/` first, then symlinked back (or re-run `~/.dotfiles/install.sh`).
-* Before creating a new config file under `$HOME`, check whether its parent directory is dotfiles-managed — `ls -la` for sibling symlinks pointing into `~/.dotfiles` is the quickest tell.
+* Edit the source of truth, not the deployed copy: a symlinked file under `packages/<pkg>/` flows through automatically, but a Nix-owned config must be changed at `nix/home/features/<name>.nix` — editing it in `$HOME` is a no-op.
+* Before creating a new config under `$HOME`, check whether its parent is dotfiles-managed — `ls -la` for sibling symlinks into `~/.dotfiles` is the quickest tell (Nix-owned areas won't show one).
 
 ## PRs and Commits
 
