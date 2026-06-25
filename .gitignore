@@ -9,17 +9,20 @@
 **/.netrc
 **/.npmrc
 **/.pypirc
+**/.htpasswd
 **/credentials*
+**/service-account*.json
+**/*serviceAccountKey*.json
+**/gcloud-key.json
 **/*token*
 **/*secret*
-!packages/claude/.claude/rules/secrets.md
+# secrets.md is the secrets-hygiene rule doc, not a secret — keep it tracked.
+!packages/agents/.agents/rules/secrets.md
 **/.env
 **/.env.*
 
 # Local overrides
 *.local
-# ...except the tmux persistence config — versioned + shared across machines
-!packages/tmux/.tmux.conf.local
 .local/
 **/rules/local.md
 **/AGENTS.local.md

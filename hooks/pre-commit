@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
+# Fail closed: this is a public repo that must never receive a secret. If the
+# scanner is missing, block the commit rather than waving it through.
 if ! command -v gitleaks &>/dev/null; then
-    echo "gitleaks not installed, skipping secret scan (brew install gitleaks)"
-    exit 0
+    echo "pre-commit: gitleaks not installed — refusing to commit without a secret scan." >&2
+    echo "  Install it with: dotfiles pull   (gitleaks is provided by Nix/home-manager)" >&2
+    exit 1
 fi
 
 gitleaks git --staged --no-banner -v
