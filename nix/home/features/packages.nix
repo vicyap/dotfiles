@@ -42,13 +42,21 @@
     just
     entr
 
+    # formatters / linters / security (consolidated here from Brewfile + mise)
+    gitleaks
+    shfmt
+
     # prompt / shell / history / fetch
     fastfetch
+
+    # media
+    ffmpeg # transcode-video-* / img conversions
 
     # misc
     glow
     tealdeer # tldr
     chafa
     cloc
+    hyperfine # CLI benchmarking
   ];
 }

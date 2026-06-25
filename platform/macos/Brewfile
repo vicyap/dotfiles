@@ -13,9 +13,8 @@ brew "watch"
 brew "p7zip"
 brew "qrencode"
 
-# Formatters & linters
-brew "gitleaks"
-brew "shfmt"
+# Formatters & linters (gitleaks + shfmt are provided by home-manager — see
+# nix/home/features/packages.nix)
 brew "shellcheck"
 brew "typos-cli"
 brew "taplo"

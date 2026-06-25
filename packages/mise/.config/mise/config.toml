@@ -89,32 +89,9 @@ go build -ldflags="-s -w" -o "$HOME/.local/bin/tmux-status" .
 echo "✓ tmux-status installed to ~/.local/bin/tmux-status"
 """
 
-[tasks."setup:gitleaks"]
-description = "Install gitleaks (secret scanner for git)"
-run = """
-#!/usr/bin/env bash
-set -eo pipefail
-mkdir -p "$HOME/.local/bin"
-version="$(gh release view --repo gitleaks/gitleaks --json tagName -q .tagName)"
-os="$(uname -s | tr '[:upper:]' '[:lower:]')"
-arch="$(uname -m)"
-case "$arch" in
-  x86_64) arch="x64" ;;
-  aarch64|arm64) arch="arm64" ;;
-esac
-curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/${version}/gitleaks_${version#v}_${os}_${arch}.tar.gz" | tar xz -C "$HOME/.local/bin/" gitleaks
-echo "✓ gitleaks ${version} installed to ~/.local/bin/gitleaks"
-"""
-
-[tasks."setup:shfmt"]
-description = "Install shfmt (shell formatter)"
-run = """
-#!/usr/bin/env bash
-set -e
-go install mvdan.cc/sh/v3/cmd/shfmt@latest
-echo "✓ shfmt installed to $(go env GOPATH)/bin/shfmt"
-"""
+# gitleaks and shfmt are provided by Nix/home-manager (see
+# nix/home/features/packages.nix), not bespoke mise tasks.
 
 [tasks."update:tools"]
-description = "Update all CLI tools (web, ask, ssh-opener, pyright, tmux-status, gitleaks, shfmt)"
-depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright", "setup:typescript-lsp", "setup:tmux-status", "setup:gitleaks", "setup:shfmt"]
+description = "Update all CLI tools (web, ask, ssh-opener, pyright, typescript-lsp, tmux-status)"
+depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright", "setup:typescript-lsp", "setup:tmux-status"]

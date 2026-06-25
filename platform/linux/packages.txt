@@ -4,7 +4,6 @@ cmake
 curl
 docker-ce
 earlyoom
-ffmpeg
 figlet
 git
 imagemagick
