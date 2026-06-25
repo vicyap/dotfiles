@@ -1,4 +1,5 @@
-# git — native home-manager module, replacing packages/git/.gitconfig.
+# git — native home-manager module; all git config lives in the `settings`
+# attrset below (replaced the old packages/git/.gitconfig).
 { pkgs, ... }:
 {
   # delta is its own module in home-manager 26.05. enableGitIntegration wires
