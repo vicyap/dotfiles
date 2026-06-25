@@ -3,6 +3,11 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    # Unstable is tapped for single packages that lag on the 26.05 release
+    # branch. atuin is pulled from here (see nix/home/features/atuin.nix): the
+    # 26.05 atuin (18.15.2) predates the `atuin ai` session-store migration
+    # `20260417000000`, so it refuses to open a DB any newer atuin has touched.
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -16,6 +21,7 @@
   outputs =
     {
       nixpkgs,
+      nixpkgs-unstable,
       home-manager,
       nix-darwin,
       ...
@@ -33,6 +39,7 @@
         }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
+          extraSpecialArgs = { inherit nixpkgs-unstable; };
           modules = [
             module
             {
@@ -89,6 +96,7 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit nixpkgs-unstable; };
               # Back up (rather than fail on) any non-symlink file in the way on
               # first activation; setup_nix removes the legacy repo symlinks.
               home-manager.backupFileExtension = "backup";
