@@ -7,6 +7,9 @@ description: >-
   or wants changed code reviewed for reuse, quality, and efficiency. Defaults to
   changed files from git diff and uses three reviewer passes: code reuse, code
   quality, and efficiency.
+# Edits files directly (see Operating Contract), so require explicit invocation
+# rather than letting the model auto-trigger on keywords.
+disable-model-invocation: true
 ---
 
 # Simplify

@@ -13,9 +13,11 @@ project/
 ├── AGENTS.md                  # Shared instructions (all agents read this)
 ├── CLAUDE.md                  # @AGENTS.md + Claude Code specifics
 ├── .agents/
+│   ├── rules/                 # Shared path/domain-scoped coding rules
 │   └── skills/                # Universal agent skills
 ├── .claude/
-│   ├── skills -> ../.agents/skills  # Symlink to universal skills
+│   ├── rules/                 # Per-file symlinks into ../.agents/rules
+│   └── skills -> ../.agents/skills  # Symlink to universal skills
 └── subdirectory/
     ├── AGENTS.md              # Subdirectory-scoped shared instructions
     └── CLAUDE.md              # @AGENTS.md + Claude Code specifics
@@ -45,10 +47,18 @@ Follow progressive disclosure: Subdirectories have their own AGENTS.md + CLAUDE.
 
 ## General
 
-* When uncertain, ask clarifying questions.
 * Avoid overuse of emojis.
 * NEVER estimate implementation timelines.
 * NEVER delete production databases or data files without explicit approval. Offer non-destructive alternatives first.
+
+## Done When
+
+A change isn't done until:
+
+* Relevant tests pass, or the final response says which were not run and why.
+* Lint, type-check, and formatters pass for the files you touched (run the project's configured tools).
+* New behavior has an automated test or an explicit manual-verification note.
+* The final summary names the changed files, the commands you ran, and any remaining risks.
 
 ## Dotfiles
 
@@ -99,9 +109,11 @@ Sources: github.com/obra/dotfiles, github.com/trailofbits/claude-code-config
 
 ## Code Rules
 
-Shared coding rules live in `~/.agents/rules/`. When working in a matching domain,
-read the relevant rule file before implementing changes. Claude Code may auto-load
-these through `~/.claude/rules` symlinks; other agents should open them explicitly.
+Shared coding rules live in `~/.agents/rules/` (symlinked into `~/.claude/rules/`).
+When working in a matching domain, READ the relevant rule file before implementing
+changes — treat that as the contract for every agent. Path-scoped auto-loading via
+the `paths:` frontmatter is unreliable for user-level rules, so don't depend on a
+rule being injected automatically; open it yourself when its domain applies.
 
 * Python: `~/.agents/rules/python.md` for `*.py`, `*.pyi`, `pyproject.toml`, and `uv.lock`.
 * Elixir/Phoenix: `~/.agents/rules/elixir.md` for `*.ex` and `*.exs`; add `ecto.md`, `phoenix.md`, `heex.md`, or `liveview.md` when working in schemas, repos, migrations, web modules, HEEx templates, LiveViews, or LiveView tests.
@@ -138,40 +150,7 @@ web https://example.com --truncate-after 5000
 
 ### CLI tools available
 
-These are installed across both lima (macOS) and rhinestone (Linux) via the dotfiles manifests. Prefer them over their classic equivalents:
-
-| Tool        | Replaces / does                              |
-|-------------|----------------------------------------------|
-| `rg`        | `grep` (recursive content search)            |
-| `fd`        | `find` (`fdfind` on Linux apt)               |
-| `bat`       | `cat` with syntax highlighting (`batcat` on Linux apt) |
-| `eza`       | `ls` (icons, git status, tree)               |
-| `dust`      | `du` (visual disk usage)                     |
-| `procs`     | `ps` (modern, colored, sortable)             |
-| `sd`        | `sed` (intuitive find/replace)               |
-| `delta`     | `git diff` pager (configured in `.gitconfig`)|
-| `duf`       | `df` (disk free)                             |
-| `jq`        | JSON query/transform                         |
-| `yq`        | YAML query (jq for YAML)                     |
-| `jless`     | Interactive JSON pager                       |
-| `gping`     | `ping` with graph                            |
-| `dog`       | `dig` (modern DNS lookup)                    |
-| `mosh`      | `ssh` (mobile-resilient; recovers tunnels)   |
-| `lazygit`   | TUI git client                               |
-| `lazydocker`| TUI docker client                            |
-| `atuin`     | Shell history (Ctrl+R = TUI search)          |
-| `fastfetch` | System info banner                           |
-| `btop`      | TUI process/resource monitor                 |
-| `glow`      | Markdown renderer                            |
-| `chafa`     | Terminal image viewer                        |
-| `just`      | Modern task runner (Makefile alternative)    |
-| `entr`      | Re-run a command on file change              |
-| `cloc`      | Count lines of code by language              |
-| `hyperfine` | CLI benchmark tool                           |
-| `tldr`      | Simplified man pages                         |
-| `zoxide`    | `cd` with frecency (`z`, `zi`)               |
-| `fzf`       | Fuzzy finder (Ctrl+R, Ctrl+T, Alt+C, `ff`)   |
-| `gh`        | GitHub CLI (also git credential helper)      |
+The curated toolkit (modern CLI replacements like `rg`/`fd`/`bat`/`eza`/`dust`/`procs`/`sd`, plus TUIs and data tools) is installed across both lima (macOS) and rhinestone (Linux). See [`CHEATSHEET.md`](https://github.com/vicyap/dotfiles/blob/main/CHEATSHEET.md) (or run `oma`) for the full list and what each replaces. Prefer these over their classic equivalents.
 
 Tool usage rules:
 

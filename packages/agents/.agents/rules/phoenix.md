@@ -4,7 +4,6 @@ paths:
   - "**/*router*"
   - "**/*controller*"
   - "**/*plug*"
-  - "**/*.ex"
 ---
 
 ## Phoenix guidelines

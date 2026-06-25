@@ -1,0 +1,4 @@
+interface:
+  display_name: "Simplify"
+  short_description: "Review changed code and apply scoped simplifications"
+  default_prompt: "Use $simplify to review the current diff and apply scoped simplifications."

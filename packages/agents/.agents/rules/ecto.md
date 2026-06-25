@@ -4,8 +4,6 @@ paths:
   - "**/*changeset*"
   - "**/*migration*"
   - "**/*repo*"
-  - "**/*.ex"
-  - "**/*.exs"
 ---
 
 ## Ecto Guidelines

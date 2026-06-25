@@ -3,7 +3,6 @@ paths:
   - "**/*live*"
   - "**/*_live.ex"
   - "**/*_live/*.ex"
-  - "**/*.heex"
   - "**/*_test.exs"
 ---
 

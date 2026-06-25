@@ -1,14 +1,5 @@
 ---
-description: Shell script quality checks (bash, sh, zsh scripts)
-paths:
-  - "**/*.sh"
-  - "**/*.bash"
-  - "**/*.zsh"
-  - "**/.bashrc"
-  - "**/.zshrc"
-  - "**/.profile"
-  - "**/.aliases"
-  - "**/.functions"
+description: Shell script quality checks (bash, sh, zsh scripts). Loaded unconditionally — user-level path-scoping is unreliable in Claude Code, and this is small + broadly relevant.
 ---
 
 # Shell Scripts

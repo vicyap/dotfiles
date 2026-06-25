@@ -1,6 +1,9 @@
 ---
 name: writer-editor
 description: Write, diagnose, and revise human-facing work prose. Use when the user asks to draft, rewrite, tighten, edit, polish, shorten, clarify, or improve emails, Slack messages, docs, memos, announcements, status updates, personal notes, or other prose meant for people to read. Also use for file-based prose edits when the user provides a path, but ask before modifying files. Do not use for coaching-only requests where the user wants to improve their own writing without receiving finished wording; use writing-coach instead.
+# Can edit files when given a path; require explicit invocation so the model
+# doesn't auto-trigger on prose keywords. Invoke with /writer-editor.
+disable-model-invocation: true
 ---
 
 # Writer Editor
