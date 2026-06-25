@@ -43,12 +43,12 @@
       mru-spaces = false;
     };
     finder = {
-      AppleShowAllExtensions = true;
+      AppleShowAllExtensions = false;
       FXPreferredViewStyle = "Nlsv"; # list view
       ShowPathbar = true;
     };
     NSGlobalDomain = {
-      AppleShowAllExtensions = true;
+      AppleShowAllExtensions = false;
       ApplePressAndHoldEnabled = false; # key repeat instead of the accent menu
       InitialKeyRepeat = 15;
       KeyRepeat = 2;
