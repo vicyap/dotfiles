@@ -15,7 +15,6 @@
     "OTEL_LOG_RAW_API_BODIES": "1",
     "OTEL_METRIC_EXPORT_INTERVAL": "60000",
     "OTEL_LOGS_EXPORT_INTERVAL": "5000",
-    "OTEL_RESOURCE_ATTRIBUTES": "user.handle=victor,host.name=rhinestone",
     "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "100"
   },
   "permissions": {

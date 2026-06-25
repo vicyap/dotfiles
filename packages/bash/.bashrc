@@ -28,8 +28,22 @@ export PATH="$HOME/bin:$PATH"
 # mise
 command -v mise &>/dev/null && eval "$(mise activate bash)"
 
+# starship prompt (parity with the zsh config; falls back to PS1 above if absent)
+command -v starship &>/dev/null && eval "$(starship init bash)"
+
+# zoxide (z / zi directory jumping)
+command -v zoxide &>/dev/null && eval "$(zoxide init bash)"
+
+# direnv (per-directory env loading)
+command -v direnv &>/dev/null && eval "$(direnv hook bash)"
+
 # atuin owns Ctrl+R; --disable-up-arrow keeps default history search on UP
 command -v atuin &>/dev/null && eval "$(atuin init bash --disable-up-arrow)"
+
+# OpenTelemetry resource attributes (parity with zsh; Claude/Codex inherit this).
+# Computed per-machine because Claude Code's settings.json env block can't expand
+# $VARS, and a hardcoded host.name would mis-attribute the other host.
+export OTEL_RESOURCE_ATTRIBUTES="user.handle=victor,host.name=$(hostname -s 2>/dev/null || hostname)"
 
 # Secrets
 [[ -f ~/.secrets ]] && source ~/.secrets

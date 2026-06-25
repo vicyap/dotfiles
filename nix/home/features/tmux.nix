@@ -59,12 +59,13 @@
       set -as terminal-features ",xterm-ghostty:hyperlinks"
       set -g allow-passthrough on
 
-      # OSC 52 clipboard (copy to local clipboard over SSH)
+      # OSC 52 clipboard (copy to local clipboard over SSH). Works everywhere,
+      # including headless rhinestone — no copy binary needed. The macOS-only
+      # `copy-command 'pbcopy'` and prefix `y` save-buffer binding live in
+      # nix/home/hosts/lima.nix (pbcopy does not exist on Linux).
       set -g set-clipboard on
 
-      # Mouse copy + clipboard command
       unbind -Tcopy-mode-vi MouseDragEnd1Pane
-      set -s copy-command 'pbcopy'
 
       # Vi copy bindings
       bind -Tcopy-mode-vi v send -X begin-selection
@@ -72,7 +73,6 @@
       bind Enter copy-mode
       bind p paste-buffer -p
       bind P choose-buffer
-      bind y run-shell -b "tmux save-buffer - | pbcopy"
 
       # Pane navigation
       bind h select-pane -L

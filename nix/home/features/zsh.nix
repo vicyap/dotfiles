@@ -114,7 +114,7 @@
 
       # AI agents
       cc = "claude";
-      cx = "codex";
+      # `cx = "codex"` is macOS-only (codex is a Homebrew cask) — see lima.nix.
 
       # Dev / network / misc
       nr = "npm run";
@@ -126,15 +126,10 @@
       du = "du -h";
     };
 
-    # ~/.zprofile (login shell): Homebrew shellenv + the omakase MOTD.
+    # ~/.zprofile (login shell): the omakase MOTD. The macOS Homebrew shellenv
+    # block lives in nix/home/hosts/lima.nix (profileExtra concatenates across
+    # modules), so it never runs on headless rhinestone.
     profileExtra = ''
-      # Homebrew (macOS)
-      if [[ -f /opt/homebrew/bin/brew ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-      elif [[ -f /usr/local/bin/brew ]]; then
-        eval "$(/usr/local/bin/brew shellenv)"
-      fi
-
       # Omakase tool reminder (login-shell only; not run per tmux pane).
       [[ -x "$HOME/.dotfiles/bin/omakase-motd" ]] && "$HOME/.dotfiles/bin/omakase-motd"
     '';
@@ -196,6 +191,12 @@
 
         # uv shims
         [[ -s "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
+
+        # OpenTelemetry resource attributes for Claude Code / Codex telemetry.
+        # Computed per-machine here because Claude Code's settings.json env block
+        # does not expand $VARS — a hardcoded host.name would mis-attribute the
+        # other host. Claude/Codex inherit this from the launching shell.
+        export OTEL_RESOURCE_ATTRIBUTES="user.handle=victor,host.name=$(hostname -s 2>/dev/null || hostname)"
 
         # Secrets (API keys, tokens — not tracked in dotfiles)
         [[ -f ~/.secrets ]] && source ~/.secrets

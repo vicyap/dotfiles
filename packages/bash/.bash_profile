@@ -1,9 +1,7 @@
 # ~/.bash_profile - Login shell configuration
 
-# Source .bashrc if it exists
+# Source .bashrc if it exists (which sources ~/.posthog/env, guarded)
 [[ -f ~/.bashrc ]] && source ~/.bashrc
-
-. "$HOME/.posthog/env"
 
 # Omakase tool reminder (login-shell only).
 [[ -x "$HOME/.dotfiles/bin/omakase-motd" ]] && "$HOME/.dotfiles/bin/omakase-motd"
