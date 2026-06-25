@@ -12,7 +12,9 @@ status=0
 note() { printf '\n== %s ==\n' "$1"; }
 
 shopt -s nullglob
-shell_files=(install.sh bin/dotfiles lib/*.sh scripts/*.sh)
+# All bash scripts in the repo (bin/* are all #!/usr/bin/env bash, as is
+# hooks/pre-commit). Keep this list exhaustive so no script escapes shellcheck.
+shell_files=(install.sh bin/* hooks/pre-commit lib/*.sh scripts/*.sh)
 shopt -u nullglob
 
 note "bash -n (syntax)"

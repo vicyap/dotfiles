@@ -27,9 +27,14 @@ if [[ -z "$base_ref" ]]; then
 fi
 
 # --- Create worktree ---
+# Keep stdout clean (the contract is "print only the worktree path"), but
+# surface git's error on stderr instead of swallowing it — e.g. when the branch
+# already exists — so the failure is visible rather than a silent non-zero exit.
 mkdir -p "$(dirname "$worktree_path")"
-git -C "$git_repo_path" worktree add "$worktree_path" -b "$git_branch" "$base_ref" \
-    >/dev/null 2>&1
+if ! git_err=$(git -C "$git_repo_path" worktree add "$worktree_path" -b "$git_branch" "$base_ref" 2>&1 >/dev/null); then
+    echo "claude-worktree-create: failed to create worktree '$git_branch': $git_err" >&2
+    exit 1
+fi
 
 # --- Copy gitignored .env* files ---
 while IFS= read -r -d '' env_file; do

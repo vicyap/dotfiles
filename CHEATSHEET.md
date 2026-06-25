@@ -4,7 +4,7 @@ Quick reference for the curated tools, aliases, functions, and keybindings in th
 
 ## Modern CLI tools
 
-Installed via `mise` (primary), Brewfile (macOS-only / system deps), or apt (Ubuntu system deps).
+Installed via Nix home-manager (primary), with `mise` for language runtimes plus a few extras, Brewfile (macOS GUI / system deps), and apt (Ubuntu system deps).
 
 | Tool         | Replaces / does                                                  |
 |--------------|------------------------------------------------------------------|
@@ -111,7 +111,7 @@ From [`packages/shell/.aliases`](./packages/shell/.aliases) and [`packages/shell
 
 | Key                | Action                                                     |
 |--------------------|------------------------------------------------------------|
-| `prefix r`         | reload `~/.tmux.conf`                                      |
+| `prefix r`         | reload `~/.config/tmux/tmux.conf`                         |
 | `prefix "` / `%`   | split horizontal / vertical (inheriting cwd)               |
 | `prefix - / _`     | split horizontal / vertical (alternates)                   |
 | `prefix h/j/k/l`   | move between panes (vim-style)                             |
@@ -131,11 +131,11 @@ From [`packages/shell/.aliases`](./packages/shell/.aliases) and [`packages/shell
 The repo ships a live light/dark switcher:
 
 ```sh
-dark      # Catppuccin Mocha across ghostty, bat, fzf, tmux, claude
+dark      # Catppuccin Mocha across ghostty, bat, fzf, delta, tmux, claude
 light     # GitHub Light High Contrast across the same
 ```
 
-Behind the scenes, these write the theme line into `~/.config/ghostty/config` (a `git smudge`/`clean` filter keeps the working tree clean) and update `BAT_THEME`, `FZF_DEFAULT_OPTS`, the tmux source file, and the Claude Code config.
+Behind the scenes, these write the theme line into `~/.config/ghostty/config` (a `git smudge`/`clean` filter keeps the working tree clean) and update `BAT_THEME`, `FZF_DEFAULT_OPTS`, `DELTA_FEATURES`, the tmux source file, and the Claude Code config.
 
 ## One-time setup
 
@@ -152,7 +152,8 @@ After the first `~/.dotfiles/install.sh`:
 
 ```sh
 for t in lazygit lazydocker fastfetch atuin dust procs sd gping dog mosh \
-         yq jless just entr cloc glow chafa rg fd bat eza zoxide fzf; do
+         yq jless just entr cloc glow chafa rg fd bat eza zoxide fzf \
+         hyperfine ffmpeg gitleaks shfmt; do
   command -v "$t" >/dev/null && printf "ok    %s\n" "$t" || printf "MISS  %s\n" "$t"
 done
 
@@ -162,7 +163,7 @@ type ff compress decompress img2jpg fip dip lip try
 
 ## Troubleshooting
 
-- **"command not found: lazygit"** etc. — run `mise install` then open a new shell. If it still fails, check `mise ls` for the failing tool and look at `~/.local/state/mise/log/`.
-- **fzf-tab Tab not working** — `~/.zsh/plugins/fzf-tab/` missing. Re-run `~/.dotfiles/install.sh` or `git clone https://github.com/Aloxaf/fzf-tab ~/.zsh/plugins/fzf-tab`.
+- **"command not found: lazygit"** etc. — most tools come from Nix home-manager now, so run `dotfiles pull` then open a new shell. For a mise-managed runtime/extra (`dog`, `op`, language toolchains), check `mise ls` and `~/.local/state/mise/log/`.
+- **fzf-tab Tab not working** — fzf-tab is a home-manager-managed zsh plugin (`nix/home/features/zsh.nix`). Re-run `dotfiles pull` and open a new shell.
 - **atuin Ctrl+R not popping up** — `command -v atuin` to verify install. Then `atuin status`. The history db lives at `~/.local/share/atuin/history.db`.
 - **Icons render as boxes** — Nerd Font missing. lima: `brew install --cask font-jetbrains-mono-nerd-font`, then restart ghostty.

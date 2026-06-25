@@ -33,11 +33,9 @@ func main() {
 	var wg sync.WaitGroup
 
 	for _, c := range collectors {
-		wg.Add(1)
-		go func(c collector) {
-			defer wg.Done()
+		wg.Go(func() {
 			results[c.idx] = result{label: c.label, value: c.fn()}
-		}(c)
+		})
 	}
 
 	wg.Wait()

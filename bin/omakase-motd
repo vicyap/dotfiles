@@ -4,11 +4,11 @@
 
 [[ -t 1 && "${TERM:-}" != "dumb" && -z "${OMAKASE_MOTD_OFF:-}" ]] || exit 0
 
-bold=$(tput bold 2> /dev/null || true)
-dim=$(tput dim 2> /dev/null || true)
-reset=$(tput sgr0 2> /dev/null || true)
+bold=$(tput bold 2>/dev/null || true)
+dim=$(tput dim 2>/dev/null || true)
+reset=$(tput sgr0 2>/dev/null || true)
 
-cat << EOF
+cat <<EOF
 
   ${bold}omakase${reset}  ${dim}— type${reset} ${bold}oma${reset} ${dim}for the full cheatsheet${reset}
 

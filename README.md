@@ -110,11 +110,21 @@ This file is sourced by `.zshrc` and `.bashrc` if it exists.
 
 ## Adding new dotfiles
 
+Two mechanisms; pick by who should own the file.
+
+**Symlinked dotfiles** (most app configs):
+
 1. Create a package directory: `mkdir -p packages/myapp`
 2. Add your config file with the same path it would have in `$HOME`:
    - `packages/myapp/.myapprc` will be symlinked to `~/.myapprc`
    - `packages/myapp/.config/myapp/config` will be symlinked to `~/.config/myapp/config`
 3. Run `dotfiles pull` or `./install.sh` to apply
+
+**Nix home-manager** (the shell, git, tmux, and the CLI tool set): add a package
+to `nix/home/features/packages.nix`, or a `programs.<name>` module under
+`nix/home/features/`, then `dotfiles pull`. Packages listed in
+`NIX_OWNED_PACKAGES` (`lib/symlink.sh`) are deliberately skipped by the symlinker
+so the two mechanisms never fight over the same path.
 
 ## Remote browser / OAuth
 
