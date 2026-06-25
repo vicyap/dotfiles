@@ -2,7 +2,7 @@
 # Dotfiles CLI — a thin dispatcher over the shared install/converge/refresh
 # helpers defined in install.sh. `install.sh` is the fresh-machine entrypoint;
 # this command keeps an already-cloned machine in sync.
-set -e
+set -eo pipefail
 
 # Resolve the repo root from this script (follows symlinks, so it works for
 # worktree checkouts and a ~/.local/bin symlink). DOTFILES_DIR overrides it.

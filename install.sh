@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
 
 DOTFILES_REPO="https://github.com/vicyap/dotfiles.git"
 
@@ -145,6 +145,7 @@ remove_legacy_nix_symlinks() {
 # fall back to the generic Home Manager config.
 setup_nix() {
     local host platform nix_system attr darwin_configs home_configs
+    local named_attr generic_attr use_impure
     host="$(hostname -s 2>/dev/null || hostname)"
     platform="$(detect_supported_platform)"
     nix_system="$(detect_nix_system)"
@@ -168,7 +169,10 @@ setup_nix() {
                 sudo darwin-rebuild switch --flake "${DOTFILES_DIR}#${host}" \
                     || echo "  Warning: darwin-rebuild switch failed"
             else
-                # First run: bootstrap darwin-rebuild from the pinned flake input.
+                # First run: bootstrap darwin-rebuild from the nix-darwin 26.05
+                # release branch (a floating ref — darwin-rebuild isn't on PATH
+                # yet, so the locked flake input can't be reused here). Once
+                # installed, the switch above uses the locked flake.
                 sudo NIX_CONFIG="experimental-features = nix-command flakes" \
                     nix run "github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild" -- \
                     switch --flake "${DOTFILES_DIR}#${host}" \
@@ -182,10 +186,10 @@ setup_nix() {
 
     case "$platform" in
         ubuntu)
-            attr="ubuntu-${nix_system}"
+            generic_attr="ubuntu-${nix_system}"
             ;;
         macos)
-            attr="macos-${nix_system}"
+            generic_attr="macos-${nix_system}"
             ;;
         *)
             echo "  Skipped: unsupported platform for home-manager (${platform})"
@@ -198,25 +202,42 @@ setup_nix() {
         return 0
     fi
 
-    # Otherwise: standalone home-manager (Ubuntu, or macOS with no darwin entry).
+    # Standalone home-manager (Ubuntu, or macOS with no darwin entry). Prefer a
+    # host-specific `user@host` config when the flake declares one (e.g.
+    # victor@rhinestone) — it pins identity so it activates with pure eval. Fall
+    # back to the generic OS/arch config, which needs --impure for USER/HOME.
+    named_attr="$(whoami)@${host}"
     home_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
         nix eval --json "${DOTFILES_DIR}#homeConfigurations" \
         --apply 'builtins.attrNames' 2>/dev/null || true)"
-    if [[ "$home_configs" == \[* && "$home_configs" != *"\"${attr}\""* ]]; then
-        echo "  Skipped: no generic home-manager config for ${attr}"
+    if [[ "$home_configs" == *"\"${named_attr}\""* ]]; then
+        attr="$named_attr"
+        use_impure=0
+    elif [[ "$home_configs" == \[* && "$home_configs" == *"\"${generic_attr}\""* ]]; then
+        attr="$generic_attr"
+        use_impure=1
+    else
+        echo "  Skipped: no home-manager config for ${named_attr} or ${generic_attr}"
         return 0
     fi
 
     cleanup_relocated_nix_symlinks
     remove_legacy_nix_symlinks
 
-    echo "  Activating home-manager for $(whoami)@${host} via ${attr}..."
+    echo "  Activating home-manager for ${attr}..."
     # -b backup renames any pre-existing file (e.g. an old symlinked ~/.zshrc)
     # instead of failing on the first switch.
-    NIX_CONFIG="experimental-features = nix-command flakes" \
-        nix run home-manager/release-26.05 -- \
-        switch -b backup --impure --flake "${DOTFILES_DIR}#${attr}" \
-        || echo "  Warning: home-manager switch failed"
+    if [[ "$use_impure" == 1 ]]; then
+        NIX_CONFIG="experimental-features = nix-command flakes" \
+            nix run home-manager/release-26.05 -- \
+            switch -b backup --impure --flake "${DOTFILES_DIR}#${attr}" \
+            || echo "  Warning: home-manager switch failed"
+    else
+        NIX_CONFIG="experimental-features = nix-command flakes" \
+            nix run home-manager/release-26.05 -- \
+            switch -b backup --flake "${DOTFILES_DIR}#${attr}" \
+            || echo "  Warning: home-manager switch failed"
+    fi
 
     # Make Nix-provided tools visible to the rest of this run.
     prepend_path "$HOME/.nix-profile/bin"
@@ -701,6 +722,7 @@ generate_codex_config() {
     local codex_dir="$HOME/.codex"
     local base="$DOTFILES_DIR/packages/codex/.codex/config.base.toml"
     local local_config="$DOTFILES_DIR/packages/codex/.codex/config.local.toml"
+    local merger="$DOTFILES_DIR/lib/merge-codex-config.py"
     local target="$codex_dir/config.toml"
 
     if [[ ! -f "$base" ]]; then
@@ -709,14 +731,32 @@ generate_codex_config() {
     fi
 
     mkdir -p "$codex_dir"
-    rm -f "$target"
 
+    # Codex writes runtime state into config.toml ([projects] trust, [hooks.state]
+    # approvals, [tui]/[notice], service_tier). A plain regen wipes them, forcing
+    # hook re-approval on every pull. The merger re-emits base+local then
+    # preserves any top-level keys/tables the managed files don't define.
+    if has_cmd python3 && [[ -f "$merger" ]]; then
+        local tmp
+        tmp="$(mktemp)"
+        if python3 "$merger" "$base" "$local_config" "$target" >"$tmp" 2>/dev/null; then
+            mv "$tmp" "$target"
+            echo "  Generated $target (preserved runtime state)"
+        else
+            rm -f "$tmp"
+            echo "  Warning: codex config merge failed; left existing $target untouched"
+        fi
+        return 0
+    fi
+
+    # Fallback when python3 is unavailable: original regen. Resets runtime state.
+    [[ -f "$target" ]] && echo "  Warning: python3 unavailable — codex runtime state (trust/hooks) will be reset"
+    : >"$target"
     cat "$base" >"$target"
     if [[ -f "$local_config" ]]; then
         printf '\n' >>"$target"
         cat "$local_config" >>"$target"
     fi
-
     echo "  Generated $target"
 }
 
@@ -861,10 +901,11 @@ ensure_extra_tools() {
         return 0
     }
     eval "$(mise activate bash)"
+    # gitleaks + shfmt come from Nix/home-manager now, not mise tasks.
     local task
     for task in \
         setup:web setup:ask setup:ssh-opener setup:pyright \
-        setup:typescript-lsp setup:tmux-status setup:shfmt; do
+        setup:typescript-lsp setup:tmux-status; do
         mise run "$task" || echo "  Warning: mise run $task failed"
     done
 }

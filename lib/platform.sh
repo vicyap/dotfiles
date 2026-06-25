@@ -110,7 +110,7 @@ install_zsh() {
 # Set zsh as default shell
 set_default_shell() {
     local zsh_path
-    zsh_path="$(which zsh)"
+    zsh_path="$(command -v zsh)"
 
     if [[ "$SHELL" == "$zsh_path" ]]; then
         echo "✓ zsh is already default shell"
@@ -203,11 +203,11 @@ install_mise() {
             if has_cmd brew; then
                 brew install mise
             else
-                curl https://mise.run | sh
+                curl -fsSL https://mise.run | sh
             fi
             ;;
         linux)
-            curl https://mise.run | sh
+            curl -fsSL https://mise.run | sh
             export PATH="$HOME/.local/bin:$PATH"
             ;;
         *)
