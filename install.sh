@@ -392,6 +392,10 @@ AGENT_SKILL_EXCLUDES=(
     resend-cli
     template-skill
     vercel-react-native-skills
+    # usetemi registry opt-outs
+    answer-engine-optimization
+    daisyui
+    shadcn
     # off-stack / one-off PostHog workflow skills (pruned 2026-06)
     signals-scout-csp-violations
     signals-scout-inbox-validation

@@ -78,6 +78,9 @@
       }
     ]
   },
+  "worktree": {
+    "baseRef": "fresh"
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"
@@ -125,6 +128,7 @@
   "autoCompactEnabled": true,
   "teammateMode": "auto",
   "remoteControlAtStartup": true,
-  "agentPushNotifEnabled": true,
+  "agentPushNotifEnabled": false,
+  "useAutoModeDuringPlan": true,
   "voiceEnabled": true
 }
