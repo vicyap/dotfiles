@@ -10,6 +10,7 @@
   # The interactive zsh config itself is provided by home-manager.
   programs.zsh.enable = true;
 
-  # Pin the release this config tracks; gates opt-in default changes.
-  system.stateVersion = 6;
+  # Pin the release this config tracks; gates opt-in default changes. Matches
+  # the nix-darwin 26.05 default (7).
+  system.stateVersion = 7;
 }

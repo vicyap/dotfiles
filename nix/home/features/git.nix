@@ -10,6 +10,15 @@
     options = {
       navigate = true;
       line-numbers = true;
+
+      # Light-mode feature, activated by `DELTA_FEATURES=+theme-light` which the
+      # `light`/`dark` switcher exports (see packages/zsh/.zsh/theme.zsh). delta
+      # only bundles standard syntax themes, so dark mode keeps delta's default
+      # dark theme rather than the custom "Catppuccin Mocha" bat theme.
+      theme-light = {
+        light = true;
+        syntax-theme = "GitHub";
+      };
     };
   };
 

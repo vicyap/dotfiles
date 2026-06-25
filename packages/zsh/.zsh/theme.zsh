@@ -9,9 +9,12 @@ _apply_theme_env() {
     if [[ "$mode" == "light" ]]; then
         export BAT_THEME="GitHub"
         export FZF_DEFAULT_OPTS="--color=light"
+        # delta: activate the light-mode feature defined in nix/home/features/git.nix
+        export DELTA_FEATURES="+theme-light"
     else
         export BAT_THEME="Catppuccin Mocha"
         export FZF_DEFAULT_OPTS="--color=dark"
+        unset DELTA_FEATURES
     fi
 }
 
@@ -29,9 +32,9 @@ _set_theme() {
     # Persist mode for new shells
     echo "$mode" > ~/.theme-mode
 
-    # Shell env (bat, fzf, vim)
+    # Shell env (bat, fzf, delta, vim)
     _apply_theme_env "$mode"
-    switched+=("bat, fzf, vim")
+    switched+=("bat, fzf, delta, vim")
 
     # Ghostty
     if [[ -f "$GHOSTTY_CONFIG" ]]; then

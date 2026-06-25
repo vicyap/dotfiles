@@ -12,7 +12,9 @@
 # ahead of the DB. Drop this override once 26.05 backports atuin >= 18.16.0.
 { pkgs, nixpkgs-unstable, ... }:
 let
-  unstable = import nixpkgs-unstable { inherit (pkgs.stdenv.hostPlatform) system; };
+  # legacyPackages mirrors flake.nix's own `nixpkgs.legacyPackages.<system>`
+  # pattern — reuses the input's evaluation instead of re-importing nixpkgs.
+  unstable = nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system};
 in
 {
   programs.atuin = {
