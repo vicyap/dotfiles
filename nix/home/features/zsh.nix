@@ -192,12 +192,6 @@
         # uv shims
         [[ -s "$HOME/.local/bin/env" ]] && source "$HOME/.local/bin/env"
 
-        # OpenTelemetry resource attributes for Claude Code / Codex telemetry.
-        # Computed per-machine here because Claude Code's settings.json env block
-        # does not expand $VARS — a hardcoded host.name would mis-attribute the
-        # other host. Claude/Codex inherit this from the launching shell.
-        export OTEL_RESOURCE_ATTRIBUTES="user.handle=victor,host.name=$(hostname -s 2>/dev/null || hostname)"
-
         # Secrets (API keys, tokens — not tracked in dotfiles)
         [[ -f ~/.secrets ]] && source ~/.secrets
 

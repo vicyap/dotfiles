@@ -5,13 +5,6 @@ approval_policy = "never"
 sandbox_mode = "danger-full-access"
 web_search = "live"
 
-[otel]
-environment = "dev"
-log_user_prompt = true
-exporter = { otlp-grpc = { endpoint = "http://telme.llama-bull.ts.net:4317" } }
-metrics_exporter = { otlp-grpc = { endpoint = "http://telme.llama-bull.ts.net:4317" } }
-trace_exporter = { otlp-grpc = { endpoint = "http://telme.llama-bull.ts.net:4317" } }
-
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp"
 # Header value resolved from $CONTEXT7_API_KEY at runtime (kept out of the repo).
