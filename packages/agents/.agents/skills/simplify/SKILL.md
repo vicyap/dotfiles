@@ -1,14 +1,13 @@
 ---
 name: simplify
 description: >-
-  Review changed code for simplification opportunities, then make scoped fixes.
-  Use when the user invokes simplify, says /simplify, asks to simplify a diff,
-  asks to reduce code complexity, asks for a cleanup pass after implementation,
-  or wants changed code reviewed for reuse, quality, and efficiency. Defaults to
-  changed files from git diff and uses three reviewer passes: code reuse, code
-  quality, and efficiency.
-# Edits files directly (see Operating Contract), so require explicit invocation
-# rather than letting the model auto-trigger on keywords.
+  Explicit cleanup pass for changed code. Use only when the user invokes
+  simplify, says /simplify, asks to simplify a diff, asks to reduce code
+  complexity, or requests a cleanup pass after implementation. Defaults to the
+  git diff, reviews reuse, quality, and efficiency, then edits files directly
+  with scoped behavior-preserving fixes.
+# Edits files directly, so keep explicit invocation rather than model
+# auto-triggering.
 disable-model-invocation: true
 ---
 

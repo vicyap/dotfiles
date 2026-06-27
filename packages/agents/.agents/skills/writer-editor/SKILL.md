@@ -1,6 +1,12 @@
 ---
 name: writer-editor
-description: Write, diagnose, and revise human-facing work prose. Use when the user asks to draft, rewrite, tighten, edit, polish, shorten, clarify, or improve emails, Slack messages, docs, memos, announcements, status updates, personal notes, or other prose meant for people to read. Also use for file-based prose edits when the user provides a path, but ask before modifying files. Do not use for coaching-only requests where the user wants to improve their own writing without receiving finished wording; use writing-coach instead.
+description: >-
+  Produce finished human-facing prose. Use when the user asks to draft, rewrite,
+  tighten, edit, polish, shorten, clarify, or improve emails, Slack messages,
+  docs, memos, announcements, status updates, personal notes, or similar prose.
+  Output a diagnosis plus revised wording. For file paths, read and propose
+  edits first; ask before modifying files. For coaching-only requests, give
+  feedback without taking over the final wording.
 # Can edit files when given a path; require explicit invocation so the model
 # doesn't auto-trigger on prose keywords. Invoke with /writer-editor.
 disable-model-invocation: true
@@ -10,9 +16,9 @@ disable-model-invocation: true
 
 ## Operating Contract
 
-Own the wording. This skill produces the draft or rewrite.
-
-Keep a strict split from `writing-coach`: if the user wants questions, hints, or learning support without finished prose, use that skill instead.
+Own the wording when the user asks for a draft or rewrite. If the user wants
+questions, hints, or learning support without finished prose, give feedback
+without taking over the final wording.
 
 Optimize for human-facing work prose: email, Slack, docs, memos, announcements, status updates, and similar writing. For engineering text read mainly by agents, tools, or compilers, preserve precision and tolerate extra length when it carries useful context.
 

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Writing Coach"
-  short_description: "Coach clearer human-facing work prose"
-  default_prompt: "Use $writing-coach to help me improve this work prose without rewriting it for me."

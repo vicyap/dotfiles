@@ -1,6 +1,11 @@
 ---
 name: event-sourcing
-description: Use when designing or evolving any new data model, system, or feature where the user's default is event sourcing — choosing aggregates, modeling events, structuring projections, evolving schemas, handling regulatory deletion (GDPR right to erasure), or recovering from projection bugs. The skill assumes ES is the preferred approach unless one of the listed CRUD-is-fine cases applies.
+description: >-
+  Design or evolve event-sourced systems. Use when choosing aggregates,
+  modeling events, structuring projections, evolving event schemas, handling
+  regulatory deletion, or recovering from projection bugs. Output a concrete ES
+  design or review; do not edit files unless the user asks for implementation.
+  Assume event sourcing is preferred unless a listed CRUD-is-fine case applies.
 ---
 
 # Event Sourcing
