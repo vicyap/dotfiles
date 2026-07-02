@@ -936,11 +936,19 @@ refresh_upstream() {
 
     if has_cmd mise; then
         echo "=== Upgrading mise tools ==="
+        # mise itself is curl-script-installed on Linux, so self-update applies
+        # there; on macOS it's brew-owned and brew bundle keeps it current.
+        if [[ "$(uname -s)" == "Linux" ]]; then
+            mise self-update --yes || echo "  Warning: mise self-update failed"
+        fi
         mise upgrade --yes || echo "  Warning: mise upgrade failed"
         # update:tools depends on all six setup:* tasks, so this is also the
         # single place the extra CLI tools (web, ask, ssh-opener, pyright,
         # typescript-lsp, tmux-status) get built.
         mise run update:tools || echo "  Warning: mise update:tools failed"
+        # Removes installs unreferenced by any config mise has seen; project
+        # pins reinstall automatically the next time that project is visited.
+        mise prune --yes || echo "  Warning: mise prune failed"
         echo
     fi
 
