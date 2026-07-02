@@ -16,6 +16,16 @@ _apply_theme_env() {
         export FZF_DEFAULT_OPTS="--color=dark"
         unset DELTA_FEATURES
     fi
+
+    # lazygit: layer ~/.config/lazygit/theme.yml over config.yml via LG_CONFIG_FILE.
+    # Create theme.yml from the saved mode if a fresh machine hasn't run light/dark yet,
+    # so lazygit never sees a dangling path.
+    local lg_config="$HOME/.config/lazygit/config.yml"
+    local lg_theme="$HOME/.config/lazygit/theme.yml"
+    if [[ -f "$lg_config" ]]; then
+        [[ -f "$lg_theme" ]] || cp "$HOME/.config/lazygit/themes/${mode}.yml" "$lg_theme" 2>/dev/null
+        [[ -f "$lg_theme" ]] && export LG_CONFIG_FILE="${lg_config},${lg_theme}"
+    fi
 }
 
 # Apply saved theme on shell startup
@@ -35,6 +45,14 @@ _set_theme() {
     # Shell env (bat, fzf, delta, vim)
     _apply_theme_env "$mode"
     switched+=("bat, fzf, delta, vim")
+
+    # lazygit: cp (not symlink — themes/*.yml deploy as symlinks into the repo)
+    # the chosen palette to the overlay path LG_CONFIG_FILE points at.
+    local lg_theme_src="$HOME/.config/lazygit/themes/${mode}.yml"
+    if [[ -f "$lg_theme_src" ]]; then
+        cp "$lg_theme_src" "$HOME/.config/lazygit/theme.yml"
+        switched+=("lazygit: ${mode}")
+    fi
 
     # Ghostty
     if [[ -f "$GHOSTTY_CONFIG" ]]; then

@@ -1,0 +1,23 @@
+# lazygit — dark (Catppuccin Mocha) theme overlay.
+# Layered on top of ../config.yml via LG_CONFIG_FILE; see packages/zsh/.zsh/theme.zsh.
+gui:
+  theme:
+    activeBorderColor:
+      - "#a6e3a1"
+      - bold
+    inactiveBorderColor:
+      - "#cdd6f4"
+    optionsTextColor:
+      - "#89b4fa"
+    selectedLineBgColor:
+      - "#313244"
+    cherryPickedCommitBgColor:
+      - "#94e2d5"
+    cherryPickedCommitFgColor:
+      - "#1e1e2e"
+    unstagedChangesColor:
+      - "#f38ba8"
+    defaultFgColor:
+      - "#cdd6f4"
+    searchingActiveBorderColor:
+      - "#f9e2af"

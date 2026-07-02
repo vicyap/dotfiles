@@ -83,7 +83,7 @@ From [`packages/shell/.aliases`](./packages/shell/.aliases) and [`packages/shell
 | `ff`                             | fuzzy file finder; opens selection in `$EDITOR` (vim)        |
 | `ccc`                            | AI-drafted git commit (uses `claude -p`); flags related unstaged files |
 | `dotfiles cd`                    | `cd ~/.dotfiles`                                             |
-| `light` / `dark`                 | switch ghostty / bat / fzf / tmux / claude themes live       |
+| `light` / `dark`                 | switch ghostty / bat / fzf / tmux / lazygit / claude themes live |
 | `compress <path>`                | create `<path>.tar.gz`                                       |
 | `decompress <archive>`           | expand tar.gz, tgz, tar.bz2, tar.xz, tar, zip, gz, bz2, xz   |
 | `img2jpg <input>`                | near-full-quality JPG (`-quality 92`)                        |
