@@ -47,9 +47,18 @@ load_libs() {
     source "$DOTFILES_DIR/install.sh"
 }
 
+# Pull with rebase, stashing local edits around it. Without --autostash a
+# dirty tree aborts the rebase with a raw git error and no guidance.
+pull_latest() {
+    if [[ -n "$(git -C "$DOTFILES_DIR" status --porcelain --untracked-files=no)" ]]; then
+        echo "  (local changes detected — carrying them through with --autostash)"
+    fi
+    git -C "$DOTFILES_DIR" pull --rebase --autostash
+}
+
 cmd_pull() {
     echo "Pulling + converging dotfiles..."
-    git -C "$DOTFILES_DIR" pull --rebase
+    pull_latest
     echo
     load_libs
     converge
@@ -57,7 +66,7 @@ cmd_pull() {
 
 cmd_update() {
     echo "Updating dotfiles (pull + converge + upstream refresh)..."
-    git -C "$DOTFILES_DIR" pull --rebase
+    pull_latest
     echo
     load_libs
     converge
@@ -70,14 +79,12 @@ cmd_cd() {
 
 cmd_agents_local() {
     # Machine-specific agent instructions, @-imported by ~/.agents/AGENTS.md.
-    # Not tracked by git; converge() scaffolds an empty one so the import always
-    # resolves.
-    local f="$HOME/.agents/AGENTS.local.md"
-    if [[ ! -e "$f" ]]; then
-        mkdir -p "$HOME/.agents"
-        : >"$f"
-    fi
-    ${EDITOR:-vim} "$f"
+    # Not tracked by git. ensure_agents_local (install.sh) scaffolds it,
+    # including the one-time legacy rules/local.md migration — reuse it rather
+    # than duplicating a migration-less copy here.
+    load_libs
+    ensure_agents_local
+    ${EDITOR:-vim} "$HOME/.agents/AGENTS.local.md"
 }
 
 main() {
