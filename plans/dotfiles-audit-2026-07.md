@@ -53,6 +53,10 @@ check.
 
 ## Recommended, not applied
 
+> Update 2026-07-02: the merger allowlist, mise self-update + prune,
+> zcompile, lazygit theming, and statusline trim below have since been
+> applied (see git log). Only the bash PATH dedup remains open.
+
 ### merge-codex-config.py: allowlist preserved state (correctness, high)
 
 The merger re-emits any top-level table/scalar from the previous generated
