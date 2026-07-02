@@ -20,6 +20,13 @@ elixir = "1.19"
 # Secrets / credentials (1Password CLI — `op`; auth via OP_SERVICE_ACCOUNT_TOKEN in ~/.secrets)
 op = "latest"
 
+[settings]
+# Re-evaluate hook-env only on directory change instead of before every
+# prompt (~15ms per precmd otherwise). Tools are pinned globally here, so the
+# env only actually changes when entering a project with its own mise.toml;
+# in-place config edits take effect on the next cd or new shell.
+hook_env.chpwd_only = true
+
 [tasks."setup:web"]
 description = "Install web CLI from source (requires Go)"
 run = """
