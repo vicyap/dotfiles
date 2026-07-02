@@ -63,7 +63,11 @@ import_atuin_history() {
     fi
 
     if [[ -f "$HOME/.zsh_history" ]]; then
-        atuin import zsh && echo "  + imported zsh history"
+        if atuin import zsh; then
+            echo "  + imported zsh history"
+        else
+            echo "  Warning: atuin import failed"
+        fi
     else
         echo "  ok no zsh history to import"
     fi
@@ -910,22 +914,6 @@ converge() {
     echo
 }
 
-# --- Extra CLI tools installed via mise tasks ------------------------------
-ensure_extra_tools() {
-    has_cmd mise || {
-        echo "  Skipped: mise not installed"
-        return 0
-    }
-    eval "$(mise activate bash)"
-    # gitleaks + shfmt come from Nix/home-manager now, not mise tasks.
-    local task
-    for task in \
-        setup:web setup:ask setup:ssh-opener setup:pyright \
-        setup:typescript-lsp setup:tmux-status; do
-        mise run "$task" || echo "  Warning: mise run $task failed"
-    done
-}
-
 # --- Upstream refresh: expensive, network-bound ----------------------------
 # Runs only on a fresh install.sh and `dotfiles update`. Pulls newer upstream
 # state: flake inputs, Homebrew/apt packages, mise upgrades, extra CLI tools,
@@ -947,13 +935,12 @@ refresh_upstream() {
     if has_cmd mise; then
         echo "=== Upgrading mise tools ==="
         mise upgrade --yes || echo "  Warning: mise upgrade failed"
+        # update:tools depends on all six setup:* tasks, so this is also the
+        # single place the extra CLI tools (web, ask, ssh-opener, pyright,
+        # typescript-lsp, tmux-status) get built.
         mise run update:tools || echo "  Warning: mise update:tools failed"
         echo
     fi
-
-    echo "=== Installing extra CLI tools ==="
-    ensure_extra_tools
-    echo
 
     echo "=== Installing Codex plugins ==="
     setup_codex_plugins

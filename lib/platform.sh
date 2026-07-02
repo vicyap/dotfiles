@@ -88,7 +88,9 @@ install_zsh() {
             ;;
         linux)
             if has_cmd apt; then
-                sudo apt-get update && sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y zsh
+                { sudo apt-get update \
+                    && sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y zsh; } \
+                    || echo "  Warning: zsh install failed"
             elif has_cmd dnf; then
                 sudo dnf install -y zsh
             elif has_cmd yum; then
@@ -175,7 +177,9 @@ install_vim() {
     case "$(detect_os)" in
         linux)
             if has_cmd apt; then
-                sudo apt-get update && sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y vim
+                { sudo apt-get update \
+                    && sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y vim; } \
+                    || echo "  Warning: vim install failed"
             elif has_cmd dnf; then
                 sudo dnf install -y vim
             elif has_cmd yum; then
@@ -201,13 +205,25 @@ install_mise() {
     case "$(detect_os)" in
         macos)
             if has_cmd brew; then
-                brew install mise
+                brew install mise \
+                    || {
+                        echo "  Warning: mise install failed"
+                        return 0
+                    }
             else
-                curl -fsSL https://mise.run | sh
+                curl -fsSL https://mise.run | sh \
+                    || {
+                        echo "  Warning: mise install failed"
+                        return 0
+                    }
             fi
             ;;
         linux)
-            curl -fsSL https://mise.run | sh
+            curl -fsSL https://mise.run | sh \
+                || {
+                    echo "  Warning: mise install failed"
+                    return 0
+                }
             export PATH="$HOME/.local/bin:$PATH"
             ;;
         *)
@@ -223,7 +239,7 @@ install_ubuntu_packages() {
     local pkgfile="$1"
     local package available=() unavailable=()
 
-    sudo apt-get update
+    sudo apt-get update || echo "  Warning: apt-get update failed; using cached package lists"
 
     while IFS= read -r package; do
         if apt-cache show "$package" >/dev/null 2>&1; then
@@ -254,7 +270,8 @@ install_platform_packages() {
             local brewfile="$dotfiles_dir/platform/macos/Brewfile"
             if [[ -f "$brewfile" ]] && has_cmd brew; then
                 echo "Installing Homebrew packages..."
-                brew bundle --file="$brewfile"
+                brew bundle --file="$brewfile" \
+                    || echo "  Warning: brew bundle failed"
             fi
             ;;
         ubuntu)
