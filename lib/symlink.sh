@@ -123,6 +123,13 @@ symlink_package() {
 
     echo "[$pkg_name]"
 
+    # Per-package manifest of the rel paths seen on the previous run, so links
+    # whose source file was deleted or renamed can be pruned (same
+    # previous/current diff pattern as sync_claude_rules in install.sh).
+    local manifest_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+    local manifest="$manifest_dir/symlinks-$pkg_name.txt"
+    local -a current_rels=()
+
     # Find all files and symlinks, then link them into $HOME
     while IFS= read -r -d '' file; do
         local rel_path="${file#"$pkg_path"/}"
@@ -138,6 +145,8 @@ symlink_package() {
         if [[ "$pkg_name" == "agents" && "$rel_path" == .agents/skills/* ]]; then
             continue
         fi
+
+        current_rels+=("$rel_path")
 
         if [[ -L "$file" ]]; then
             # For symlinks: recreate the same link target at $HOME so relative
@@ -188,6 +197,38 @@ symlink_package() {
             create_symlink "$file" "$target"
         fi
     done < <(find "$pkg_path" \( -type f -o -type l \) -print0)
+
+    # Prune links recorded on a prior run whose source has since been deleted
+    # or renamed. Only ever removes a symlink that points into the dotfiles
+    # repo AND is dangling — never a real file or a foreign link.
+    if [[ -f "$manifest" ]]; then
+        local prev still cur target link
+        while IFS= read -r prev; do
+            [[ -n "$prev" ]] || continue
+            still=0
+            for cur in "${current_rels[@]}"; do
+                if [[ "$cur" == "$prev" ]]; then
+                    still=1
+                    break
+                fi
+            done
+            [[ "$still" == 1 ]] && continue
+            target="$HOME/$prev"
+            [[ -L "$target" ]] || continue
+            link="$(readlink "$target")"
+            if [[ "$link" == "$DOTFILES_DIR"/* && ! -e "$target" ]]; then
+                rm -f "$target"
+                echo "  - $target (source removed)"
+            fi
+        done <"$manifest"
+    fi
+
+    mkdir -p "$manifest_dir"
+    if ((${#current_rels[@]} > 0)); then
+        printf '%s\n' "${current_rels[@]}" | sort >"$manifest"
+    else
+        : >"$manifest"
+    fi
 }
 
 # Packages whose files are managed by Nix/home-manager instead of symlinks.
@@ -196,7 +237,9 @@ symlink_package() {
 #
 # `shell` (.aliases/.functions) is intentionally NOT here: home-manager bakes
 # its content into the generated zsh rc, but .bashrc still sources the symlinked
-# files, so the bash symlinker keeps them. There is no `fzf` package dir.
+# files, so the bash symlinker keeps them. There are no `fzf`, `zoxide`, or
+# `direnv` package dirs — home-manager owns those three outright, so they're
+# intentionally absent from this array; don't add package dirs for them.
 NIX_OWNED_PACKAGES=(git vim zsh starship atuin bat tmux)
 
 # Symlink all packages in a directory

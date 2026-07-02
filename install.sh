@@ -553,7 +553,9 @@ sync_claude_rules() {
     local -a current=()
     local entry name target current_link target_name
     for entry in "$agents_rules"/*; do
-        [[ -f "$entry" || -L "$entry" ]] || continue
+        # -f alone (it follows symlinks): a dangling symlink passes -L and
+        # would be re-admitted — and re-created in ~/.claude/rules — forever.
+        [[ -f "$entry" ]] || continue
         name="$(basename "$entry")"
         [[ "$name" == .* ]] && continue
 
