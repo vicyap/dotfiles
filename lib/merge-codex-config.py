@@ -8,8 +8,11 @@ nux flags, `[notice]` migration records, and top-level scalars such as
 re-approval on every `dotfiles pull`).
 
 This re-emits the managed files (base, then optional local) verbatim, then
-appends any top-level scalar keys and tables the managed files do NOT define —
-keeping scalars in the pre-table region so the result stays valid TOML.
+appends only the runtime tables/scalars in RUNTIME_ALLOWLIST_TOPS /
+RUNTIME_ALLOWLIST_SCALARS below that the managed files do NOT define — keeping
+scalars in the pre-table region so the result stays valid TOML. Anything else
+left over from the previous file (e.g. a table deliberately deleted from base)
+is dropped on regen, which is what makes removals from base/local stick.
 
 Usage: merge-codex-config.py BASE LOCAL OLD  > merged.toml
   BASE  managed base config (required)
@@ -29,6 +32,12 @@ import sys
 HDR = re.compile(r"^\s*\[\[?\s*([A-Za-z0-9_-]+)")
 # A top-level scalar assignment: `key = value` (Codex top-level keys are bare).
 SCALAR = re.compile(r"^\s*([A-Za-z0-9_-]+)\s*=")
+
+# Runtime-written tables/scalars Codex maintains outside the managed files.
+# Only these survive from OLD when the managed files don't define them; any
+# other leftover top-level key/table (e.g. one deleted from base) is dropped.
+RUNTIME_ALLOWLIST_TOPS = {"projects", "hooks", "tui", "notice"}
+RUNTIME_ALLOWLIST_SCALARS = {"service_tier"}
 
 
 def parse(path):
@@ -88,7 +97,9 @@ def main():
     preserved_scalars = [
         line
         for line in old_pre
-        if (k := scalar_key(line)) and k not in managed_scalar_keys
+        if (k := scalar_key(line))
+        and k not in managed_scalar_keys
+        and k in RUNTIME_ALLOWLIST_SCALARS
     ]
     out.extend(preserved_scalars)
     if out and not out[-1].endswith("\n"):
@@ -99,7 +110,11 @@ def main():
         out.extend(block["lines"])
     for block in local_blocks:
         out.extend(block["lines"])
-    preserved_blocks = [b for b in old_blocks if b["top"] not in managed_tops]
+    preserved_blocks = [
+        b
+        for b in old_blocks
+        if b["top"] not in managed_tops and b["top"] in RUNTIME_ALLOWLIST_TOPS
+    ]
     if preserved_blocks:
         out.append(
             "\n# --- preserved runtime state "
