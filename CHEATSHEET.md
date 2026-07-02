@@ -9,8 +9,8 @@ Installed via Nix home-manager (primary), with `mise` for language runtimes plus
 | Tool         | Replaces / does                                                  |
 |--------------|------------------------------------------------------------------|
 | `rg`         | `grep` — recursive content search, respects `.gitignore`         |
-| `fd`         | `find` — sane syntax (`fdfind` on apt; aliased to `fd`)          |
-| `bat`        | `cat` with syntax highlighting (`batcat` on apt; aliased)        |
+| `fd`         | `find` — sane syntax                                             |
+| `bat`        | `cat` with syntax highlighting                                   |
 | `eza`        | `ls` with icons, git status, tree                                |
 | `dust`       | `du` — visual disk-usage tree                                    |
 | `procs`      | `ps` — modern, colored, sortable process listing                 |
