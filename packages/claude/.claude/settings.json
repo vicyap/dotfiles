@@ -4,9 +4,15 @@
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
     "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "100"
   },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "PostToolUse": [
       {
@@ -71,11 +77,6 @@
     "type": "command",
     "command": "~/.claude/statusline.sh"
   },
-  "attribution": {
-    "commit": "",
-    "pr": "",
-    "sessionUrl": false
-  },
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
@@ -107,7 +108,7 @@
       }
     }
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "medium",
   "autoUpdatesChannel": "latest",
   "tui": "default",
   "voice": {
