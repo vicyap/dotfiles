@@ -17,7 +17,10 @@
     mouse = true;
     baseIndex = 1;
     escapeTime = 10;
-    historyLimit = 1000000;
+    # 100k lines is still ~2 months of scrollback per pane; the old 1M cap let
+    # a single chatty pane hold gigabytes of history on a host with an OOM
+    # postmortem (resurrect also captures pane contents every 15 min).
+    historyLimit = 100000;
     terminal = "tmux-256color";
     # The config is hand-tuned; don't layer tmux-sensible on top.
     sensibleOnTop = false;
@@ -53,6 +56,9 @@
       set -g repeat-time 400
       # focus-events: the module defaults this off; the old config wants it on.
       set -g focus-events on
+      # Pass modified keys (ctrl+shift combos etc.) through to programs that
+      # ask for them — ghostty and vim both speak the extended-keys protocol.
+      set -g extended-keys on
 
       # True color + ghostty passthrough
       set -as terminal-overrides ",xterm-ghostty:RGB"
