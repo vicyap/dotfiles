@@ -17,7 +17,7 @@ measured results and everything intentionally left as a recommendation.
 | atuin: `search_mode = "daemon-fuzzy"` | Ctrl-R queries daemon index instead of SQLite per keystroke |
 | bash/zsh: trailing `[[ -f ... ]] &&` guard → `if` | `bash -i -c cmd` no longer starts with `$? = 1` |
 | bash: add `~/.resend/bin` to PATH | parity with zsh `home.sessionPath` |
-| tmux: `historyLimit` 1M → 100k, `extended-keys on` | bounded per-pane memory on the OOM-postmortem host |
+| tmux: `extended-keys on` | modified-key passthrough (ghostty/vim). A 100k scrollback cap was also tried and reverted — the 1M `historyLimit` is intentional |
 | install: wire `hooks/pre-commit` via `core.hooksPath` | gitleaks scan actually runs now (was never installed) |
 | install: `\|\| warn` guards on apt/curl/brew/atuin steps | transient network failure no longer aborts converge/refresh |
 | install: drop `ensure_extra_tools` | `mise run update:tools` already runs the same six setup tasks — every `dotfiles update` built them twice |

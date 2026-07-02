@@ -17,10 +17,9 @@
     mouse = true;
     baseIndex = 1;
     escapeTime = 10;
-    # 100k lines is still ~2 months of scrollback per pane; the old 1M cap let
-    # a single chatty pane hold gigabytes of history on a host with an OOM
-    # postmortem (resurrect also captures pane contents every 15 min).
-    historyLimit = 100000;
+    # 1M lines per pane is deliberate — deep scrollback is worth the memory
+    # here. Revisit only if memory pressure returns.
+    historyLimit = 1000000;
     terminal = "tmux-256color";
     # The config is hand-tuned; don't layer tmux-sensible on top.
     sensibleOnTop = false;
