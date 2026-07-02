@@ -19,11 +19,12 @@ PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 [[ -f ~/.aliases ]] && source ~/.aliases
 [[ -f ~/.functions ]] && source ~/.functions
 
-# PATH
+# PATH (kept in step with zsh's home.sessionPath in nix/home/features/zsh.nix)
 export PATH="$HOME/.dotfiles/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/.resend/bin:$PATH"
 
 # mise
 command -v mise &>/dev/null && eval "$(mise activate bash)"
@@ -43,4 +44,7 @@ command -v atuin &>/dev/null && eval "$(atuin init bash --disable-up-arrow)"
 # Secrets
 [[ -f ~/.secrets ]] && source ~/.secrets
 
-[[ -f "$HOME/.posthog/env" ]] && . "$HOME/.posthog/env"
+# `if` rather than `&&`: as the last line of the file, a short-circuited &&
+# would leave the whole rc with exit status 1 when the file is absent, so
+# every `bash -i -c cmd` reports spurious failure.
+if [[ -f "$HOME/.posthog/env" ]]; then . "$HOME/.posthog/env"; fi

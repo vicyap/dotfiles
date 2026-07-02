@@ -222,7 +222,9 @@
         # Secrets (API keys, tokens — not tracked in dotfiles)
         [[ -f ~/.secrets ]] && source ~/.secrets
 
-        [[ -f "$HOME/.posthog/env" ]] && . "$HOME/.posthog/env"
+        # `if` rather than `&&`: near the end of the rc, a short-circuited &&
+        # would leave a fresh shell with exit status 1 when the file is absent.
+        if [[ -f "$HOME/.posthog/env" ]]; then . "$HOME/.posthog/env"; fi
 
         # Open URLs on local browser from headless remotes (ssh-opener)
         if [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" && "$(uname)" != "Darwin" ]]; then
