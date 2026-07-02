@@ -806,6 +806,18 @@ ensure_agents_local() {
     echo "  + created empty AGENTS.local.md"
 }
 
+# Point this repo's git hooks at the tracked hooks/ dir so the gitleaks
+# pre-commit scan actually runs — without this, hooks/pre-commit is dead weight.
+wire_git_hooks() {
+    if [[ -d "$DOTFILES_DIR/.git" ]]; then
+        git -C "$DOTFILES_DIR" config core.hooksPath hooks \
+            && echo "  ok core.hooksPath = hooks" \
+            || echo "  Warning: could not set core.hooksPath"
+    else
+        echo "  Skipped: not a git checkout"
+    fi
+}
+
 # --- Convergence: fast, idempotent local steps -----------------------------
 # Shared by a fresh install.sh run and `dotfiles pull`. No expensive upstream
 # refresh here (no brew bundle, mise upgrades, flake updates, or plugin pulls) —
@@ -835,6 +847,10 @@ converge() {
 
     echo "=== Symlinking packages ==="
     symlink_all_packages "$DOTFILES_DIR/packages"
+    echo
+
+    echo "=== Wiring git hooks (gitleaks pre-commit) ==="
+    wire_git_hooks
     echo
 
     # rhinestone-only: graceful memory-pressure handling (zram + swapfile + earlyoom)
