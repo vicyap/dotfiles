@@ -63,6 +63,17 @@
           compinit
           touch "$zcd"
         fi
+        # Byte-compile the dump when it is newer than its .zwc (zsh prefers a
+        # fresher name.zwc when sourcing). Compile to a temp name and mv so
+        # concurrently starting shells never read a half-written file.
+        if [[ -s $zcd && (! -s $zcd.zwc || $zcd -nt $zcd.zwc) ]]; then
+          local tmp=$zcd.$$
+          if zcompile "$tmp" "$zcd" 2>/dev/null; then
+            mv -f "$tmp.zwc" "$zcd.zwc"
+          else
+            rm -f "$tmp.zwc"
+          fi
+        fi
       }
     '';
 
