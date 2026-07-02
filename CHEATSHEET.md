@@ -21,6 +21,8 @@ Installed via Nix home-manager (primary), with `mise` for language runtimes plus
 | `yq`         | jq for YAML                                                      |
 | `jless`      | interactive JSON pager (collapse/expand/search)                  |
 | `gping`      | `ping` with a live graph                                         |
+| `w3m`        | terminal web browser (text-only, instant)                        |
+| `browsh`     | high-fidelity terminal browser — headless Firefox, full JS       |
 | `dog`        | `dig` — modern DNS lookup                                        |
 | `mosh`       | `ssh` that survives sleep / network drops                        |
 | `lazygit`    | TUI git client (stage, commit, rebase, cherry-pick, log)         |
@@ -152,7 +154,7 @@ After the first `~/.dotfiles/install.sh`:
 
 ```sh
 for t in lazygit lazydocker fastfetch atuin dust procs sd gping dog mosh \
-         yq jless just entr cloc glow chafa rg fd bat eza zoxide fzf \
+         w3m yq jless just entr cloc glow chafa rg fd bat eza zoxide fzf \
          hyperfine ffmpeg gitleaks shfmt; do
   command -v "$t" >/dev/null && printf "ok    %s\n" "$t" || printf "MISS  %s\n" "$t"
 done

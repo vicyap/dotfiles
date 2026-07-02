@@ -30,6 +30,9 @@
     btop
 
     # network
+    w3m
+    browsh # high-fidelity terminal browser: drives the headless firefox below (full JS)
+    firefox # engine for browsh; runs headless, no display needed
     gping
     mosh
     # NOTE: `dog` (dogdns) was removed from nixpkgs 26.05 (unmaintained upstream);
