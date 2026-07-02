@@ -47,6 +47,25 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
+    # Mtime-gated compinit: reuse the dump with -C (skipping the ~23ms compaudit
+    # fpath walk) unless the dump is missing or older than a day. The (#q)
+    # qualifier needs extended_glob, which is not set globally — hence the
+    # anonymous function with local_options. `touch` keeps the daily clock
+    # honest even when compinit leaves an unchanged dump untouched.
+    completionInit = ''
+      autoload -U compinit
+      () {
+        setopt local_options extended_glob
+        local zcd=''${ZDOTDIR:-$HOME}/.zcompdump
+        if [[ -n $zcd(#qN.mh-24) ]]; then
+          compinit -C
+        else
+          compinit
+          touch "$zcd"
+        fi
+      }
+    '';
+
     plugins = [
       {
         name = "fzf-tab";
@@ -125,6 +144,14 @@
       df = "df -h";
       du = "du -h";
     };
+
+    # ~/.zshenv: Ubuntu's /etc/zsh/zshrc runs its own full compinit unless this
+    # is set, doubling completion init for every /usr/bin/zsh start (the login
+    # shell SSH and tmux actually spawn) — measured at ~580ms per shell on
+    # rhinestone. Inert on macOS, whose /etc/zshrc has no such gate.
+    envExtra = ''
+      skip_global_compinit=1
+    '';
 
     # ~/.zprofile (login shell): the omakase MOTD. The macOS Homebrew shellenv
     # block lives in nix/home/hosts/lima.nix (profileExtra concatenates across
