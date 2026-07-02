@@ -11,17 +11,6 @@
         "matcher": "^Bash$"
       }
     ],
-    "PostToolUseFailure": [
-      {
-        "hooks": [
-          {
-            "command": "atuin hook codex",
-            "type": "command"
-          }
-        ],
-        "matcher": "^Bash$"
-      }
-    ],
     "PreToolUse": [
       {
         "hooks": [
