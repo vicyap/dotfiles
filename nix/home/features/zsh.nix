@@ -226,9 +226,11 @@
         # would leave a fresh shell with exit status 1 when the file is absent.
         if [[ -f "$HOME/.posthog/env" ]]; then . "$HOME/.posthog/env"; fi
 
-        # Open URLs on local browser from headless remotes (ssh-opener)
+        # Open URLs on local browser from headless remotes (ssh-opener).
+        # Inner `if` rather than `&&`: this is the last command of the rc, so a
+        # missing ssh-opener would otherwise start every shell with $? = 1.
         if [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" && "$(uname)" != "Darwin" ]]; then
-          command -v ssh-opener &>/dev/null && export BROWSER="ssh-opener"
+          if command -v ssh-opener &>/dev/null; then export BROWSER="ssh-opener"; fi
         fi
       '')
     ];
