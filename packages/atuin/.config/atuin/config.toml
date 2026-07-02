@@ -18,6 +18,11 @@ show_preview = true
 # Pressing Esc from the search returns the original line you were typing.
 exit_mode = "return-original"
 
+# Route Ctrl+R search through the daemon's in-memory index instead of a
+# per-keystroke SQLite query. If a shell ever hangs on history after a crash,
+# remove the stale daemon socket: rm ~/.local/share/atuin/atuin.sock
+search_mode = "daemon-fuzzy"
+
 # Vim-mode insert keymap matches the rest of the workflow (vim editor, vi tmux mode).
 keymap_mode = "vim-insert"
 
