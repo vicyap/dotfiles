@@ -71,6 +71,11 @@
     "type": "command",
     "command": "~/.claude/statusline.sh"
   },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
