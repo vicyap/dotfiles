@@ -2,6 +2,11 @@
 truncation_length = 2
 truncate_to_repo = false
 
+# Default-enabled module that probes the network namespace on every prompt
+# (1-3ms) and never has output outside a netns.
+[netns]
+disabled = true
+
 [aws]
 format = '\[[$symbol($profile)(\($region\))(\[$duration\])]($style)\]'
 
