@@ -15,35 +15,40 @@ branch=$(git -c core.useBuiltinFSMonitor=false --no-optional-locks rev-parse --a
 if [ -n "$branch" ]; then
     # Check for uncommitted changes (fast method)
     dirty=""
-    if ! git -c core.useBuiltinFSMonitor=false --no-optional-locks diff --quiet HEAD 2>/dev/null; then
-        dirty="●"
-    elif [ -n "$(git -c core.useBuiltinFSMonitor=false --no-optional-locks ls-files --others --exclude-standard 2>/dev/null | head -1)" ]; then
-        dirty="+"
+    status_out=$(git -c core.useBuiltinFSMonitor=false --no-optional-locks status --porcelain 2>/dev/null)
+    if [ -n "$status_out" ]; then
+        if echo "$status_out" | grep -qv '^??'; then
+            dirty="●"
+        else
+            dirty="+"
+        fi
     fi
     printf ' [%s%s]' "$branch" "$dirty"
 fi
 
-# Model name from JSON input (cyan color)
-model=$(echo "$input" | jq -r '.model.display_name // empty')
-if [ -n "$model" ]; then
-    printf ' \033[01;36m[%s]\033[00m' "$model"
-fi
-
-# Context USED percentage from JSON input (magenta color)
-ctx=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
-if [ -n "$ctx" ]; then
-    printf ' \033[01;35m[ctx %.0f%%]\033[00m' "$ctx"
-fi
-
-# Rate limit usage from built-in rate_limits field (available for Claude.ai subscribers)
-IFS=$'\t' read -r five_pct five_resets seven_pct seven_resets < <(
+# Model, context USED percentage, and rate limit usage from JSON input
+IFS=$'\t' read -r model ctx five_pct five_resets seven_pct seven_resets < <(
     echo "$input" | jq -r '[
+        (.model.display_name // ""),
+        (.context_window.used_percentage // ""),
         (.rate_limits.five_hour.used_percentage // ""),
         (.rate_limits.five_hour.resets_at // ""),
         (.rate_limits.seven_day.used_percentage // ""),
         (.rate_limits.seven_day.resets_at // "")
     ] | @tsv' 2>/dev/null
 )
+
+# Model name (cyan color)
+if [ -n "$model" ]; then
+    printf ' \033[01;36m[%s]\033[00m' "$model"
+fi
+
+# Context USED percentage (magenta color)
+if [ -n "$ctx" ]; then
+    printf ' \033[01;35m[ctx %.0f%%]\033[00m' "$ctx"
+fi
+
+# Rate limit usage from built-in rate_limits field (available for Claude.ai subscribers)
 if [ -n "$five_pct" ] && [ -n "$seven_pct" ]; then
     now=$(date +%s)
     format_duration() {
