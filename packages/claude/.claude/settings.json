@@ -12,7 +12,7 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "model": "claude-fable-5[1m]",
+  "model": "claude-fable-5",
   "hooks": {
     "PostToolUse": [
       {
@@ -108,7 +108,7 @@
       }
     }
   },
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "autoUpdatesChannel": "latest",
   "tui": "default",
   "voice": {
