@@ -3,9 +3,9 @@
 
 Codex writes runtime state into ~/.codex/config.toml that the dotfiles do not
 manage: `[projects]` trust entries, `[hooks.state]` approval hashes, `[tui]`
-nux flags, `[notice]` migration records, and top-level scalars such as
-`service_tier`. A plain `rm + cat base` regen wipes all of it (forcing hook
-re-approval on every `dotfiles pull`).
+nux flags, `[notice]` migration records, `[plugins]` install/enable state, and
+top-level scalars such as `service_tier`. A plain `rm + cat base` regen wipes
+all of it (forcing hook re-approval on every `dotfiles pull`).
 
 This re-emits the managed files (base, then optional local) verbatim, then
 appends only the runtime tables/scalars in RUNTIME_ALLOWLIST_TOPS /
@@ -36,7 +36,7 @@ SCALAR = re.compile(r"^\s*([A-Za-z0-9_-]+)\s*=")
 # Runtime-written tables/scalars Codex maintains outside the managed files.
 # Only these survive from OLD when the managed files don't define them; any
 # other leftover top-level key/table (e.g. one deleted from base) is dropped.
-RUNTIME_ALLOWLIST_TOPS = {"projects", "hooks", "tui", "notice"}
+RUNTIME_ALLOWLIST_TOPS = {"projects", "hooks", "tui", "notice", "plugins"}
 RUNTIME_ALLOWLIST_SCALARS = {"service_tier"}
 
 
@@ -118,7 +118,7 @@ def main():
     if preserved_blocks:
         out.append(
             "\n# --- preserved runtime state "
-            "(projects/hooks/tui/notice; not in base/local) ---\n"
+            "(projects/hooks/tui/notice/plugins; not in base/local) ---\n"
         )
         for block in preserved_blocks:
             out.extend(block["lines"])

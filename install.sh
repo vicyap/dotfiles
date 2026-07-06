@@ -329,21 +329,35 @@ setup_claude_plugins() {
     done
 }
 
+# `codex update` can only self-update the official standalone layout
+# (~/.codex/packages/standalone + the ~/.local/bin/codex symlink), so the CLI
+# comes from the official installer instead of Nix/npm/brew. The installer is
+# idempotent and doubles as the updater (checksummed, swaps a `current` link).
+install_codex_cli() {
+    if ! has_cmd curl; then
+        echo "  Skipped: curl not installed"
+        return 0
+    fi
+
+    curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh \
+        || echo "  Warning: codex standalone install failed"
+}
+
+# Converge fast path: only hit the network when the standalone layout is
+# missing (fresh machine, or codex was previously Nix/npm-owned).
+ensure_codex_cli() {
+    if [[ -x "$HOME/.codex/packages/standalone/current/bin/codex" ]]; then
+        echo "  ok codex standalone present"
+        return 0
+    fi
+    install_codex_cli
+}
+
 setup_codex_plugins() {
     if ! has_cmd codex; then
         echo "  Skipped: codex not installed"
         return 0
     fi
-
-    local marketplaces=(
-        "https://github.com/PostHog/ai-plugin.git"
-    )
-
-    local marketplace
-    for marketplace in "${marketplaces[@]}"; do
-        codex plugin marketplace add "$marketplace" \
-            || echo "  Skipped: $marketplace marketplace add failed"
-    done
 
     local curated="$HOME/.codex/.tmp/plugins"
     local curated_manifest="$curated/.agents/plugins/marketplace.json"
@@ -370,7 +384,7 @@ setup_codex_plugins() {
     fi
 
     local plugins=(
-        "posthog@posthog"
+        "posthog@openai-curated"
         "linear@openai-curated"
         "google-calendar@openai-curated"
         "gmail@openai-curated"
@@ -379,6 +393,12 @@ setup_codex_plugins() {
         "vercel@openai-curated"
         "github@openai-curated"
         "google-drive@openai-curated"
+        "expo@openai-curated"
+        "cloudflare@openai-curated"
+        "openai-developers@openai-curated"
+        "build-web-apps@openai-curated"
+        "build-ios-apps@openai-curated"
+        "build-macos-apps@openai-curated"
     )
 
     local plugin
@@ -740,9 +760,10 @@ generate_codex_config() {
     mkdir -p "$codex_dir"
 
     # Codex writes runtime state into config.toml ([projects] trust, [hooks.state]
-    # approvals, [tui]/[notice], service_tier). A plain regen wipes them, forcing
-    # hook re-approval on every pull. The merger re-emits base+local then
-    # preserves any top-level keys/tables the managed files don't define.
+    # approvals, [tui]/[notice], [plugins] installs, service_tier). A plain regen
+    # wipes them, forcing hook re-approval on every pull. The merger re-emits
+    # base+local then preserves any top-level keys/tables the managed files
+    # don't define.
     if has_cmd python3 && [[ -f "$merger" ]]; then
         local tmp
         tmp="$(mktemp)"
@@ -877,6 +898,10 @@ converge() {
     migrate_skill_configs
     echo
 
+    echo "=== Ensuring codex CLI (standalone) ==="
+    ensure_codex_cli
+    echo
+
     echo "=== Generating codex config ==="
     generate_codex_config
     echo
@@ -953,6 +978,9 @@ refresh_upstream() {
         echo
     fi
 
+    echo "=== Updating codex CLI ==="
+    install_codex_cli
+    echo
     echo "=== Installing Codex plugins ==="
     setup_codex_plugins
     echo

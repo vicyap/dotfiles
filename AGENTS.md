@@ -29,7 +29,7 @@ dotfiles cd               # cd into the dotfiles repo
 functions in `install.sh`: `converge` does fast local steps (symlinks, home-manager
 `switch` against the locked flake, generated config, pinned mise runtimes);
 `refresh_upstream` does the expensive network refresh (flake update, Brewfile/apt,
-mise upgrades, Claude/Codex plugins, skill registries).
+mise upgrades, the codex CLI, Claude/Codex plugins, skill registries).
 
 Platform packages are installed by `install_platform_packages`:
 ```bash

@@ -39,7 +39,8 @@
     # it stays mise-managed via aqua:ogham/dog. Revisit `doggo` if desired.
 
     # git / dev tooling
-    codex # OpenAI Codex CLI (the macOS desktop app stays a Brewfile cask)
+    # NOTE: codex moved to the official standalone installer (install.sh
+    # install_codex_cli) — `codex update` can't self-update a Nix-owned binary.
     postgresql # psql client (nixpkgs has no client-only package)
     gh
     lazygit
