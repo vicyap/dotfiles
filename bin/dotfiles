@@ -47,6 +47,32 @@ load_libs() {
     source "$DOTFILES_DIR/install.sh"
 }
 
+# Serialize mutating runs, like apt's dpkg lock: concurrent pull/upgrade
+# would race git, symlinks, and home-manager. mkdir is atomic and portable
+# (macOS has no flock(1)); a stale lock from a dead run is reclaimed via a
+# PID liveness check.
+DOTFILES_LOCK_DIR="${TMPDIR:-/tmp}/dotfiles-$(id -u).lock"
+
+release_lock() {
+    rm -rf "$DOTFILES_LOCK_DIR"
+}
+
+acquire_lock() {
+    if ! mkdir "$DOTFILES_LOCK_DIR" 2>/dev/null; then
+        local pid
+        pid="$(cat "$DOTFILES_LOCK_DIR/pid" 2>/dev/null || true)"
+        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+            echo "Could not get lock $DOTFILES_LOCK_DIR: another dotfiles run is in progress (pid $pid)"
+            exit 1
+        fi
+        echo "  (removing stale lock left by pid ${pid:-unknown})"
+        rm -rf "$DOTFILES_LOCK_DIR"
+        mkdir "$DOTFILES_LOCK_DIR"
+    fi
+    echo $$ >"$DOTFILES_LOCK_DIR/pid"
+    trap release_lock EXIT
+}
+
 # Pull with rebase, stashing local edits around it. Without --autostash a
 # dirty tree aborts the rebase with a raw git error and no guidance.
 pull_latest() {
@@ -57,6 +83,7 @@ pull_latest() {
 }
 
 cmd_pull() {
+    acquire_lock
     echo "Pulling + converging dotfiles..."
     pull_latest
     echo
@@ -65,6 +92,7 @@ cmd_pull() {
 }
 
 cmd_upgrade() {
+    acquire_lock
     echo "Upgrading dotfiles (pull + converge + upstream refresh)..."
     pull_latest
     echo
