@@ -28,6 +28,9 @@
     "${config.home.homeDirectory}/.local/bin"
     "${config.home.homeDirectory}/bin"
     "${config.home.homeDirectory}/.resend/bin"
+    # mise shims: version-stable fallback for non-interactive shells and hooks;
+    # `mise activate` prepends real tool paths in interactive shells anyway.
+    "${config.home.homeDirectory}/.local/share/mise/shims"
   ];
 
   programs.zsh = {
