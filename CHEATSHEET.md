@@ -32,6 +32,7 @@ Installed via Nix home-manager (primary), with `mise` for language runtimes plus
 | `btop`       | TUI process/resource monitor                                     |
 | `glow`       | terminal markdown renderer                                       |
 | `chafa`      | terminal image viewer                                            |
+| `realesrgan-ncnn-vulkan` | AI image upscaler on the Apple GPU (macOS only)      |
 | `just`       | modern task runner (replaces `make` for ad-hoc tasks)            |
 | `entr`       | re-run a command on file change                                  |
 | `cloc`       | count lines of code, by language                                 |

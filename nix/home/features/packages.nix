@@ -7,7 +7,7 @@
 # atuin, zoxide, direnv, tmux, git. gh is kept below because git's credential
 # helper references it; vim's binary stays apt/brew-managed (only ~/.vimrc is
 # Nix-owned).
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   home.packages = with pkgs; [
     # modern CLI replacements
@@ -61,5 +61,10 @@
     chafa
     cloc
     hyperfine # CLI benchmarking
+  ]
+  ++ lib.optionals stdenv.isDarwin [
+    # macOS-only: AI image upscaler (models bundled in share/models); uses the
+    # Apple GPU via Vulkan/MoltenVK. Verified working on Apple Silicon.
+    realesrgan-ncnn-vulkan
   ];
 }
