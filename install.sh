@@ -403,6 +403,7 @@ install_agent_skills() {
     for registry in "${registries[@]}"; do
         npx --yes skills add "$registry" \
             --global \
+            --agent claude-code codex \
             --yes || echo "  Skipped: $registry install failed"
     done
 }
