@@ -39,6 +39,8 @@
     # it stays mise-managed via aqua:ogham/dog. Revisit `doggo` if desired.
 
     # git / dev tooling
+    codex # OpenAI Codex CLI (the macOS desktop app stays a Brewfile cask)
+    postgresql # psql client (nixpkgs has no client-only package)
     gh
     lazygit
     lazydocker
