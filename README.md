@@ -91,7 +91,7 @@ After installation, use the `dotfiles` CLI:
 
 ```bash
 dotfiles pull     # Pull latest, then converge this machine (fast, repeatable)
-dotfiles update   # pull + refresh upstream (flake inputs, Homebrew, mise, plugins)
+dotfiles upgrade  # pull + refresh upstream (flake inputs, Homebrew, mise, plugins)
 dotfiles cd       # cd into the dotfiles repo
 ```
 

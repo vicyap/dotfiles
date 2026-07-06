@@ -21,11 +21,11 @@ When proposing changes, prefer cohesion with the existing curation over adding n
 ```bash
 ./install.sh              # Fresh machine: converge + upstream refresh (zsh, mise, symlinks, home-manager, tools)
 dotfiles pull             # Pull latest + converge (fast, repeatable; alias: sync)
-dotfiles update           # pull + expensive upstream refresh (flake inputs, Homebrew, mise upgrades, plugins)
+dotfiles upgrade          # pull + expensive upstream refresh (flake inputs, Homebrew, mise upgrades, plugins)
 dotfiles cd               # cd into the dotfiles repo
 ```
 
-`install.sh` and `dotfiles pull`/`update` share the same `converge`/`refresh_upstream`
+`install.sh` and `dotfiles pull`/`upgrade` share the same `converge`/`refresh_upstream`
 functions in `install.sh`: `converge` does fast local steps (symlinks, home-manager
 `switch` against the locked flake, generated config, pinned mise runtimes);
 `refresh_upstream` does the expensive network refresh (flake update, Brewfile/apt,
@@ -34,7 +34,7 @@ mise upgrades, Claude/Codex plugins, skill registries).
 Platform packages are installed by `install_platform_packages`:
 ```bash
 brew bundle --file=platform/macos/Brewfile   # macOS
-dotfiles update                              # Ubuntu apt packages from configured sources
+dotfiles upgrade                             # Ubuntu apt packages from configured sources
 ```
 
 ## Architecture

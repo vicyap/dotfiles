@@ -25,7 +25,7 @@ Usage: dotfiles <command>
 Commands:
   pull          Pull latest, then converge this machine: symlinks, home-manager,
                 generated config, pinned tools. Fast and repeatable. Alias: sync.
-  update        Pull + refresh upstream: Nix flake inputs, Homebrew/apt packages,
+  upgrade       Pull + refresh upstream: Nix flake inputs, Homebrew/apt packages,
                 mise upgrades, Claude/Codex plugins, agent-skill registries.
   cd            Print the dotfiles directory (the shell wraps this to actually cd).
   agents-local  Edit ~/.agents/AGENTS.local.md (machine-specific agent notes).
@@ -64,8 +64,8 @@ cmd_pull() {
     converge
 }
 
-cmd_update() {
-    echo "Updating dotfiles (pull + converge + upstream refresh)..."
+cmd_upgrade() {
+    echo "Upgrading dotfiles (pull + converge + upstream refresh)..."
     pull_latest
     echo
     load_libs
@@ -92,7 +92,11 @@ main() {
 
     case "$cmd" in
         pull | sync) cmd_pull ;;
-        update) cmd_update ;;
+        upgrade) cmd_upgrade ;;
+        update)
+            echo "'dotfiles update' was renamed to 'dotfiles upgrade'"
+            exit 1
+            ;;
         cd) cmd_cd ;;
         agents-local) cmd_agents_local ;;
         help | -h | --help) usage ;;

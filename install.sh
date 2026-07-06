@@ -828,7 +828,7 @@ wire_git_hooks() {
 # Shared by a fresh install.sh run and `dotfiles pull`. No expensive upstream
 # refresh here (no brew bundle, mise upgrades, flake updates, or plugin pulls) —
 # those live in refresh_upstream and run only on a fresh install or
-# `dotfiles update`.
+# `dotfiles upgrade`.
 converge() {
     require_supported_platform
 
@@ -917,7 +917,7 @@ converge() {
 }
 
 # --- Upstream refresh: expensive, network-bound ----------------------------
-# Runs only on a fresh install.sh and `dotfiles update`. Pulls newer upstream
+# Runs only on a fresh install.sh and `dotfiles upgrade`. Pulls newer upstream
 # state: flake inputs, Homebrew/apt packages, mise upgrades, extra CLI tools,
 # and Claude/Codex plugins plus agent-skill registries.
 refresh_upstream() {
@@ -999,7 +999,7 @@ main() {
     converge
 
     # Expensive upstream refresh — a fresh machine wants the full tool/plugin set
-    # (shared with `dotfiles update`).
+    # (shared with `dotfiles upgrade`).
     refresh_upstream
 
     # Set default shell (first run only; prompt only when the login shell is not

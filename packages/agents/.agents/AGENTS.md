@@ -66,7 +66,7 @@ Before creating a new config under `$HOME`, check whether its parent is already
 dotfiles-managed with `ls -la` and sibling symlinks into `~/.dotfiles`.
 
 After editing dotfiles, re-apply with `dotfiles pull` when requested. Use
-`dotfiles update` only when the user wants the slower upstream refresh.
+`dotfiles upgrade` only when the user wants the slower upstream refresh.
 
 ## Code Quality
 
