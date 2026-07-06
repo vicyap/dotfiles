@@ -11,6 +11,18 @@
   # codex is a macOS-only Homebrew cask; the alias would dangle on Linux.
   programs.zsh.shellAliases.cx = "codex";
 
+  # Weekly GC with generation expiry, via a home-manager launchd agent — the
+  # darwin counterpart of rhinestone's services.home-manager.autoExpire (that
+  # module is systemd-only). nix-darwin can't own this: nix/darwin/common.nix
+  # sets nix.enable = false, so its nix.gc options are unavailable.
+  # --delete-older-than expires this user's old profile generations (home
+  # included) before collecting. Verify with: launchctl list | grep nix-gc
+  nix.gc = {
+    automatic = true;
+    dates = "weekly"; # darwin allows a single entry only
+    options = "--delete-older-than 30d";
+  };
+
   # Homebrew shellenv (login shell). profileExtra is a `lines` option, so this
   # concatenates after the shared MOTD block in nix/home/features/zsh.nix.
   programs.zsh.profileExtra = ''

@@ -30,23 +30,18 @@ Steps on lima:
    shell-driven. If acceptable, remove the ghostty branch from theme.zsh and
    the clean/smudge filter from git.nix + .gitattributes.
 
-## 2. Nix GC / generation expiry (high)
+## 2. Nix GC / generation expiry (high) — APPLIED 2026-07-06
 
-rhinestone now runs `services.home-manager.autoExpire` (30-day expiry, weekly
-store GC) via a systemd user timer — that module shape doesn't carry to
-darwin. On lima, configure GC through nix-darwin instead, in
-`nix/darwin/common.nix` (or lima.nix):
+Configured in `nix/home/hosts/lima.nix` as home-manager `nix.gc` (weekly
+launchd agent, `--delete-older-than 30d`), not nix-darwin's `nix.gc`:
+`nix/darwin/common.nix` sets `nix.enable = false` (the upstream installer owns
+the daemon), which makes nix-darwin's nix.* options unavailable. The
+home-manager agent runs as the user, which also expires the user's old
+profile generations (home-manager included) before collecting — the darwin
+counterpart of rhinestone's `services.home-manager.autoExpire`.
 
-```nix
-nix.gc = {
-  automatic = true;
-  interval = { Weekday = 0; Hour = 3; Minute = 0; };
-  options = "--delete-older-than 30d";
-};
-nix.optimise.automatic = true;
-```
-
-Verify with `sudo launchctl list | grep nix-gc` after `darwin-rebuild switch`.
+Verify on lima after `dotfiles pull` + new login:
+`launchctl list | grep nix-gc` (user domain, not sudo).
 
 ## 3. mise binary currency (low)
 
