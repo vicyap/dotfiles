@@ -10,14 +10,19 @@ erlang = "28"
 elixir = "1.19"
 
 # CLI tools (starship, delta, atuin, lazygit, lazydocker, fastfetch, dust,
-# procs, sd, gping, yq, jless, just, glow) are now provided by home-manager and
-# removed from here. mise keeps language runtimes plus the few tools without a
-# nixpkgs 26.05 home: `dog` (removed from nixpkgs) and op.
+# procs, sd, gping, yq, jless, just, glow, doggo) are now provided by
+# home-manager and removed from here. mise keeps language runtimes, the LSP
+# servers below, and op.
 
-# Network — `dog` was dropped from nixpkgs 26.05, so it stays mise-managed.
-"aqua:ogham/dog" = "latest"
+# LSP servers. The pipx backend delegates to uvx automatically since uv is
+# managed above; npm uses the mise-managed node.
+"npm:typescript-language-server" = "latest"
+"npm:typescript" = "latest"
+"pipx:pyright" = "latest"
 
-# Secrets / credentials (1Password CLI — `op`; auth via OP_SERVICE_ACCOUNT_TOKEN in ~/.secrets)
+# Secrets / credentials (1Password CLI — `op`; auth via OP_SERVICE_ACCOUNT_TOKEN in ~/.secrets).
+# nixpkgs ships `_1password-cli`, but it's unfree and this Nix config sets no
+# allowUnfree, so op stays mise-managed.
 op = "latest"
 
 [settings]
@@ -26,6 +31,11 @@ op = "latest"
 # env only actually changes when entering a project with its own mise.toml;
 # in-place config edits take effect on the next cd or new shell.
 hook_env.chpwd_only = true
+
+# Pin resolved versions in mise.lock (tracked in the repo) so the "latest"
+# pins above converge to identical versions on every machine. Versions move
+# only when `dotfiles upgrade` runs `mise upgrade`.
+lockfile = true
 
 [tasks."setup:web"]
 description = "Install web CLI from source (requires Go)"
@@ -67,24 +77,6 @@ echo "✓ ssh-opener installed to ~/.local/bin/ssh-opener"
 echo "  Set SSH_OPENER_LOCALHOST in ~/.secrets to use ssh-opener"
 """
 
-[tasks."setup:pyright"]
-description = "Install pyright-langserver (Python LSP)"
-run = """
-#!/usr/bin/env bash
-set -e
-uv tool install pyright
-echo "✓ pyright-langserver installed"
-"""
-
-[tasks."setup:typescript-lsp"]
-description = "Install typescript-language-server (TypeScript LSP)"
-run = """
-#!/usr/bin/env bash
-set -e
-npm install -g typescript-language-server typescript
-echo "✓ typescript-language-server installed"
-"""
-
 [tasks."setup:tmux-status"]
 description = "Build and install tmux-status (Go binary for tmux status line)"
 run = """
@@ -97,8 +89,10 @@ echo "✓ tmux-status installed to ~/.local/bin/tmux-status"
 """
 
 # gitleaks and shfmt are provided by Nix/home-manager (see
-# nix/home/features/packages.nix), not bespoke mise tasks.
+# nix/home/features/packages.nix), not bespoke mise tasks. pyright and
+# typescript-language-server are pipx:/npm: backend tools above, so
+# `mise upgrade` keeps them current — no setup tasks needed.
 
 [tasks."update:tools"]
-description = "Update all CLI tools (web, ask, ssh-opener, pyright, typescript-lsp, tmux-status)"
-depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:pyright", "setup:typescript-lsp", "setup:tmux-status"]
+description = "Update all CLI tools (web, ask, ssh-opener, tmux-status)"
+depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:tmux-status"]
