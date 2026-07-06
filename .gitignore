@@ -4,6 +4,13 @@
 **/.ssh/known_hosts
 **/*.key
 **/*.pem
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/id_rsa
+**/id_ed25519
+**/id_ecdsa
 
 # Credentials
 **/.netrc
@@ -20,6 +27,10 @@
 !packages/agents/.agents/rules/secrets.md
 **/.env
 **/.env.*
+
+# VM migration bundles (carry .env credentials — never commit)
+vms/**/*.zip
+vms/**/*.tar.gz
 
 # Local overrides
 *.local

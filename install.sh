@@ -118,14 +118,10 @@ cleanup_relocated_nix_symlinks() {
 # switch fail with "would be clobbered". Drop them first — only ever a symlink
 # that points back into this repo, so no real file is ever touched.
 remove_legacy_nix_symlinks() {
-    local owned
-    if [[ -n "${NIX_OWNED_PACKAGES:-}" ]]; then
-        owned=("${NIX_OWNED_PACKAGES[@]}")
-    else
-        owned=(git vim zsh starship atuin bat tmux)
-    fi
+    # NIX_OWNED_PACKAGES is the single source of truth in lib/symlink.sh; both
+    # entrypoints (install.sh main and bin/dotfiles) source it before converge.
     local pkg base rel target f
-    for pkg in "${owned[@]}"; do
+    for pkg in "${NIX_OWNED_PACKAGES[@]}"; do
         base="$DOTFILES_DIR/packages/$pkg"
         [[ -d "$base" ]] || continue
         while IFS= read -r -d '' f; do
@@ -361,7 +357,6 @@ setup_codex_plugins() {
 
     local curated="$HOME/.codex/.tmp/plugins"
     local curated_manifest="$curated/.agents/plugins/marketplace.json"
-    local curated_sha="$HOME/.codex/.tmp/plugins.sha"
     if [[ -f "$curated_manifest" ]]; then
         echo "  ok openai-curated marketplace"
     else
@@ -377,10 +372,6 @@ setup_codex_plugins() {
                 && echo "  + openai-curated marketplace" \
                 || echo "  Skipped: openai-curated marketplace clone failed"
         fi
-    fi
-    if [[ -f "$curated_manifest" && -d "$curated/.git" ]]; then
-        git -C "$curated" rev-parse HEAD >"$curated_sha" \
-            || echo "  Skipped: openai-curated marketplace sha update failed"
     fi
 
     local plugins=(
@@ -497,15 +488,6 @@ sync_dotfiles_agent_skills() {
 
     mkdir -p "$agents_skills"
 
-    # Names sync copied here last time. Used to prune skills removed from dotfiles
-    # without touching skills installed by other means (Anthropic packs, npx skills, etc.).
-    local -a previous=()
-    if [[ -f "$manifest" ]]; then
-        while IFS= read -r name; do
-            [[ -n "$name" ]] && previous+=("$name")
-        done <"$manifest"
-    fi
-
     # Mirror current source.
     local mirrored=0
     local -a current=()
@@ -521,22 +503,17 @@ sync_dotfiles_agent_skills() {
         mirrored=$((mirrored + 1))
     done
 
-    # Remove dirs we copied previously that are no longer in source.
-    local prev keep removed=0
-    for prev in "${previous[@]}"; do
-        keep=false
-        for name in "${current[@]}"; do
-            if [[ "$name" == "$prev" ]]; then
-                keep=true
-                break
-            fi
-        done
-        if ! $keep && [[ -d "$agents_skills/$prev" ]]; then
+    # Remove dirs we copied previously (per the manifest) that are no longer
+    # in source, without touching skills installed by other means (Anthropic
+    # packs, npx skills, etc.).
+    local prev removed=0
+    while IFS= read -r prev; do
+        if [[ -d "$agents_skills/$prev" ]]; then
             rm -rf "${agents_skills:?}/$prev"
             removed=$((removed + 1))
             echo "  - $prev (removed from dotfiles)"
         fi
-    done
+    done < <(manifest_stale_entries "$manifest" "${current[@]}")
 
     # Record what we own now so the next sync can detect future removals.
     if ((${#current[@]} > 0)); then
@@ -560,14 +537,6 @@ sync_claude_rules() {
     fi
 
     mkdir -p "$claude_rules"
-
-    local -a previous=()
-    if [[ -f "$manifest" ]]; then
-        local prev_name
-        while IFS= read -r prev_name; do
-            [[ -n "$prev_name" ]] && previous+=("$prev_name")
-        done <"$manifest"
-    fi
 
     local linked=0
     local skipped=0
@@ -609,26 +578,19 @@ sync_claude_rules() {
         linked=$((linked + 1))
     done
 
+    # Prune links recorded on a prior run (per the manifest) whose source rule
+    # has since been removed.
     local prev keep stale_removed=0
-    for prev in "${previous[@]}"; do
-        keep=false
-        for name in "${current[@]}"; do
-            if [[ "$name" == "$prev" ]]; then
-                keep=true
-                break
-            fi
-        done
-
+    while IFS= read -r prev; do
         target="$claude_rules/$prev"
-        if ! $keep && [[ -L "$target" ]]; then
-            current_link="$(readlink "$target")"
-            if [[ "$current_link" == "$agents_rules/$prev" || "$current_link" == "$old_rules/$prev" ]]; then
-                rm -f "$target"
-                echo "  - $prev (stale)"
-                stale_removed=$((stale_removed + 1))
-            fi
+        [[ -L "$target" ]] || continue
+        current_link="$(readlink "$target")"
+        if [[ "$current_link" == "$agents_rules/$prev" || "$current_link" == "$old_rules/$prev" ]]; then
+            rm -f "$target"
+            echo "  - $prev (stale)"
+            stale_removed=$((stale_removed + 1))
         fi
-    done
+    done < <(manifest_stale_entries "$manifest" "${current[@]}")
 
     # First migration run may not have a manifest yet. Clean up old
     # dotfiles-owned Claude rule links whose source files moved or were folded
@@ -777,9 +739,13 @@ generate_codex_config() {
         return 0
     fi
 
-    # Fallback when python3 is unavailable: original regen. Resets runtime state.
-    [[ -f "$target" ]] && echo "  Warning: python3 unavailable — codex runtime state (trust/hooks) will be reset"
-    : >"$target"
+    # Without python3 the merge can't preserve Codex runtime state ([projects]
+    # trust, [hooks.state] approvals, [plugins]), so never overwrite an
+    # existing config — only seed a machine that has none yet.
+    if [[ -f "$target" ]]; then
+        echo "  Skipped: python3 unavailable — left existing $target untouched"
+        return 0
+    fi
     cat "$base" >"$target"
     if [[ -f "$local_config" ]]; then
         printf '\n' >>"$target"
@@ -968,9 +934,10 @@ refresh_upstream() {
             mise self-update --yes || echo "  Warning: mise self-update failed"
         fi
         mise upgrade --yes || echo "  Warning: mise upgrade failed"
-        # update:tools depends on all six setup:* tasks, so this is also the
-        # single place the extra CLI tools (web, ask, ssh-opener, pyright,
-        # typescript-lsp, tmux-status) get built.
+        # update:tools depends on the setup:* tasks, so this is also the
+        # single place the extra CLI tools (web, ask, ssh-opener, tmux-status)
+        # get built. pyright/typescript-language-server are mise backend tools
+        # now, covered by `mise upgrade` above.
         mise run update:tools || echo "  Warning: mise update:tools failed"
         # Removes installs unreferenced by any config mise has seen; project
         # pins reinstall automatically the next time that project is visited.
