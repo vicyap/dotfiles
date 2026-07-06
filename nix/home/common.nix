@@ -4,6 +4,9 @@
   imports = [
     ./features/packages.nix
     ./features/git.nix
+    ./features/gh.nix
+    ./features/lazygit.nix
+    ./features/fastfetch.nix
     ./features/vim.nix
     ./features/zsh.nix
     ./features/starship.nix

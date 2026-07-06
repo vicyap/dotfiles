@@ -4,9 +4,8 @@
 #
 # Tools with a dedicated home-manager module are NOT listed here — their
 # `programs.<name>.enable` installs the package: bat, delta, fzf, starship,
-# atuin, zoxide, direnv, tmux, git. gh is kept below because git's credential
-# helper references it; vim's binary stays apt/brew-managed (only ~/.vimrc is
-# Nix-owned).
+# atuin, zoxide, direnv, tmux, git, gh, lazygit, fastfetch. vim's binary stays
+# apt/brew-managed (only ~/.vimrc is Nix-owned).
 { pkgs, lib, ... }:
 {
   home.packages = with pkgs; [
@@ -35,25 +34,26 @@
     firefox # engine for browsh; runs headless, no display needed
     gping
     mosh
-    # NOTE: `dog` (dogdns) was removed from nixpkgs 26.05 (unmaintained upstream);
-    # it stays mise-managed via aqua:ogham/dog. Revisit `doggo` if desired.
+    doggo # dig replacement (took over from the unmaintained `dog`, which nixpkgs 26.05 dropped)
 
     # git / dev tooling
     # NOTE: codex moved to the official standalone installer (install.sh
     # install_codex_cli) — `codex update` can't self-update a Nix-owned binary.
     postgresql # psql client (nixpkgs has no client-only package)
-    gh
-    lazygit
     lazydocker
     just
     entr
 
-    # formatters / linters / security (consolidated here from Brewfile + mise)
+    # formatters / linters / security (consolidated here from Brewfile + mise
+    # so both OSes get the same versions; shell.md requires shellcheck + shfmt
+    # on every shell-script edit)
     gitleaks
     shfmt
-
-    # prompt / shell / history / fetch
-    fastfetch
+    shellcheck
+    typos
+    taplo
+    yamlfmt
+    clang-tools # clang-format
 
     # media
     ffmpeg # transcode-video-* / img conversions

@@ -14,7 +14,7 @@ cat <<EOF
 
   ${bold}Search    ${reset}  rg ${dim}(grep)${reset}    fd ${dim}(find)${reset}
   ${bold}View      ${reset}  bat ${dim}(cat)${reset}    eza ${dim}(ls)${reset}     chafa ${dim}(img)${reset}
-  ${bold}Inspect   ${reset}  dust ${dim}(du)${reset}    dog ${dim}(dig)${reset}    btop   fastfetch
+  ${bold}Inspect   ${reset}  dust ${dim}(du)${reset}    doggo ${dim}(dig)${reset}  btop   fastfetch
   ${bold}Data      ${reset}  jq           yq ${dim}(yaml)${reset}
   ${bold}Funcs     ${reset}  try  compress  decompress  img2{jpg,png}  transcode-video-*
 

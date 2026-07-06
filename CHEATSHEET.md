@@ -23,7 +23,7 @@ Installed via Nix home-manager (primary), with `mise` for language runtimes plus
 | `gping`      | `ping` with a live graph                                         |
 | `w3m`        | terminal web browser (text-only, instant)                        |
 | `browsh`     | high-fidelity terminal browser — headless Firefox, full JS       |
-| `dog`        | `dig` — modern DNS lookup                                        |
+| `doggo`      | `dig` — modern DNS lookup                                        |
 | `mosh`       | `ssh` that survives sleep / network drops                        |
 | `lazygit`    | TUI git client (stage, commit, rebase, cherry-pick, log)         |
 | `lazydocker` | TUI docker client (containers, images, logs)                     |
@@ -41,6 +41,13 @@ Installed via Nix home-manager (primary), with `mise` for language runtimes plus
 | `zoxide`     | `cd` with frecency (`z foo`, `zi` for fuzzy)                     |
 | `fzf`        | fuzzy finder (Ctrl+R, Ctrl+T, Alt+C, plus `ff`)                  |
 | `gh`         | GitHub CLI, also wired as git credential helper                  |
+| `op`         | 1Password CLI (service-account auth via `~/.secrets`)           |
+| `psql`       | PostgreSQL client (via nixpkgs `postgresql`)                     |
+| `htop`       | interactive process viewer (kept alongside `btop`)               |
+| `tree`       | directory tree listing                                           |
+| `gitleaks`   | secret scanner (wired as this repo's pre-commit hook)            |
+| `shfmt`      | shell formatter (`shfmt -w -i 4 -bn -ci`)                        |
+| `ffmpeg`     | media transcoding (backs `transcode-video-*`)                    |
 
 ## Aliases
 
@@ -154,7 +161,7 @@ After the first `~/.dotfiles/install.sh`:
 ## Verifying the toolkit
 
 ```sh
-for t in lazygit lazydocker fastfetch atuin dust procs sd gping dog mosh \
+for t in lazygit lazydocker fastfetch atuin dust procs sd gping doggo mosh \
          w3m yq jless just entr cloc glow chafa rg fd bat eza zoxide fzf \
          hyperfine ffmpeg gitleaks shfmt; do
   command -v "$t" >/dev/null && printf "ok    %s\n" "$t" || printf "MISS  %s\n" "$t"
@@ -166,7 +173,7 @@ type ff compress decompress img2jpg fip dip lip try
 
 ## Troubleshooting
 
-- **"command not found: lazygit"** etc. — most tools come from Nix home-manager now, so run `dotfiles pull` then open a new shell. For a mise-managed runtime/extra (`dog`, `op`, language toolchains), check `mise ls` and `~/.local/state/mise/log/`.
+- **"command not found: lazygit"** etc. — most tools come from Nix home-manager now, so run `dotfiles pull` then open a new shell. For a mise-managed runtime/extra (`op`, the LSP servers, language toolchains), check `mise ls` and `~/.local/state/mise/log/`.
 - **fzf-tab Tab not working** — fzf-tab is a home-manager-managed zsh plugin (`nix/home/features/zsh.nix`). Re-run `dotfiles pull` and open a new shell.
 - **atuin Ctrl+R not popping up** — `command -v atuin` to verify install. Then `atuin status`. The history db lives at `~/.local/share/atuin/history.db`.
 - **Icons render as boxes** — Nerd Font missing. lima: `brew install --cask font-jetbrains-mono-nerd-font`, then restart ghostty.

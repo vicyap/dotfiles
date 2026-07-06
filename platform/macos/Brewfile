@@ -13,13 +13,9 @@ brew "watch"
 brew "p7zip"
 brew "qrencode"
 
-# Formatters & linters (gitleaks + shfmt are provided by home-manager — see
-# nix/home/features/packages.nix)
-brew "shellcheck"
-brew "typos-cli"
-brew "taplo"
-brew "yamlfmt"
-brew "clang-format"
+# Formatters & linters live in home-manager now (gitleaks, shfmt, shellcheck,
+# typos, taplo, yamlfmt, clang-format — see nix/home/features/packages.nix) so
+# both OSes get the same versions.
 brew "cmake"
 
 # Development
@@ -36,9 +32,9 @@ brew "poppler"
 brew "pdfly"
 brew "signal-cli"
 
-# Language tooling
+# Language tooling (typescript-language-server comes from mise's npm backend
+# on both OSes — see packages/mise/.config/mise/config.toml)
 brew "eslint"
-brew "typescript-language-server"
 brew "zig"
 
 # Cloud / infra
