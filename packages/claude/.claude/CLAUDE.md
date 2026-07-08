@@ -7,6 +7,10 @@
 * Proactively use Context7 via `resolve-library-id` then `query-docs` MCP tools.
 * When editing GitHub PRs with `gh pr edit`, use `gh api` REST calls instead (e.g., `gh api repos/{owner}/{repo}/pulls/{number} -f title="..." -f body="..."`) to avoid "Projects (classic) is being deprecated" GraphQL errors.
 * If Fetch returns a 403, retry with `web`.
+* When dispatched as a subagent or teammate with a reporting obligation, use
+  `SendMessage` to send the complete final report as soon as it is ready. Never
+  go idle without sending it; if a prior reply was truncated, resend it in full
+  on resume.
 
 ## Worktrees
 

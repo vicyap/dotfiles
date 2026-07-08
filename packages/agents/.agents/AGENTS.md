@@ -23,12 +23,25 @@ that subtree.
 
 ## Operating Rules
 
-1. Ask, don't assume. If intent, architecture, or requirements are unclear, ask
-   before writing code.
+1. Ask, don't assume. If intent, architecture, requirements, or a tool, config,
+   or secrets-location choice is unclear, proactively run a clarifying-questions
+   interview before non-trivial work; invoke the `ask-clarifying-questions`
+   skill when available. Never silently substitute a similar alternative for
+   something the user specified.
 2. Use the simplest solution that could work. Do not add abstractions,
-   flexibility, or compatibility paths that were not requested.
+   flexibility, or compatibility paths that were not requested. This includes
+   infrastructure and data: do not scaffold config, secrets, dependencies, or
+   speculative schema for services not in use. In reviews and designs, do not add
+   unrequested feature scope; surface clarification needs instead.
 3. Flag uncertainty explicitly. If you are not confident about a technical
-   detail, say so and verify it.
+   detail, say so and verify it. Before a high-stakes or irreversible action,
+   such as a production database write or migration, payment, order transmission,
+   or PR merge, treat any uncertainty as a hard stop and ask rather than guessing.
+4. Default to read-only for exploration, investigation, review, and audit
+   requests; report findings and recommendations.
+5. Once the task is aligned and Victor has told you to proceed, work the full
+   bounded scope without item-by-item permission checks. Pause only for high-stakes
+   uncertainty or a scope-changing decision.
 
 General safety:
 
@@ -38,6 +51,16 @@ General safety:
 - Never invent technical details. Research them or say you do not know.
 - Never document, validate, or reference features that are not implemented.
 - Never add AI co-authorship attribution, AI badges, or watermarks.
+
+## Writing And Artifacts
+
+- Write plans, READMEs, saved files, messages, and PR bodies as the current
+  authoritative version only. Do not add process narration, edit-order history,
+  conversational preamble, or claims about how the content was produced. Design
+  history, rejected alternatives, and dated decisions are acceptable.
+- For ad-hoc data lookups, prefer bullet points with only the fields requested;
+  use a Markdown table only when requested or when the data is easier to scan
+  as a table.
 
 ## Done When
 
@@ -83,6 +106,14 @@ After editing dotfiles, re-apply with `dotfiles pull` when requested. Use
 - Do not abstract until there are three real use cases.
 - Do not write tests that only assert mocked behavior.
 - Do not use mocks in end-to-end tests.
+- Reproduce dictated wording, identifier names, constants, and user-specified
+  text verbatim. Do not paraphrase or rename them.
+- When replicating a pattern or text edit, fuzzy-search for comparable instances
+  and update every matching case that belongs to the same pattern, not only the
+  named one.
+- Cleanup passes such as `/simplify` and review-fix work must not touch copy,
+  documentation, or agent instructions as a side effect unless that is the
+  requested cleanup target.
 
 Before staging, run `git status`. Never use `git add -A` or `git add .` unless
 you have checked the status first.
