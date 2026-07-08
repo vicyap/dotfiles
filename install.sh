@@ -815,6 +815,16 @@ wire_git_hooks() {
     fi
 }
 
+ensure_modal_cli() {
+    if ! has_cmd mise; then
+        echo "  Skipped: mise not installed"
+        return 0
+    fi
+
+    mise exec -- uv tool install --upgrade modal \
+        || echo "  Warning: modal install/upgrade failed"
+}
+
 # --- Convergence: fast, idempotent local steps -----------------------------
 # Shared by a fresh install.sh run and `dotfiles pull`. No expensive upstream
 # refresh here (no brew bundle, mise upgrades, flake updates, or plugin pulls) —
@@ -889,6 +899,10 @@ converge() {
     if has_cmd mise; then
         echo "=== Converging mise runtimes (pinned) ==="
         mise install --yes || echo "  Warning: mise install failed"
+        echo
+
+        echo "=== Installing/upgrading modal CLI ==="
+        ensure_modal_cli
         echo
 
         echo "=== Importing atuin history ==="

@@ -40,7 +40,6 @@
     # NOTE: codex moved to the official standalone installer (install.sh
     # install_codex_cli) — `codex update` can't self-update a Nix-owned binary.
     postgresql # psql client (nixpkgs has no client-only package)
-    python3Packages.modal # modal
     lazydocker
     just
     entr

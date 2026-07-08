@@ -66,7 +66,19 @@ Sensitive data lives in `~/.secrets` (never committed). Both `.zshrc` and `.bash
 
 ### Tool Management
 
-`mise` manages language runtimes (Go, Node, Python, Bun, Erlang, Elixir), pinned in `packages/mise/.config/mise/config.toml`, plus a few setup-task tools (`setup:web`, `setup:ask`, `setup:ssh-opener`). The general CLI tool set now comes from Nix home-manager (`nix/home/features/packages.nix`); reach for a mise task when adding a language runtime or a tool Nix can't manage.
+Choose a tool owner based on its update policy. Nix home-manager is for stable,
+general-purpose programs where reproducibility matters more than immediacy
+(`rg`, `fd`, `bat`, `tmux`, `git`, etc.). `mise` and `uv` are for tools where
+latest is usually best: programming languages, LSPs, fast-moving developer
+tools, company/vendor CLIs, and Python CLIs published primarily through PyPI.
+
+`mise` manages language runtimes (Go, Node, Python, Bun, Erlang, Elixir), pinned
+in `packages/mise/.config/mise/config.toml`, plus a few setup-task tools
+(`setup:web`, `setup:ask`, `setup:ssh-opener`). Use `uv tool` for Python CLIs
+that should track PyPI more closely than nixpkgs. The general stable CLI tool
+set comes from Nix home-manager (`nix/home/features/packages.nix`). Before
+adding or moving a CLI, check for PATH shadowing so the intended package manager
+owns the executable users will actually run.
 
 ### Host-Scoped System Setup (`platform/linux/setup-system.sh`)
 
@@ -74,8 +86,9 @@ System-level changes that are not `$HOME` symlinks and must apply to a single ho
 
 ## Tools
 
-- Nix home-manager (`nix/home/`) provides the shell and CLI tool set; nix-darwin (`nix/darwin/`) handles macOS system settings + GUI casks
-- `mise` manages language runtimes (versions pinned in `packages/mise/.config/mise/config.toml`)
+- Nix home-manager (`nix/home/`) provides the shell and stable CLI tool set; nix-darwin (`nix/darwin/`) handles macOS system settings + GUI casks
+- `mise` manages language runtimes and other latest-is-best dev tools (versions pinned in `packages/mise/.config/mise/config.toml`)
+- `uv tool` manages Python CLIs that should track PyPI closely
 - `brew` for bootstrap binaries (git/vim/zsh) and tooling not yet in Nix on macOS, `apt` on Ubuntu
 - Repos live at `~/code/{org}/{repo}` on all machines
 
