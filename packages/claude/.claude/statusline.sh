@@ -26,17 +26,34 @@ if [ -n "$branch" ]; then
     printf ' [%s%s]' "$branch" "$dirty"
 fi
 
-# Model, context USED percentage, and rate limit usage from JSON input
-IFS=$'\t' read -r model ctx five_pct five_resets seven_pct seven_resets < <(
-    echo "$input" | jq -r '[
+# Model, context USED percentage, and rate limit usage from JSON input.
+# One jq call emits one field per line; a separate `read` per field preserves
+# empty lines. A value that is still null at session start (e.g. rate limits
+# before they load) stays in its own field instead of collapsing and shifting a
+# reset timestamp into a percentage slot, which an IFS=$'\t' split would do.
+{
+    IFS= read -r model
+    IFS= read -r ctx
+    IFS= read -r five_pct
+    IFS= read -r five_resets
+    IFS= read -r seven_pct
+    IFS= read -r seven_resets
+} < <(
+    echo "$input" | jq -r '
         (.model.display_name // ""),
         (.context_window.used_percentage // ""),
         (.rate_limits.five_hour.used_percentage // ""),
         (.rate_limits.five_hour.resets_at // ""),
         (.rate_limits.seven_day.used_percentage // ""),
         (.rate_limits.seven_day.resets_at // "")
-    ] | @tsv' 2>/dev/null
+    ' 2>/dev/null
 )
+
+# A usable percentage is numeric and within 0-100, so a raw reset timestamp can
+# never be rendered as a "1783638000%".
+is_pct() { [[ $1 =~ ^[0-9]+(\.[0-9]+)?$ ]] && ((${1%.*} <= 100)); }
+# A usable reset time is a positive integer (unix epoch seconds).
+is_epoch() { [[ $1 =~ ^[0-9]+$ ]]; }
 
 # Model name (cyan color)
 if [ -n "$model" ]; then
@@ -44,12 +61,13 @@ if [ -n "$model" ]; then
 fi
 
 # Context USED percentage (magenta color)
-if [ -n "$ctx" ]; then
+if is_pct "$ctx"; then
     printf ' \033[01;35m[ctx %.0f%%]\033[00m' "$ctx"
 fi
 
-# Rate limit usage from built-in rate_limits field (available for Claude.ai subscribers)
-if [ -n "$five_pct" ] && [ -n "$seven_pct" ]; then
+# Rate limit usage from built-in rate_limits field (available for Claude.ai
+# subscribers). Rendered only once both windows report a sane percentage.
+if is_pct "$five_pct" && is_pct "$seven_pct"; then
     now=$(date +%s)
     format_duration() {
         local s=$1
@@ -63,11 +81,16 @@ if [ -n "$five_pct" ] && [ -n "$seven_pct" ]; then
         ((h > 0)) && r="${r}${h}h "
         printf '%s' "${r}${m}m"
     }
-    five_rem=$((${five_resets%.*} - now))
-    ((five_rem < 0)) && five_rem=0
-    seven_rem=$((${seven_resets%.*} - now))
-    ((seven_rem < 0)) && seven_rem=0
+    reset_label() {
+        is_epoch "$1" || {
+            printf '?'
+            return
+        }
+        local rem=$(($1 - now))
+        ((rem < 0)) && rem=0
+        format_duration "$rem"
+    }
     printf ' 5h: \033[0;32m%.0f%%\033[0m \033[2m(%s)\033[0m 7d: \033[0;32m%.0f%%\033[0m \033[2m(%s)\033[0m' \
-        "$five_pct" "$(format_duration "$five_rem")" \
-        "$seven_pct" "$(format_duration "$seven_rem")"
+        "$five_pct" "$(reset_label "$five_resets")" \
+        "$seven_pct" "$(reset_label "$seven_resets")"
 fi
