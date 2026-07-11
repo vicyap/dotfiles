@@ -1,0 +1,25 @@
+# /etc/zsh/zshenv: system-wide .zshenv file for zsh(1).
+#
+# Managed by ~/.dotfiles (platform/linux/setup-system.sh); the PATH block
+# below is Ubuntu's stock content.
+#
+# This file is sourced on all invocations of the shell.
+#
+# Global Order: zshenv, zprofile, zshrc, zlogin
+
+if [[ -z "$PATH" || "$PATH" == "/bin:/usr/bin" ]]
+then
+	export PATH="/usr/local/bin:/usr/bin:/bin:/usr/games"
+fi
+
+# Tailscale SSH sessions inherit tailscaled's OOMScoreAdjust=-1000 (tailscaled
+# never resets oom_score_adj for spawned shells, unlike sshd). Left in place,
+# everything launched from such a session would be skipped by both the kernel
+# OOM killer and earlyoom. Raising the value needs no privilege.
+if [[ -w /proc/self/oom_score_adj ]]; then
+	read -r _oom_score_adj < /proc/self/oom_score_adj
+	if (( _oom_score_adj < 0 )); then
+		echo 0 > /proc/self/oom_score_adj
+	fi
+	unset _oom_score_adj
+fi

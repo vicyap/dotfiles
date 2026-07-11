@@ -67,6 +67,10 @@ deploy_etc() {
     install_etc_file "systemd/zram-generator.conf" "/etc/systemd/zram-generator.conf" 0644
     install_etc_file "sysctl.d/99-rhinestone-memory.conf" "/etc/sysctl.d/99-rhinestone-memory.conf" 0644
     install_etc_file "default/earlyoom" "/etc/default/earlyoom" 0644
+    install_etc_file "systemd/system/tailscaled.service.d/10-oom.conf" "/etc/systemd/system/tailscaled.service.d/10-oom.conf" 0644
+    install_etc_file "systemd/system/ssh.service.d/10-oom.conf" "/etc/systemd/system/ssh.service.d/10-oom.conf" 0644
+    install_etc_file "systemd/system/system.slice.d/10-access-memorymin.conf" "/etc/systemd/system/system.slice.d/10-access-memorymin.conf" 0644
+    install_etc_file "zsh/zshenv" "/etc/zsh/zshenv" 0644
 }
 
 ensure_fstab() {
@@ -105,6 +109,38 @@ enable_services() {
     sudo systemctl restart earlyoom.service
 }
 
+protect_tailscaled() {
+    # The tailscaled.service.d drop-in applies on the next restart; restarting
+    # tailscaled here would drop live tailnet SSH sessions, so also set the
+    # running daemon's score directly.
+    local pid
+    pid="$(pgrep -xo tailscaled || true)"
+    if [[ -n "$pid" ]]; then
+        echo -1000 | sudo tee "/proc/$pid/oom_score_adj" >/dev/null
+        echo "ok tailscaled oom_score_adj=-1000 (live, pid $pid)"
+    else
+        echo "! tailscaled not running; drop-in applies on next start"
+    fi
+}
+
+apply_memory_min() {
+    # The MemoryMin drop-ins apply on service restart; write the cgroup files
+    # directly so the protection holds now without restarting sshd/tailscaled.
+    local cg entry
+    for entry in \
+        "/sys/fs/cgroup/system.slice:268435456" \
+        "/sys/fs/cgroup/system.slice/ssh.service:134217728" \
+        "/sys/fs/cgroup/system.slice/tailscaled.service:134217728"; do
+        cg="${entry%%:*}"
+        if [[ -f "$cg/memory.min" ]]; then
+            echo "${entry##*:}" | sudo tee "$cg/memory.min" >/dev/null
+            echo "ok memory.min=${entry##*:} ($cg)"
+        else
+            echo "! no cgroup at $cg; drop-in applies on next start"
+        fi
+    done
+}
+
 apply_sysctl() {
     sudo sysctl --system >/dev/null
     echo "ok sysctl applied (swappiness=$(cat /proc/sys/vm/swappiness), page-cluster=$(cat /proc/sys/vm/page-cluster))"
@@ -118,6 +154,11 @@ summary() {
     zramctl 2>/dev/null || true
     echo
     printf "earlyoom: %s\n" "$(systemctl is-active earlyoom.service)"
+    local ts_pid
+    ts_pid="$(pgrep -xo tailscaled || true)"
+    if [[ -n "$ts_pid" ]]; then
+        printf "tailscaled oom_score_adj: %s\n" "$(cat "/proc/$ts_pid/oom_score_adj")"
+    fi
 }
 
 main() {
@@ -128,6 +169,8 @@ main() {
     setup_swapfile
     apply_sysctl
     enable_services
+    protect_tailscaled
+    apply_memory_min
     summary
 }
 
