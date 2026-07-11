@@ -161,6 +161,7 @@ Use a skill when the user names it or when the task clearly matches its trigger.
 Before using a skill, read its `SKILL.md` completely and follow its routing for
 any referenced files. Dotfiles-owned skills include:
 
+- `ask-clarifying-questions`: interview before ambiguous implementation work.
 - `event-sourcing`: design or evolve event-sourced systems.
 - `simplify`: explicitly invoked cleanup pass that edits changed files directly.
 - `writer-editor`: draft or revise human-facing prose; ask before file edits.
