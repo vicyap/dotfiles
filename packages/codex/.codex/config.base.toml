@@ -1,4 +1,4 @@
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 personality = "pragmatic"
 approval_policy = "never"
@@ -6,6 +6,4 @@ sandbox_mode = "danger-full-access"
 web_search = "live"
 
 [mcp_servers.context7]
-url = "https://mcp.context7.com/mcp"
-# Header value resolved from $CONTEXT7_API_KEY at runtime (kept out of the repo).
-env_http_headers = { "CONTEXT7_API_KEY" = "CONTEXT7_API_KEY" }
+url = "https://mcp.context7.com/mcp/oauth"
