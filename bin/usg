@@ -90,6 +90,7 @@ def describe_window(label):
     return {
         "5h": "Current session",
         "7d": "Current week",
+        "7d:fable": "Current week (Fable)",
     }.get(label, label)
 
 
@@ -235,13 +236,17 @@ def fetch_codex_windows():
         raise ProviderUnavailable("usage API unavailable")
 
     rate_limit = data.get("rate_limit") or {}
-    primary = rate_limit.get("primary_window") or {}
-    secondary = rate_limit.get("secondary_window") or {}
     windows = []
-    if primary.get("used_percent") is not None:
-        windows.append(("5h", primary.get("used_percent"), primary.get("reset_at")))
-    if secondary.get("used_percent") is not None:
-        windows.append(("7d", secondary.get("used_percent"), secondary.get("reset_at")))
+    labels_by_duration = {
+        5 * 60 * 60: "5h",
+        7 * 24 * 60 * 60: "7d",
+    }
+    for key in ("primary_window", "secondary_window"):
+        window = rate_limit.get(key) or {}
+        label = labels_by_duration.get(window.get("limit_window_seconds"))
+        if label and window.get("used_percent") is not None:
+            windows.append((label, window.get("used_percent"), window.get("reset_at")))
+    windows.sort(key=lambda window: (window[0] != "5h", window[0]))
     if not windows:
         raise AuthRequired()
     return windows
@@ -380,6 +385,25 @@ def fetch_claude_windows():
         raise ProviderUnavailable("usage API unavailable")
 
     windows = []
+    limits = data.get("limits") or []
+    labels_by_kind = {
+        "session": "5h",
+        "weekly_all": "7d",
+    }
+    for limit in limits:
+        if not isinstance(limit, dict):
+            continue
+        label = labels_by_kind.get(limit.get("kind"))
+        if limit.get("kind") == "weekly_scoped":
+            model = ((limit.get("scope") or {}).get("model") or {}).get("display_name")
+            if model == "Fable":
+                label = "7d:fable"
+        if label and limit.get("percent") is not None:
+            windows.append((label, limit.get("percent"), limit.get("resets_at")))
+
+    if windows:
+        return windows
+
     five_hour = data.get("five_hour") or {}
     seven_day = data.get("seven_day") or {}
     if five_hour.get("utilization") is not None:
