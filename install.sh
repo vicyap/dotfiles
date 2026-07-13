@@ -317,7 +317,9 @@ setup_claude_plugins() {
 
     # Plugins to keep installed but disabled (install auto-enables)
     local disabled=(
+        "claude-code-setup@claude-plugins-official"
         "explanatory-output-style@claude-plugins-official"
+        "skill-creator@claude-plugins-official"
     )
 
     for plugin in "${disabled[@]}"; do
