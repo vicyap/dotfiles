@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Interfaces"
+  short_description: "Design and review interaction patterns"
+  default_prompt: "Use $design-interfaces to design or review this interface with clear pattern reasoning."
