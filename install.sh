@@ -397,6 +397,19 @@ setup_codex_plugins() {
         codex plugin add "$plugin" \
             || echo "  Skipped: $plugin install failed"
     done
+
+    # Remove unwanted bundled app plugins exposed by remote plugin sync.
+    local excluded_plugins=(
+        "app-6938a94a61d881918ef32cb999ff937c@openai-curated-remote" # Apple Music
+        "app-69bbcab1ccd08191a6df676440fa37af@openai-curated-remote" # GetMeDesign
+        "app-6982cfb482bc81918416ec35e7cc90e5@openai-curated-remote" # Shop
+        "app-68de829bf7648191acd70a907364c67c@openai-curated-remote" # Spotify
+    )
+
+    for plugin in "${excluded_plugins[@]}"; do
+        codex plugin remove "$plugin" \
+            || echo "  Skipped: $plugin removal failed"
+    done
 }
 
 install_agent_skills() {
