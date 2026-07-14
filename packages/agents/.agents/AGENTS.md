@@ -101,6 +101,8 @@ After editing dotfiles, re-apply with `dotfiles pull` when requested. Use
 - Use descriptive variable names. Single-letter names are only for simple
   counters or iterators.
 - Do not add deprecation comments when removing code.
+- If you need a paragraph-long comment to justify why the workaround is OK, the
+  code is wrong; fix the code.
 - Remove old implementations entirely when replacing them, unless compatibility
   was requested.
 - Do not abstract until there are three real use cases.
