@@ -63,14 +63,25 @@ install_etc_file() {
     echo "+ wrote $dst"
 }
 
-deploy_etc() {
+deploy_system_files() {
     install_etc_file "systemd/zram-generator.conf" "/etc/systemd/zram-generator.conf" 0644
     install_etc_file "sysctl.d/99-rhinestone-memory.conf" "/etc/sysctl.d/99-rhinestone-memory.conf" 0644
     install_etc_file "default/earlyoom" "/etc/default/earlyoom" 0644
+    install_etc_file "systemd/system/rhinestone-memory-monitor.service" "/etc/systemd/system/rhinestone-memory-monitor.service" 0644
+    install_etc_file "systemd/system/rhinestone-memory-monitor.timer" "/etc/systemd/system/rhinestone-memory-monitor.timer" 0644
     install_etc_file "systemd/system/tailscaled.service.d/10-oom.conf" "/etc/systemd/system/tailscaled.service.d/10-oom.conf" 0644
     install_etc_file "systemd/system/ssh.service.d/10-oom.conf" "/etc/systemd/system/ssh.service.d/10-oom.conf" 0644
     install_etc_file "systemd/system/system.slice.d/10-access-memorymin.conf" "/etc/systemd/system/system.slice.d/10-access-memorymin.conf" 0644
     install_etc_file "zsh/zshenv" "/etc/zsh/zshenv" 0644
+
+    local monitor_src="$SCRIPT_DIR/usr/local/libexec/rhinestone-memory-snapshot"
+    local monitor_dst="/usr/local/libexec/rhinestone-memory-snapshot"
+    if sudo cmp -s "$monitor_src" "$monitor_dst" 2>/dev/null; then
+        echo "ok $monitor_dst (unchanged)"
+    else
+        sudo install -D -m 0755 "$monitor_src" "$monitor_dst"
+        echo "+ wrote $monitor_dst"
+    fi
 }
 
 ensure_fstab() {
@@ -107,6 +118,10 @@ enable_services() {
     # earlyoom: enable at boot and (re)start to pick up /etc/default/earlyoom.
     sudo systemctl enable earlyoom.service >/dev/null 2>&1 || true
     sudo systemctl restart earlyoom.service
+
+    # Record structured memory, swap, zram, and pressure metrics in journald.
+    sudo systemctl enable --now rhinestone-memory-monitor.timer >/dev/null
+    sudo systemctl start rhinestone-memory-monitor.service
 }
 
 protect_tailscaled() {
@@ -154,6 +169,7 @@ summary() {
     zramctl 2>/dev/null || true
     echo
     printf "earlyoom: %s\n" "$(systemctl is-active earlyoom.service)"
+    printf "memory monitor: %s\n" "$(systemctl is-active rhinestone-memory-monitor.timer)"
     local ts_pid
     ts_pid="$(pgrep -xo tailscaled || true)"
     if [[ -n "$ts_pid" ]]; then
@@ -165,7 +181,7 @@ main() {
     require_host
     require_linux_apt
     install_packages
-    deploy_etc
+    deploy_system_files
     setup_swapfile
     apply_sysctl
     enable_services

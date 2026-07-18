@@ -1,0 +1,15 @@
+[Unit]
+Description=Record rhinestone memory, swap, and zram metrics
+ConditionHost=rhinestone
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/rhinestone-memory-snapshot
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectControlGroups=yes
+ProtectKernelTunables=yes
+MemoryMax=32M
+TasksMax=8

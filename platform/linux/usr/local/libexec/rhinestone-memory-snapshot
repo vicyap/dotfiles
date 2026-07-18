@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mem_metrics="$({
+    awk '
+        $1 == "MemTotal:" { mem_total = $2 }
+        $1 == "MemAvailable:" { mem_available = $2 }
+        $1 == "MemFree:" { mem_free = $2 }
+        $1 == "Buffers:" { buffers = $2 }
+        $1 == "Cached:" { cached = $2 }
+        $1 == "AnonPages:" { anon = $2 }
+        $1 == "Shmem:" { shmem = $2 }
+        $1 == "Slab:" { slab = $2 }
+        $1 == "SReclaimable:" { slab_reclaimable = $2 }
+        $1 == "SUnreclaim:" { slab_unreclaimable = $2 }
+        $1 == "SwapTotal:" { swap_total = $2 }
+        $1 == "SwapFree:" { swap_free = $2 }
+        END {
+            printf "mem_total_kib=%d mem_available_kib=%d mem_free_kib=%d buffers_kib=%d cached_kib=%d anon_kib=%d shmem_kib=%d slab_kib=%d slab_reclaimable_kib=%d slab_unreclaimable_kib=%d swap_total_kib=%d swap_free_kib=%d", mem_total, mem_available, mem_free, buffers, cached, anon, shmem, slab, slab_reclaimable, slab_unreclaimable, swap_total, swap_free
+        }
+    ' /proc/meminfo
+})"
+
+vm_metrics="$({
+    awk '
+        $1 == "pswpin" { pswpin = $2 }
+        $1 == "pswpout" { pswpout = $2 }
+        $1 == "pgmajfault" { pgmajfault = $2 }
+        $1 == "oom_kill" { oom_kill = $2 }
+        $1 ~ /^allocstall_/ { allocstall += $2 }
+        $1 ~ /^pgscan_kswapd/ { pgscan_kswapd += $2 }
+        $1 ~ /^pgsteal_kswapd/ { pgsteal_kswapd += $2 }
+        END {
+            printf "pswpin_pages=%d pswpout_pages=%d pgmajfault=%d oom_kill=%d allocstall=%d pgscan_kswapd=%d pgsteal_kswapd=%d", pswpin, pswpout, pgmajfault, oom_kill, allocstall, pgscan_kswapd, pgsteal_kswapd
+        }
+    ' /proc/vmstat
+})"
+
+psi_metrics="$({
+    awk '
+        $1 == "some" {
+            sub(/^avg10=/, "", $2)
+            sub(/^avg60=/, "", $3)
+            sub(/^avg300=/, "", $4)
+            sub(/^total=/, "", $5)
+            some_avg10 = $2
+            some_avg60 = $3
+            some_avg300 = $4
+            some_total = $5
+        }
+        $1 == "full" {
+            sub(/^avg10=/, "", $2)
+            sub(/^avg60=/, "", $3)
+            sub(/^avg300=/, "", $4)
+            sub(/^total=/, "", $5)
+            full_avg10 = $2
+            full_avg60 = $3
+            full_avg300 = $4
+            full_total = $5
+        }
+        END {
+            printf "psi_some_avg10=%s psi_some_avg60=%s psi_some_avg300=%s psi_some_total_usec=%s psi_full_avg10=%s psi_full_avg60=%s psi_full_avg300=%s psi_full_total_usec=%s", some_avg10, some_avg60, some_avg300, some_total, full_avg10, full_avg60, full_avg300, full_total
+        }
+    ' /proc/pressure/memory
+})"
+
+swap_metrics="$({
+    awk '
+        NR > 1 && $1 == "/dev/zram0" {
+            zram_size = $3
+            zram_used = $4
+        }
+        NR > 1 && $1 == "/swapfile" {
+            disk_size = $3
+            disk_used = $4
+        }
+        END {
+            printf "zram_swap_size_kib=%d zram_swap_used_kib=%d disk_swap_size_kib=%d disk_swap_used_kib=%d", zram_size, zram_used, disk_size, disk_used
+        }
+    ' /proc/swaps
+})"
+
+if [[ -r /sys/block/zram0/mm_stat ]]; then
+    read -r zram_orig_bytes zram_compressed_bytes zram_memory_bytes zram_memory_limit_bytes zram_memory_max_bytes zram_same_pages zram_pages_compacted zram_huge_pages zram_huge_pages_since </sys/block/zram0/mm_stat
+else
+    zram_orig_bytes=0
+    zram_compressed_bytes=0
+    zram_memory_bytes=0
+    zram_memory_limit_bytes=0
+    zram_memory_max_bytes=0
+    zram_same_pages=0
+    zram_pages_compacted=0
+    zram_huge_pages=0
+    zram_huge_pages_since=0
+fi
+
+cgroup_bytes() {
+    local path="$1"
+    if [[ -r "$path" ]]; then
+        cat "$path"
+    else
+        printf '0\n'
+    fi
+}
+
+machine_bytes="$(cgroup_bytes /sys/fs/cgroup/machine.slice/memory.current)"
+system_bytes="$(cgroup_bytes /sys/fs/cgroup/system.slice/memory.current)"
+user_bytes="$(cgroup_bytes /sys/fs/cgroup/user.slice/user-1000.slice/memory.current)"
+swappiness="$(</proc/sys/vm/swappiness)"
+
+printf 'memory-snapshot %s %s %s %s swappiness=%s zram_orig_bytes=%s zram_compressed_bytes=%s zram_memory_bytes=%s zram_memory_limit_bytes=%s zram_memory_max_bytes=%s zram_same_pages=%s zram_pages_compacted=%s zram_huge_pages=%s zram_huge_pages_since=%s machine_cgroup_bytes=%s system_cgroup_bytes=%s user_cgroup_bytes=%s\n' \
+    "$mem_metrics" \
+    "$vm_metrics" \
+    "$psi_metrics" \
+    "$swap_metrics" \
+    "$swappiness" \
+    "$zram_orig_bytes" \
+    "$zram_compressed_bytes" \
+    "$zram_memory_bytes" \
+    "$zram_memory_limit_bytes" \
+    "$zram_memory_max_bytes" \
+    "$zram_same_pages" \
+    "$zram_pages_compacted" \
+    "$zram_huge_pages" \
+    "$zram_huge_pages_since" \
+    "$machine_bytes" \
+    "$system_bytes" \
+    "$user_bytes"

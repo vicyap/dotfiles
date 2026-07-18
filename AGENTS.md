@@ -82,7 +82,7 @@ owns the executable users will actually run.
 
 ### Host-Scoped System Setup (`platform/linux/setup-system.sh`)
 
-System-level changes that are not `$HOME` symlinks and must apply to a single host live in `platform/linux/setup-system.sh`. Currently it is `rhinestone`-only memory-pressure hardening (zram swap + a 64 GiB disk swapfile + `earlyoom`, with `vm.swappiness=0`), added after the 2026-06-17 livelock postmortem. The script is idempotent, refuses to run on any host whose hostname is not `rhinestone`, and deploys root-owned `/etc` files stashed under `platform/linux/etc/`. `install.sh` invokes it from `main()` via `setup_linux_system`, guarded by hostname plus passwordless-sudo/interactive checks, so it is a no-op on macOS and every other machine.
+System-level changes that are not `$HOME` symlinks and must apply to a single host live in `platform/linux/setup-system.sh`. Currently it is `rhinestone`-only memory-pressure hardening (zram swap + a 64 GiB disk swapfile + `earlyoom`, with `vm.swappiness=20`), added after the 2026-06-17 livelock postmortem. A one-minute `rhinestone-memory-monitor.timer` also records structured memory, swap, zram, PSI, reclaim, and cgroup metrics in the persistent journal; inspect them with `journalctl -u rhinestone-memory-monitor.service`. The script is idempotent, refuses to run on any host whose hostname is not `rhinestone`, and deploys root-owned `/etc` files stashed under `platform/linux/etc/` plus its sampler under `/usr/local/libexec/`. `install.sh` invokes it from `main()` via `setup_linux_system`, guarded by hostname plus passwordless-sudo/interactive checks, so it is a no-op on macOS and every other machine.
 
 ## Tools
 

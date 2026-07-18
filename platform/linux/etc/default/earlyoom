@@ -6,11 +6,9 @@
 #
 #   -r 60     log a memory/swap report to the (persistent) journal every 60s
 #   -m 10,5   act at <10% available RAM (SIGTERM), <5% (SIGKILL)
-#   -s 100,100  ignore swap in the trigger: earlyoom requires BOTH conditions,
-#             and with vm.swappiness=0 the swap stays ~100% free forever, so
-#             any real swap threshold makes earlyoom a no-op (it never fired
-#             once while the box thrashed at 1.4% available RAM). 100,100
-#             keeps both the SIGTERM and SIGKILL paths memory-only.
+#   -s 100,100  keep both the SIGTERM and SIGKILL paths memory-only. zram can
+#             absorb cold pages before the memory threshold, but unused disk
+#             swap must not defer earlyoom until the box is already thrashing.
 #   --avoid   never target the SSH/tmux access path, core daemons, or VMs
 #             (qemu would be the largest process, but a SIGTERM is an unclean
 #             poweroff; sacrifice dev processes instead), so the box stays
