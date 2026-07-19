@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
       auto_correct: false
 
     node.vm.provider "libvirt" do |lv|
-      lv.memory = 16384
+      lv.memory = 8192
       lv.cpus = 6
       lv.machine_virtual_size = 100
       lv.title = "hermes"
@@ -28,7 +28,7 @@ Vagrant.configure("2") do |config|
     end
 
     node.vm.provider "virtualbox" do |vb|
-      vb.memory = 16384
+      vb.memory = 8192
       vb.cpus = 6
       vb.name = "hermes"
     end
