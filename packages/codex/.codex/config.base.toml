@@ -1,4 +1,4 @@
-log_dir = "/home/victor/.codex/logs"
+log_dir = "~/.codex/logs"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 personality = "pragmatic"
