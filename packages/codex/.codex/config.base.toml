@@ -1,3 +1,4 @@
+log_dir = "/home/victor/.codex/logs"
 model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 personality = "pragmatic"
@@ -7,3 +8,6 @@ web_search = "live"
 
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp/oauth"
+
+[tui]
+alternate_screen = "never"
