@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# rhinestone-only memory-pressure hardening: zram + disk swapfile + earlyoom.
+# rhinestone-only memory-pressure and NVMe-longevity configuration.
 #
 # Background: on 2026-06-17 rhinestone exhausted memory with no swap and no
 # userspace OOM manager, thrashed reclaiming page cache, livelocked, and hard
-# reset. This script makes memory pressure degrade gracefully instead.
+# reset. The host also keeps high-churn temporary data in RAM and batches
+# writeback to reduce NVMe wear.
 #
 # Idempotent and intentionally host-scoped: it refuses to run on any host other
 # than rhinestone so these system-level changes never leak to another machine.
@@ -33,7 +34,7 @@ require_linux_apt() {
 }
 
 install_packages() {
-    local want=(earlyoom systemd-zram-generator) missing=()
+    local want=(acl earlyoom systemd-zram-generator) missing=()
     local pkg
     for pkg in "${want[@]}"; do
         dpkg -s "$pkg" >/dev/null 2>&1 || missing+=("$pkg")
@@ -66,30 +67,177 @@ install_etc_file() {
 deploy_system_files() {
     install_etc_file "systemd/zram-generator.conf" "/etc/systemd/zram-generator.conf" 0644
     install_etc_file "sysctl.d/99-rhinestone-memory.conf" "/etc/sysctl.d/99-rhinestone-memory.conf" 0644
+    install_etc_file "sysctl.d/90-rhinestone-nvme-longevity.conf" "/etc/sysctl.d/90-rhinestone-nvme-longevity.conf" 0644
+    install_etc_file "sysctl.d/90-rhinestone-network.conf" "/etc/sysctl.d/90-rhinestone-network.conf" 0644
+    install_etc_file "sysctl.d/90-rhinestone-inotify.conf" "/etc/sysctl.d/90-rhinestone-inotify.conf" 0644
     install_etc_file "default/earlyoom" "/etc/default/earlyoom" 0644
     install_etc_file "systemd/system/rhinestone-memory-monitor.service" "/etc/systemd/system/rhinestone-memory-monitor.service" 0644
     install_etc_file "systemd/system/rhinestone-memory-monitor.timer" "/etc/systemd/system/rhinestone-memory-monitor.timer" 0644
+    install_etc_file "systemd/system/periodic-sync.service" "/etc/systemd/system/periodic-sync.service" 0644
+    install_etc_file "systemd/system/periodic-sync.timer" "/etc/systemd/system/periodic-sync.timer" 0644
+    install_etc_file "systemd/system/fstrim.timer.d/10-rhinestone-weekly.conf" "/etc/systemd/system/fstrim.timer.d/10-rhinestone-weekly.conf" 0644
+    install_etc_file "systemd/system/rhinestone-vagrant-tmpdirs.service" "/etc/systemd/system/rhinestone-vagrant-tmpdirs.service" 0644
+    install_etc_file "systemd/system/libvirtd.service.d/10-rhinestone-vagrant-tmpdirs.conf" "/etc/systemd/system/libvirtd.service.d/10-rhinestone-vagrant-tmpdirs.conf" 0644
     install_etc_file "systemd/system/tailscaled.service.d/10-oom.conf" "/etc/systemd/system/tailscaled.service.d/10-oom.conf" 0644
     install_etc_file "systemd/system/ssh.service.d/10-oom.conf" "/etc/systemd/system/ssh.service.d/10-oom.conf" 0644
     install_etc_file "systemd/system/system.slice.d/10-access-memorymin.conf" "/etc/systemd/system/system.slice.d/10-access-memorymin.conf" 0644
+    install_etc_file "tmpfiles.d/tmp.conf" "/etc/tmpfiles.d/tmp.conf" 0644
+    install_etc_file "tmpfiles.d/rhinestone-vagrant.conf" "/etc/tmpfiles.d/rhinestone-vagrant.conf" 0644
     install_etc_file "zsh/zshenv" "/etc/zsh/zshenv" 0644
 
-    local monitor_src="$SCRIPT_DIR/usr/local/libexec/rhinestone-memory-snapshot"
-    local monitor_dst="/usr/local/libexec/rhinestone-memory-snapshot"
-    if sudo cmp -s "$monitor_src" "$monitor_dst" 2>/dev/null; then
-        echo "ok $monitor_dst (unchanged)"
-    else
-        sudo install -D -m 0755 "$monitor_src" "$monitor_dst"
-        echo "+ wrote $monitor_dst"
-    fi
+    install_program "rhinestone-memory-snapshot"
+    install_program "rhinestone-vagrant-tmpdirs"
 }
 
-ensure_fstab() {
-    if ! grep -qE "^[[:space:]]*${SWAPFILE}[[:space:]]" /etc/fstab; then
-        echo "${SWAPFILE} none swap sw 0 0" | sudo tee -a /etc/fstab >/dev/null
-        echo "+ added ${SWAPFILE} to /etc/fstab"
+install_program() {
+    local name="$1"
+    local src="$SCRIPT_DIR/usr/local/libexec/$name"
+    local dst="/usr/local/libexec/$name"
+    if sudo cmp -s "$src" "$dst" 2>/dev/null; then
+        echo "ok $dst (unchanged)"
+        return 0
     fi
+    sudo install -D -m 0755 "$src" "$dst"
+    echo "+ wrote $dst"
 }
+
+archive_legacy_longevity_sysctl() {
+    local legacy="/etc/sysctl.d/99-nvme-longevity.conf"
+    local archive="${legacy}.disabled"
+    if [[ ! -e "$legacy" ]]; then
+        echo "ok legacy NVMe sysctl disabled"
+        return 0
+    fi
+    if sudo test -e "$archive"; then
+        archive="${archive}.$(date -u +%Y%m%dT%H%M%SZ)"
+    fi
+    sudo mv "$legacy" "$archive"
+    echo "+ archived $legacy as $archive"
+}
+
+archive_legacy_daily_fstrim_override() {
+    local legacy="/etc/systemd/system/fstrim.timer.d/override.conf"
+    local archive="${legacy}.disabled"
+    if [[ ! -e "$legacy" ]]; then
+        echo "ok vendor weekly fstrim schedule enabled"
+        return 0
+    fi
+    if sudo test -e "$archive"; then
+        archive="${archive}.$(date -u +%Y%m%dT%H%M%SZ)"
+    fi
+    sudo mv "$legacy" "$archive"
+    echo "+ archived $legacy as $archive"
+}
+
+update_fstab() (
+    local candidate
+    candidate="$(mktemp)"
+    trap 'rm -f "$candidate"' EXIT
+
+    awk '
+        function root_options(options, parts, count, result, position, option, saw_commit) {
+            count = split(options, parts, ",")
+            result = ""
+            saw_commit = 0
+            for (position = 1; position <= count; position++) {
+                option = parts[position]
+                if (option ~ /^(atime|relatime|strictatime|noatime)$/) {
+                    continue
+                }
+                if (option ~ /^commit=/) {
+                    if (!saw_commit) {
+                        option = "commit=120"
+                        saw_commit = 1
+                    } else {
+                        continue
+                    }
+                }
+                result = result (result == "" ? "" : ",") option
+            }
+            if (!saw_commit) {
+                result = result (result == "" ? "" : ",") "commit=120"
+            }
+            return result ",noatime"
+        }
+
+        /^[[:space:]]*#/ || NF < 4 {
+            print
+            next
+        }
+
+        $2 == "/" {
+            if (!saw_root) {
+                printf "%s\t%s\t%s\t%s\t%s\t%s\n", $1, $2, $3, root_options($4), $5, $6
+                saw_root = 1
+            }
+            next
+        }
+
+        $2 == "/tmp" {
+            if (!saw_tmp) {
+                print "tmpfs\t/tmp\ttmpfs\tdefaults,mode=1777,size=36G\t0\t0"
+                saw_tmp = 1
+            }
+            next
+        }
+
+        $2 == "/var/tmp" {
+            if (!saw_var_tmp) {
+                print "tmpfs\t/var/tmp\ttmpfs\tdefaults,mode=1777,size=4G\t0\t0"
+                saw_var_tmp = 1
+            }
+            next
+        }
+
+        $2 == "/var/lib/docker/tmp" {
+            if (!saw_docker_tmp) {
+                print "tmpfs\t/var/lib/docker/tmp\ttmpfs\tdefaults,size=16G,mode=1777\t0\t0"
+                saw_docker_tmp = 1
+            }
+            next
+        }
+
+        $1 == "/swapfile" && $2 == "none" && $3 == "swap" {
+            if (!saw_swapfile) {
+                print "/swapfile\tnone\tswap\tsw\t0\t0"
+                saw_swapfile = 1
+            }
+            next
+        }
+
+        { print }
+
+        END {
+            if (!saw_root) {
+                exit 42
+            }
+            if (!saw_tmp) {
+                print "tmpfs\t/tmp\ttmpfs\tdefaults,mode=1777,size=36G\t0\t0"
+            }
+            if (!saw_var_tmp) {
+                print "tmpfs\t/var/tmp\ttmpfs\tdefaults,mode=1777,size=4G\t0\t0"
+            }
+            if (!saw_docker_tmp) {
+                print "tmpfs\t/var/lib/docker/tmp\ttmpfs\tdefaults,size=16G,mode=1777\t0\t0"
+            }
+            if (!saw_swapfile) {
+                print "/swapfile\tnone\tswap\tsw\t0\t0"
+            }
+        }
+    ' /etc/fstab >"$candidate"
+
+    sudo findmnt --verify --tab-file "$candidate" >/dev/null
+    if sudo cmp -s "$candidate" /etc/fstab; then
+        echo "ok /etc/fstab targeted entries unchanged"
+        return 0
+    fi
+    if ! sudo test -e /etc/fstab.rhinestone-before-managed; then
+        sudo cp --archive /etc/fstab /etc/fstab.rhinestone-before-managed
+        echo "+ backed up /etc/fstab"
+    fi
+    sudo install -m 0644 "$candidate" /etc/fstab
+    echo "+ updated targeted /etc/fstab entries"
+)
 
 setup_swapfile() {
     if swapon --show=NAME --noheadings 2>/dev/null | grep -qx "$SWAPFILE"; then
@@ -104,24 +252,44 @@ setup_swapfile() {
         sudo swapon "$SWAPFILE"
         echo "+ $SWAPFILE enabled ($SWAPFILE_SIZE)"
     fi
-    ensure_fstab
 }
 
 enable_services() {
     sudo systemctl daemon-reload
 
     # zram: the generator builds units from zram-generator.conf; (re)start the
-    # setup service and activate the swap device.
-    sudo systemctl restart systemd-zram-setup@zram0.service 2>/dev/null || true
+    # setup service and activate the swap device. `start` leaves an already
+    # active zram device untouched.
+    sudo systemctl start systemd-zram-setup@zram0.service 2>/dev/null || true
     sudo systemctl start dev-zram0.swap 2>/dev/null || true
 
-    # earlyoom: enable at boot and (re)start to pick up /etc/default/earlyoom.
-    sudo systemctl enable earlyoom.service >/dev/null 2>&1 || true
-    sudo systemctl restart earlyoom.service
+    # Do not restart an active earlyoom while applying unrelated host tuning.
+    sudo systemctl enable --now earlyoom.service >/dev/null 2>&1 || true
 
     # Record structured memory, swap, zram, and pressure metrics in journald.
     sudo systemctl enable --now rhinestone-memory-monitor.timer >/dev/null
     sudo systemctl start rhinestone-memory-monitor.service
+
+    sudo systemctl enable --now periodic-sync.timer >/dev/null
+    sudo systemctl enable rhinestone-vagrant-tmpdirs.service >/dev/null
+    sudo systemctl start rhinestone-vagrant-tmpdirs.service
+    sudo systemctl enable fstrim.timer >/dev/null
+    sudo systemctl restart fstrim.timer
+}
+
+apply_mount_configuration() {
+    sudo mount -o remount,noatime,commit=120 /
+
+    local target
+    for target in /tmp /var/tmp /var/lib/docker/tmp; do
+        if sudo mountpoint -q "$target"; then
+            sudo mount -o remount "$target"
+        else
+            sudo mount "$target"
+        fi
+    done
+
+    sudo systemd-tmpfiles --create /etc/tmpfiles.d/tmp.conf
 }
 
 protect_tailscaled() {
@@ -158,7 +326,7 @@ apply_memory_min() {
 
 apply_sysctl() {
     sudo sysctl --system >/dev/null
-    echo "ok sysctl applied (swappiness=$(cat /proc/sys/vm/swappiness), page-cluster=$(cat /proc/sys/vm/page-cluster))"
+    echo "ok sysctl applied (swappiness=$(</proc/sys/vm/swappiness), page-cluster=$(</proc/sys/vm/page-cluster), vfs_cache_pressure=$(</proc/sys/vm/vfs_cache_pressure))"
 }
 
 summary() {
@@ -170,6 +338,12 @@ summary() {
     echo
     printf "earlyoom: %s\n" "$(systemctl is-active earlyoom.service)"
     printf "memory monitor: %s\n" "$(systemctl is-active rhinestone-memory-monitor.timer)"
+    printf "periodic sync: %s\n" "$(systemctl is-active periodic-sync.timer)"
+    printf "weekly trim: %s\n" "$(systemctl is-active fstrim.timer)"
+    local mount_target
+    for mount_target in / /tmp /var/tmp /var/lib/docker/tmp; do
+        findmnt -T "$mount_target" -no TARGET,FSTYPE,SIZE,OPTIONS
+    done
     local ts_pid
     ts_pid="$(pgrep -xo tailscaled || true)"
     if [[ -n "$ts_pid" ]]; then
@@ -182,8 +356,12 @@ main() {
     require_linux_apt
     install_packages
     deploy_system_files
+    archive_legacy_longevity_sysctl
+    archive_legacy_daily_fstrim_override
     setup_swapfile
+    update_fstab
     apply_sysctl
+    apply_mount_configuration
     enable_services
     protect_tailscaled
     apply_memory_min

@@ -103,16 +103,98 @@ cgroup_bytes() {
     fi
 }
 
+filesystem_metrics="$({
+    for metric_and_path in \
+        "tmp:/tmp" \
+        "var_tmp:/var/tmp" \
+        "docker_tmp:/var/lib/docker/tmp"; do
+        metric="${metric_and_path%%:*}"
+        path="${metric_and_path#*:}"
+        if read -r block_size total_blocks free_blocks < <(stat -f -c '%S %b %f' "$path" 2>/dev/null); then
+            printf '%s_total_bytes=%s %s_used_bytes=%s ' \
+                "$metric" "$((block_size * total_blocks))" \
+                "$metric" "$((block_size * (total_blocks - free_blocks)))"
+        else
+            printf '%s_total_bytes=unavailable %s_used_bytes=unavailable ' \
+                "$metric" "$metric"
+        fi
+    done
+})"
+
+slab_metrics="$({
+    awk '
+        NR > 2 {
+            if ($1 == "ext4_inode_cache") {
+                ext4_inode_cache = $3 * $4
+            } else if ($1 == "dentry") {
+                dentry = $3 * $4
+            } else if ($1 == "shmem_inode_cache") {
+                shmem_inode_cache = $3 * $4
+            } else if ($1 == "trace_event_file") {
+                trace_event_file = $3 * $4
+            } else if ($1 == "cifs_inode_cache") {
+                cifs_inode_cache = $3 * $4
+            }
+        }
+        END {
+            printf "ext4_inode_cache_bytes=%.0f dentry_bytes=%.0f shmem_inode_cache_bytes=%.0f trace_event_file_bytes=%.0f cifs_inode_cache_bytes=%.0f", ext4_inode_cache, dentry, shmem_inode_cache, trace_event_file, cifs_inode_cache
+        }
+    ' /proc/slabinfo
+})"
+
+process_metrics="$({
+    ps -e -ww -o pid=,ppid=,rss=,comm=,args= | awk -v monitor_pid="$$" '
+        {
+            if ($2 == monitor_pid) {
+                next
+            }
+            rss_bytes = $3 * 1024
+            identity = tolower($0)
+
+            if (identity ~ /(^|[[:space:]\/])codex([[:space:]]|$)/) {
+                codex_count++
+                codex_rss += rss_bytes
+            }
+            if (identity ~ /(^|[[:space:]\/])claude([[:space:]]|$)/) {
+                claude_count++
+                claude_rss += rss_bytes
+            }
+            if (identity ~ /google[-_]ads[-_]mcp/) {
+                google_ads_mcp_count++
+                google_ads_mcp_rss += rss_bytes
+            }
+            if (identity ~ /xcodebuildmcp/) {
+                xcodebuildmcp_count++
+                xcodebuildmcp_rss += rss_bytes
+            }
+            if (identity ~ /playwright/) {
+                playwright_count++
+                playwright_rss += rss_bytes
+            }
+        }
+        END {
+            printf "codex_process_count=%d codex_process_rss_bytes=%.0f ", codex_count, codex_rss
+            printf "claude_process_count=%d claude_process_rss_bytes=%.0f ", claude_count, claude_rss
+            printf "google_ads_mcp_process_count=%d google_ads_mcp_process_rss_bytes=%.0f ", google_ads_mcp_count, google_ads_mcp_rss
+            printf "xcodebuildmcp_process_count=%d xcodebuildmcp_process_rss_bytes=%.0f ", xcodebuildmcp_count, xcodebuildmcp_rss
+            printf "playwright_process_count=%d playwright_process_rss_bytes=%.0f", playwright_count, playwright_rss
+        }
+    '
+})"
+
 machine_bytes="$(cgroup_bytes /sys/fs/cgroup/machine.slice/memory.current)"
 system_bytes="$(cgroup_bytes /sys/fs/cgroup/system.slice/memory.current)"
 user_bytes="$(cgroup_bytes /sys/fs/cgroup/user.slice/user-1000.slice/memory.current)"
 swappiness="$(</proc/sys/vm/swappiness)"
 
-printf 'memory-snapshot %s %s %s %s swappiness=%s zram_orig_bytes=%s zram_compressed_bytes=%s zram_memory_bytes=%s zram_memory_limit_bytes=%s zram_memory_max_bytes=%s zram_same_pages=%s zram_pages_compacted=%s zram_huge_pages=%s zram_huge_pages_since=%s machine_cgroup_bytes=%s system_cgroup_bytes=%s user_cgroup_bytes=%s\n' \
+printf 'memory-snapshot %s %s %s %s %s %s %s swappiness=%s zram_orig_bytes=%s zram_compressed_bytes=%s zram_memory_bytes=%s zram_memory_limit_bytes=%s zram_memory_max_bytes=%s zram_same_pages=%s zram_pages_compacted=%s zram_huge_pages=%s zram_huge_pages_since=%s machine_cgroup_bytes=%s system_cgroup_bytes=%s user_cgroup_bytes=%s\n' \
     "$mem_metrics" \
     "$vm_metrics" \
     "$psi_metrics" \
     "$swap_metrics" \
+    "$filesystem_metrics" \
+    "$slab_metrics" \
+    "$process_metrics" \
     "$swappiness" \
     "$zram_orig_bytes" \
     "$zram_compressed_bytes" \
@@ -126,3 +208,130 @@ printf 'memory-snapshot %s %s %s %s swappiness=%s zram_orig_bytes=%s zram_compre
     "$machine_bytes" \
     "$system_bytes" \
     "$user_bytes"
+
+virsh_with_timeout() {
+    timeout --signal=TERM --kill-after=1s 3s virsh -c qemu:///system "$@"
+}
+
+cgroup_metric() {
+    local path="$1"
+    if [[ -r "$path" ]]; then
+        cat "$path"
+    else
+        printf 'unavailable\n'
+    fi
+}
+
+pressure_metrics() {
+    local path="$1"
+    if [[ ! -r "$path" ]]; then
+        printf 'vm_psi_some_avg10=unavailable vm_psi_some_total_usec=unavailable vm_psi_full_avg10=unavailable vm_psi_full_total_usec=unavailable'
+        return 0
+    fi
+    awk '
+        $1 == "some" {
+            sub(/^avg10=/, "", $2)
+            sub(/^total=/, "", $5)
+            some_avg10 = $2
+            some_total = $5
+        }
+        $1 == "full" {
+            sub(/^avg10=/, "", $2)
+            sub(/^total=/, "", $5)
+            full_avg10 = $2
+            full_total = $5
+        }
+        END {
+            printf "vm_psi_some_avg10=%s vm_psi_some_total_usec=%s vm_psi_full_avg10=%s vm_psi_full_total_usec=%s", some_avg10, some_total, full_avg10, full_total
+        }
+    ' "$path"
+}
+
+memory_event_metric() {
+    local path="$1"
+    local event="$2"
+    if [[ ! -r "$path" ]]; then
+        printf 'unavailable\n'
+        return 0
+    fi
+    awk -v event="$event" '$1 == event { print $2; found = 1; exit } END { if (!found) print "unavailable" }' "$path"
+}
+
+running_domains="$(virsh_with_timeout list --state-running --name 2>/dev/null || true)"
+while IFS= read -r domain; do
+    [[ -n "$domain" ]] || continue
+    domain_label="$(tr -c '[:alnum:]_.-' '_' <<<"$domain")"
+    domain_label="${domain_label%_}"
+    domain_id="$(virsh_with_timeout domid "$domain" 2>/dev/null || true)"
+
+    cgroup_path=""
+    if [[ "$domain_id" =~ ^[0-9]+$ ]]; then
+        cgroup_matches=(
+            "/sys/fs/cgroup/machine.slice/machine-qemu\\x2d${domain_id}\\x2d"*.scope
+        )
+        if ((${#cgroup_matches[@]} == 1)) && [[ -d "${cgroup_matches[0]}" ]]; then
+            cgroup_path="${cgroup_matches[0]}"
+        fi
+    fi
+
+    if [[ -n "$cgroup_path" ]]; then
+        memory_current="$(cgroup_metric "$cgroup_path/memory.current")"
+        memory_peak="$(cgroup_metric "$cgroup_path/memory.peak")"
+        swap_current="$(cgroup_metric "$cgroup_path/memory.swap.current")"
+        swap_peak="$(cgroup_metric "$cgroup_path/memory.swap.peak")"
+        vm_pressure="$(pressure_metrics "$cgroup_path/memory.pressure")"
+        oom_events="$(memory_event_metric "$cgroup_path/memory.events" oom)"
+        oom_kill_events="$(memory_event_metric "$cgroup_path/memory.events" oom_kill)"
+        oom_group_kill_events="$(memory_event_metric "$cgroup_path/memory.events" oom_group_kill)"
+    else
+        memory_current=unavailable
+        memory_peak=unavailable
+        swap_current=unavailable
+        swap_peak=unavailable
+        vm_pressure="vm_psi_some_avg10=unavailable vm_psi_some_total_usec=unavailable vm_psi_full_avg10=unavailable vm_psi_full_total_usec=unavailable"
+        oom_events=unavailable
+        oom_kill_events=unavailable
+        oom_group_kill_events=unavailable
+    fi
+
+    balloon_output="$(virsh_with_timeout dommemstat "$domain" 2>/dev/null || true)"
+    balloon_current_kib="$(awk '$1 == "actual" { print $2; exit }' <<<"$balloon_output")"
+    balloon_unused_kib="$(awk '$1 == "unused" { print $2; exit }' <<<"$balloon_output")"
+    balloon_available_kib="$(awk '$1 == "available" { print $2; exit }' <<<"$balloon_output")"
+    balloon_last_update_epoch="$(awk '$1 == "last_update" { print $2; exit }' <<<"$balloon_output")"
+    [[ "$balloon_current_kib" =~ ^[0-9]+$ ]] || balloon_current_kib=unavailable
+    [[ "$balloon_unused_kib" =~ ^[0-9]+$ ]] || balloon_unused_kib=unavailable
+    [[ "$balloon_available_kib" =~ ^[0-9]+$ ]] || balloon_available_kib=unavailable
+    if [[ "$balloon_last_update_epoch" =~ ^[0-9]+$ ]] && ((balloon_last_update_epoch > 0)); then
+        balloon_age_seconds=$(($(date +%s) - balloon_last_update_epoch))
+        if ((balloon_age_seconds < 0)); then
+            balloon_age_seconds=unavailable
+            balloon_status=unavailable
+        elif ((balloon_age_seconds > 300)); then
+            balloon_status=stale
+        else
+            balloon_status=fresh
+        fi
+    else
+        balloon_last_update_epoch=unavailable
+        balloon_age_seconds=unavailable
+        balloon_status=unavailable
+    fi
+
+    printf 'vm-memory-snapshot domain=%s memory_current_bytes=%s memory_peak_bytes=%s swap_current_bytes=%s swap_peak_bytes=%s %s oom_events=%s oom_kill_events=%s oom_group_kill_events=%s balloon_current_kib=%s balloon_unused_kib=%s balloon_available_kib=%s balloon_last_update_epoch=%s balloon_age_seconds=%s balloon_status=%s\n' \
+        "$domain_label" \
+        "$memory_current" \
+        "$memory_peak" \
+        "$swap_current" \
+        "$swap_peak" \
+        "$vm_pressure" \
+        "$oom_events" \
+        "$oom_kill_events" \
+        "$oom_group_kill_events" \
+        "$balloon_current_kib" \
+        "$balloon_unused_kib" \
+        "$balloon_available_kib" \
+        "$balloon_last_update_epoch" \
+        "$balloon_age_seconds" \
+        "$balloon_status"
+done <<<"$running_domains"

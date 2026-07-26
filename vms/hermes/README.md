@@ -1,7 +1,9 @@
 # Hermes VM
 
-This Vagrant VM runs Hermes Agent inside an isolated Ubuntu guest.
-The host filesystem is not mounted into the VM.
+This Vagrant VM runs Hermes Agent inside an isolated Ubuntu guest. No host
+source or workspace is mounted into the VM. On rhinestone/libvirt, guest `/tmp`
+is the sole exception: it is an isolated per-guest directory backed by the
+host's volatile tmpfs.
 The stable source files live here; generated machine state stays in `.vagrant/`
 and is ignored by git.
 

@@ -1,10 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+require "digest"
+
 Vagrant.configure("2") do |config|
   config.vm.define "hermes" do |node|
     node.vm.box = "cloud-image/ubuntu-24.04"
     node.vm.hostname = "hermes"
+    rhinestone_tmp_path = "/tmp/rhinestone-vagrant/hermes/tmp"
+    rhinestone_tmp_tag = Digest::MD5.hexdigest(rhinestone_tmp_path)[0, 31]
 
     # Keep the host filesystem out of the agent environment. Hermes should run
     # inside the VM, with its own home directory and workspace.
@@ -19,12 +23,21 @@ Vagrant.configure("2") do |config|
       id: "hermes-ssh",
       auto_correct: false
 
-    node.vm.provider "libvirt" do |lv|
+    node.vm.provider "libvirt" do |lv, override|
       lv.memory = 8192
       lv.cpus = 6
       lv.machine_virtual_size = 100
       lv.title = "hermes"
       lv.default_prefix = ""
+
+      # Expose only this guest's host tmpfs-backed directory. Vagrant adds the
+      # 9p device, while the guest helper below owns mounting and cleanup policy.
+      override.vm.synced_folder rhinestone_tmp_path,
+        "/tmp",
+        type: "9p",
+        accessmode: "mapped",
+        mount: false,
+        create: false
     end
 
     node.vm.provider "virtualbox" do |vb|
@@ -33,6 +46,14 @@ Vagrant.configure("2") do |config|
       vb.name = "hermes"
     end
 
+    # Libvirt cannot hot-plug a 9p device into a running guest. On the next
+    # Vagrant-managed up/reload the device will exist before this idempotent
+    # helper runs; run-always also repairs the mount on explicit re-provisioning.
+    node.vm.provision "rhinestone-tmp",
+      type: "shell",
+      path: "configure-rhinestone-tmp.sh",
+      args: [rhinestone_tmp_tag],
+      run: "always"
     node.vm.provision "shell", path: "provision.sh"
   end
 end
