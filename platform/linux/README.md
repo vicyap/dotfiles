@@ -9,11 +9,18 @@ below `/tmp/rhinestone-vagrant/<machine>/tmp` as guest `/tmp`. Configure it as a
 guest before any provisioner stages credentials. Other providers should retain
 their normal `/tmp`.
 
-The public dotfiles do not contain a VM inventory. Before libvirt autostart,
+The host policy requires the `vagrant-libvirt` network and the `engr-agent`,
+`gtm-agent`, and `hermes` domains. `setup-system.sh` fails if any are absent and
+enables autostart for all four. Before libvirt starts,
 `rhinestone-vagrant-tmpdirs.service` discovers declared source directories from
-the host's private domain XML and recreates only those directories. ACLs admit
-root, Victor, and `libvirt-qemu`; one guest never receives the host `/tmp` root
-or another guest's directory.
+the private domain XML and recreates only those directories. ACLs admit root,
+Victor, and `libvirt-qemu`; one guest never receives the host `/tmp` root or
+another guest's directory.
+
+Host slices apply soft pressure without hard resource ceilings: `user.slice`
+uses `MemoryHigh=40G`, `machine.slice` uses `MemoryHigh=32G`, and Docker
+containers enter `docker.slice` with `MemoryHigh=12G`. All three use
+`CPUWeight=75`; `MemoryMax`, swap limits, CPU quotas, and I/O caps remain unset.
 
 Guests own cleanup within their mounted directory and should configure:
 

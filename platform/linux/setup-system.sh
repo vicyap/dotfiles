@@ -14,7 +14,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ETC_SRC="$SCRIPT_DIR/etc"
 TARGET_HOST="rhinestone"
 SWAPFILE="/swapfile"
-SWAPFILE_SIZE="64G"
+SWAPFILE_SIZE="96G"
+SWAPFILE_SIZE_BYTES=$((96 * 1024 * 1024 * 1024))
+VAGRANT_NETWORK="vagrant-libvirt"
+REQUIRED_DOMAINS=(engr-agent gtm-agent hermes)
 
 require_host() {
     local host
@@ -64,7 +67,42 @@ install_etc_file() {
     echo "+ wrote $dst"
 }
 
+validate_docker_config() {
+    local config="$ETC_SRC/docker/daemon.json"
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "! jq is required to validate $config"
+        return 1
+    fi
+    if ! command -v dockerd >/dev/null 2>&1; then
+        echo "! dockerd is required to validate $config"
+        return 1
+    fi
+    jq empty "$config"
+    dockerd --validate --config-file="$config"
+}
+
+validate_vm_inventory() {
+    local domain details
+    if ! command -v virsh >/dev/null 2>&1; then
+        echo "! virsh is required to validate VM autostart"
+        return 1
+    fi
+    if ! details="$(virsh -c qemu:///system net-info "$VAGRANT_NETWORK" 2>&1)"; then
+        echo "! required libvirt network is absent: $VAGRANT_NETWORK"
+        echo "$details"
+        return 1
+    fi
+    for domain in "${REQUIRED_DOMAINS[@]}"; do
+        if ! details="$(virsh -c qemu:///system dominfo "$domain" 2>&1)"; then
+            echo "! required libvirt domain is absent: $domain"
+            echo "$details"
+            return 1
+        fi
+    done
+}
+
 deploy_system_files() {
+    install_etc_file "docker/daemon.json" "/etc/docker/daemon.json" 0644
     install_etc_file "systemd/zram-generator.conf" "/etc/systemd/zram-generator.conf" 0644
     install_etc_file "sysctl.d/99-rhinestone-memory.conf" "/etc/sysctl.d/99-rhinestone-memory.conf" 0644
     install_etc_file "sysctl.d/90-rhinestone-nvme-longevity.conf" "/etc/sysctl.d/90-rhinestone-nvme-longevity.conf" 0644
@@ -81,6 +119,9 @@ deploy_system_files() {
     install_etc_file "systemd/system/tailscaled.service.d/10-oom.conf" "/etc/systemd/system/tailscaled.service.d/10-oom.conf" 0644
     install_etc_file "systemd/system/ssh.service.d/10-oom.conf" "/etc/systemd/system/ssh.service.d/10-oom.conf" 0644
     install_etc_file "systemd/system/system.slice.d/10-access-memorymin.conf" "/etc/systemd/system/system.slice.d/10-access-memorymin.conf" 0644
+    install_etc_file "systemd/system/user.slice.d/20-rhinestone-capacity.conf" "/etc/systemd/system/user.slice.d/20-rhinestone-capacity.conf" 0644
+    install_etc_file "systemd/system/machine.slice.d/20-rhinestone-capacity.conf" "/etc/systemd/system/machine.slice.d/20-rhinestone-capacity.conf" 0644
+    install_etc_file "systemd/system/docker.slice.d/20-rhinestone-capacity.conf" "/etc/systemd/system/docker.slice.d/20-rhinestone-capacity.conf" 0644
     install_etc_file "tmpfiles.d/tmp.conf" "/etc/tmpfiles.d/tmp.conf" 0644
     install_etc_file "tmpfiles.d/rhinestone-vagrant.conf" "/etc/tmpfiles.d/rhinestone-vagrant.conf" 0644
     install_etc_file "zsh/zshenv" "/etc/zsh/zshenv" 0644
@@ -199,7 +240,7 @@ update_fstab() (
 
         $1 == "/swapfile" && $2 == "none" && $3 == "swap" {
             if (!saw_swapfile) {
-                print "/swapfile\tnone\tswap\tsw\t0\t0"
+                print "/swapfile\tnone\tswap\tsw,pri=-1\t0\t0"
                 saw_swapfile = 1
             }
             next
@@ -221,7 +262,7 @@ update_fstab() (
                 print "tmpfs\t/var/lib/docker/tmp\ttmpfs\tdefaults,size=16G,mode=1777\t0\t0"
             }
             if (!saw_swapfile) {
-                print "/swapfile\tnone\tswap\tsw\t0\t0"
+                print "/swapfile\tnone\tswap\tsw,pri=-1\t0\t0"
             }
         }
     ' /etc/fstab >"$candidate"
@@ -240,18 +281,59 @@ update_fstab() (
 )
 
 setup_swapfile() {
-    if swapon --show=NAME --noheadings 2>/dev/null | grep -qx "$SWAPFILE"; then
-        echo "ok $SWAPFILE already active"
-    else
-        if [[ ! -f "$SWAPFILE" ]]; then
-            echo "+ allocating $SWAPFILE ($SWAPFILE_SIZE)"
-            sudo fallocate -l "$SWAPFILE_SIZE" "$SWAPFILE"
+    local actual_size active_priority swap_type
+    if [[ -e "$SWAPFILE" ]]; then
+        actual_size="$(sudo stat -c %s "$SWAPFILE")"
+        if ((actual_size != SWAPFILE_SIZE_BYTES)); then
+            echo "! $SWAPFILE size mismatch: got $actual_size bytes, want $SWAPFILE_SIZE_BYTES bytes"
+            echo "! resize it with the capacity-first pre-reboot procedure before rerunning"
+            return 1
         fi
-        sudo chmod 600 "$SWAPFILE"
-        sudo mkswap "$SWAPFILE" >/dev/null
-        sudo swapon "$SWAPFILE"
-        echo "+ $SWAPFILE enabled ($SWAPFILE_SIZE)"
+    else
+        echo "+ allocating $SWAPFILE ($SWAPFILE_SIZE)"
+        sudo fallocate -l "$SWAPFILE_SIZE" "$SWAPFILE"
     fi
+
+    sudo chmod 600 "$SWAPFILE"
+    if swapon --show=NAME --noheadings 2>/dev/null | awk -v target="$SWAPFILE" '$1 == target { found = 1 } END { exit !found }'; then
+        active_priority="$(swapon --show=NAME,PRIO --noheadings | awk -v target="$SWAPFILE" '$1 == target { print $2; exit }')"
+        if [[ "$active_priority" != "-1" ]]; then
+            echo "! $SWAPFILE priority mismatch: got $active_priority, want -1"
+            return 1
+        fi
+        echo "ok $SWAPFILE active at $SWAPFILE_SIZE with priority -1"
+    else
+        swap_type="$(sudo blkid -p -s TYPE -o value "$SWAPFILE" 2>/dev/null || true)"
+        if [[ "$swap_type" != "swap" ]]; then
+            sudo mkswap "$SWAPFILE" >/dev/null
+        fi
+        sudo swapon --priority -1 "$SWAPFILE"
+        echo "+ $SWAPFILE enabled ($SWAPFILE_SIZE, priority -1)"
+    fi
+}
+
+configure_vm_autostart() {
+    local domain
+    virsh -c qemu:///system net-autostart "$VAGRANT_NETWORK" >/dev/null
+    echo "ok libvirt network autostart enabled: $VAGRANT_NETWORK"
+    for domain in "${REQUIRED_DOMAINS[@]}"; do
+        virsh -c qemu:///system autostart "$domain" >/dev/null
+        echo "ok libvirt domain autostart enabled: $domain"
+    done
+}
+
+apply_soft_resource_controls() {
+    local entry unit memory_high
+    for entry in \
+        "user.slice:40G" \
+        "machine.slice:32G" \
+        "docker.slice:12G"; do
+        unit="${entry%%:*}"
+        memory_high="${entry##*:}"
+        sudo systemctl start "$unit"
+        sudo systemctl set-property --runtime "$unit" "MemoryHigh=$memory_high" CPUWeight=75
+        echo "ok $unit MemoryHigh=$memory_high CPUWeight=75 (live)"
+    done
 }
 
 enable_services() {
@@ -259,12 +341,13 @@ enable_services() {
 
     # zram: the generator builds units from zram-generator.conf; (re)start the
     # setup service and activate the swap device. `start` leaves an already
-    # active zram device untouched.
+    # active zram device untouched; the new size applies after reboot.
     sudo systemctl start systemd-zram-setup@zram0.service 2>/dev/null || true
     sudo systemctl start dev-zram0.swap 2>/dev/null || true
 
-    # Do not restart an active earlyoom while applying unrelated host tuning.
-    sudo systemctl enable --now earlyoom.service >/dev/null 2>&1 || true
+    # Apply the joint RAM/swap policy now, while the host is healthy.
+    sudo systemctl enable earlyoom.service >/dev/null
+    sudo systemctl restart earlyoom.service
 
     # Record structured memory, swap, zram, and pressure metrics in journald.
     sudo systemctl enable --now rhinestone-memory-monitor.timer >/dev/null
@@ -340,6 +423,12 @@ summary() {
     printf "memory monitor: %s\n" "$(systemctl is-active rhinestone-memory-monitor.timer)"
     printf "periodic sync: %s\n" "$(systemctl is-active periodic-sync.timer)"
     printf "weekly trim: %s\n" "$(systemctl is-active fstrim.timer)"
+    systemctl show user.slice machine.slice docker.slice -p Id -p MemoryHigh -p MemoryMax -p CPUWeight
+    virsh -c qemu:///system net-info "$VAGRANT_NETWORK" | awk '/^(Name|Autostart):/'
+    local domain
+    for domain in "${REQUIRED_DOMAINS[@]}"; do
+        virsh -c qemu:///system dominfo "$domain" | awk '/^(Name|Autostart):/'
+    done
     local mount_target
     for mount_target in / /tmp /var/tmp /var/lib/docker/tmp; do
         findmnt -T "$mount_target" -no TARGET,FSTYPE,SIZE,OPTIONS
@@ -354,6 +443,8 @@ summary() {
 main() {
     require_host
     require_linux_apt
+    validate_docker_config
+    validate_vm_inventory
     install_packages
     deploy_system_files
     archive_legacy_longevity_sysctl
@@ -363,6 +454,8 @@ main() {
     apply_sysctl
     apply_mount_configuration
     enable_services
+    apply_soft_resource_controls
+    configure_vm_autostart
     protect_tailscaled
     apply_memory_min
     summary

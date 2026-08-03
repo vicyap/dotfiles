@@ -36,6 +36,47 @@ vm_metrics="$({
     ' /proc/vmstat
 })"
 
+host_pressure_metrics() {
+    local prefix="$1"
+    local path="$2"
+    awk -v prefix="$prefix" '
+        BEGIN {
+            some_avg10 = "unavailable"
+            some_avg60 = "unavailable"
+            some_avg300 = "unavailable"
+            some_total = "unavailable"
+            full_avg10 = "unavailable"
+            full_avg60 = "unavailable"
+            full_avg300 = "unavailable"
+            full_total = "unavailable"
+        }
+        $1 == "some" {
+            sub(/^avg10=/, "", $2)
+            sub(/^avg60=/, "", $3)
+            sub(/^avg300=/, "", $4)
+            sub(/^total=/, "", $5)
+            some_avg10 = $2
+            some_avg60 = $3
+            some_avg300 = $4
+            some_total = $5
+        }
+        $1 == "full" {
+            sub(/^avg10=/, "", $2)
+            sub(/^avg60=/, "", $3)
+            sub(/^avg300=/, "", $4)
+            sub(/^total=/, "", $5)
+            full_avg10 = $2
+            full_avg60 = $3
+            full_avg300 = $4
+            full_total = $5
+        }
+        END {
+            printf "%s_psi_some_avg10=%s %s_psi_some_avg60=%s %s_psi_some_avg300=%s %s_psi_some_total_usec=%s ", prefix, some_avg10, prefix, some_avg60, prefix, some_avg300, prefix, some_total
+            printf "%s_psi_full_avg10=%s %s_psi_full_avg60=%s %s_psi_full_avg300=%s %s_psi_full_total_usec=%s", prefix, full_avg10, prefix, full_avg60, prefix, full_avg300, prefix, full_total
+        }
+    ' "$path"
+}
+
 psi_metrics="$({
     awk '
         $1 == "some" {
@@ -63,6 +104,9 @@ psi_metrics="$({
         }
     ' /proc/pressure/memory
 })"
+
+cpu_psi_metrics="$(host_pressure_metrics cpu /proc/pressure/cpu)"
+io_psi_metrics="$(host_pressure_metrics io /proc/pressure/io)"
 
 swap_metrics="$({
     awk '
@@ -102,6 +146,33 @@ cgroup_bytes() {
         printf '0\n'
     fi
 }
+
+memory_event_metric() {
+    local path="$1"
+    local event="$2"
+    if [[ ! -r "$path" ]]; then
+        printf 'unavailable\n'
+        return 0
+    fi
+    awk -v event="$event" '$1 == event { print $2; found = 1; exit } END { if (!found) print "unavailable" }' "$path"
+}
+
+cgroup_class_metrics="$({
+    for class_and_path in \
+        "user:/sys/fs/cgroup/user.slice" \
+        "machine:/sys/fs/cgroup/machine.slice" \
+        "docker:/sys/fs/cgroup/docker.slice"; do
+        class="${class_and_path%%:*}"
+        path="${class_and_path#*:}"
+        swap_current="$(cgroup_bytes "$path/memory.swap.current")"
+        high_events="$(memory_event_metric "$path/memory.events" high)"
+        max_events="$(memory_event_metric "$path/memory.events" max)"
+        printf '%s_cgroup_swap_bytes=%s %s_memory_high_events=%s %s_memory_max_events=%s ' \
+            "$class" "$swap_current" \
+            "$class" "$high_events" \
+            "$class" "$max_events"
+    done
+})"
 
 filesystem_metrics="$({
     for metric_and_path in \
@@ -182,19 +253,40 @@ process_metrics="$({
     '
 })"
 
+nvme_metrics="$({
+    nvme_write_ios=0
+    nvme_written_sectors=0
+    for stat_path in /sys/class/block/nvme*n*/stat; do
+        [[ -e "$stat_path" ]] || continue
+        device_name="${stat_path%/stat}"
+        device_name="${device_name##*/}"
+        [[ "$device_name" =~ ^nvme[0-9]+n[0-9]+$ ]] || continue
+        read -r _ _ _ _ device_write_ios _ device_written_sectors _ _ _ _ _ <"$stat_path"
+        nvme_write_ios=$((nvme_write_ios + device_write_ios))
+        nvme_written_sectors=$((nvme_written_sectors + device_written_sectors))
+    done
+    printf 'nvme_write_ios=%s nvme_written_bytes=%s' \
+        "$nvme_write_ios" \
+        "$((nvme_written_sectors * 512))"
+})"
+
 machine_bytes="$(cgroup_bytes /sys/fs/cgroup/machine.slice/memory.current)"
 system_bytes="$(cgroup_bytes /sys/fs/cgroup/system.slice/memory.current)"
 user_bytes="$(cgroup_bytes /sys/fs/cgroup/user.slice/user-1000.slice/memory.current)"
 swappiness="$(</proc/sys/vm/swappiness)"
 
-printf 'memory-snapshot %s %s %s %s %s %s %s swappiness=%s zram_orig_bytes=%s zram_compressed_bytes=%s zram_memory_bytes=%s zram_memory_limit_bytes=%s zram_memory_max_bytes=%s zram_same_pages=%s zram_pages_compacted=%s zram_huge_pages=%s zram_huge_pages_since=%s machine_cgroup_bytes=%s system_cgroup_bytes=%s user_cgroup_bytes=%s\n' \
+printf 'memory-snapshot %s %s %s %s %s %s %s %s %s %s %s swappiness=%s zram_orig_bytes=%s zram_compressed_bytes=%s zram_memory_bytes=%s zram_memory_limit_bytes=%s zram_memory_max_bytes=%s zram_same_pages=%s zram_pages_compacted=%s zram_huge_pages=%s zram_huge_pages_since=%s machine_cgroup_bytes=%s system_cgroup_bytes=%s user_cgroup_bytes=%s\n' \
     "$mem_metrics" \
     "$vm_metrics" \
     "$psi_metrics" \
+    "$cpu_psi_metrics" \
+    "$io_psi_metrics" \
     "$swap_metrics" \
+    "$cgroup_class_metrics" \
     "$filesystem_metrics" \
     "$slab_metrics" \
     "$process_metrics" \
+    "$nvme_metrics" \
     "$swappiness" \
     "$zram_orig_bytes" \
     "$zram_compressed_bytes" \
@@ -247,16 +339,6 @@ pressure_metrics() {
     ' "$path"
 }
 
-memory_event_metric() {
-    local path="$1"
-    local event="$2"
-    if [[ ! -r "$path" ]]; then
-        printf 'unavailable\n'
-        return 0
-    fi
-    awk -v event="$event" '$1 == event { print $2; found = 1; exit } END { if (!found) print "unavailable" }' "$path"
-}
-
 running_domains="$(virsh_with_timeout list --state-running --name 2>/dev/null || true)"
 while IFS= read -r domain; do
     [[ -n "$domain" ]] || continue
@@ -280,6 +362,8 @@ while IFS= read -r domain; do
         swap_current="$(cgroup_metric "$cgroup_path/memory.swap.current")"
         swap_peak="$(cgroup_metric "$cgroup_path/memory.swap.peak")"
         vm_pressure="$(pressure_metrics "$cgroup_path/memory.pressure")"
+        high_events="$(memory_event_metric "$cgroup_path/memory.events" high)"
+        max_events="$(memory_event_metric "$cgroup_path/memory.events" max)"
         oom_events="$(memory_event_metric "$cgroup_path/memory.events" oom)"
         oom_kill_events="$(memory_event_metric "$cgroup_path/memory.events" oom_kill)"
         oom_group_kill_events="$(memory_event_metric "$cgroup_path/memory.events" oom_group_kill)"
@@ -289,6 +373,8 @@ while IFS= read -r domain; do
         swap_current=unavailable
         swap_peak=unavailable
         vm_pressure="vm_psi_some_avg10=unavailable vm_psi_some_total_usec=unavailable vm_psi_full_avg10=unavailable vm_psi_full_total_usec=unavailable"
+        high_events=unavailable
+        max_events=unavailable
         oom_events=unavailable
         oom_kill_events=unavailable
         oom_group_kill_events=unavailable
@@ -318,13 +404,15 @@ while IFS= read -r domain; do
         balloon_status=unavailable
     fi
 
-    printf 'vm-memory-snapshot domain=%s memory_current_bytes=%s memory_peak_bytes=%s swap_current_bytes=%s swap_peak_bytes=%s %s oom_events=%s oom_kill_events=%s oom_group_kill_events=%s balloon_current_kib=%s balloon_unused_kib=%s balloon_available_kib=%s balloon_last_update_epoch=%s balloon_age_seconds=%s balloon_status=%s\n' \
+    printf 'vm-memory-snapshot domain=%s memory_current_bytes=%s memory_peak_bytes=%s swap_current_bytes=%s swap_peak_bytes=%s %s high_events=%s max_events=%s oom_events=%s oom_kill_events=%s oom_group_kill_events=%s balloon_current_kib=%s balloon_unused_kib=%s balloon_available_kib=%s balloon_last_update_epoch=%s balloon_age_seconds=%s balloon_status=%s\n' \
         "$domain_label" \
         "$memory_current" \
         "$memory_peak" \
         "$swap_current" \
         "$swap_peak" \
         "$vm_pressure" \
+        "$high_events" \
+        "$max_events" \
         "$oom_events" \
         "$oom_kill_events" \
         "$oom_group_kill_events" \

@@ -1,0 +1,11 @@
+{
+  "log-driver": "local",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "features": {
+    "buildkit": true
+  },
+  "cgroup-parent": "docker.slice"
+}
