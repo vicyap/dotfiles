@@ -12,7 +12,7 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "model": "opus[1m]",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "PostToolUse": [
       {
@@ -119,6 +119,7 @@
   "skipDangerousModePermissionPrompt": true,
   "preferredNotifChannel": "ghostty",
   "autoCompactEnabled": true,
+  "switchModelsOnFlag": false,
   "teammateMode": "auto",
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": false,
