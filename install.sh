@@ -390,9 +390,17 @@ setup_codex_plugins() {
         "cloudflare@openai-curated"
         "openai-developers@openai-curated"
         "build-web-apps@openai-curated"
+    )
+
+    # Xcode-dependent plugins (build-ios-apps bundles the xcodebuildmcp MCP
+    # server) only work on macOS.
+    local xcode_plugins=(
         "build-ios-apps@openai-curated"
         "build-macos-apps@openai-curated"
     )
+    if [[ "$(detect_os)" == "macos" ]]; then
+        plugins+=("${xcode_plugins[@]}")
+    fi
 
     local plugin
     for plugin in "${plugins[@]}"; do
@@ -407,6 +415,9 @@ setup_codex_plugins() {
         "app-6982cfb482bc81918416ec35e7cc90e5@openai-curated-remote" # Shop
         "app-68de829bf7648191acd70a907364c67c@openai-curated-remote" # Spotify
     )
+    if [[ "$(detect_os)" != "macos" ]]; then
+        excluded_plugins+=("${xcode_plugins[@]}")
+    fi
 
     for plugin in "${excluded_plugins[@]}"; do
         codex plugin remove "$plugin" \
