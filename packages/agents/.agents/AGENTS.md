@@ -138,8 +138,9 @@ Shared coding rules live in `~/.agents/rules/` and are symlinked into
 `packages/agents/.agents/rules/`.
 
 When a task matches a domain, read the relevant rule before implementation.
-User-level path-scoped loading is unreliable, so do not depend on `paths:`
-frontmatter being injected automatically.
+Codex has no path-scoped rule mechanism and Claude Code's fires only when a
+matching file is read, not when one is written or created, so do not depend on
+`paths:` frontmatter injection alone.
 
 - Python: `~/.agents/rules/python.md` for `*.py`, `*.pyi`,
   `pyproject.toml`, and `uv.lock`.
@@ -185,6 +186,11 @@ non-interactive tool calls.
 
 Use `ask` for external AI second opinions and `web` for website markdown when
 needed; run each tool's `--help` before relying on less obvious options.
+
+`gh pr edit` fails on repos with legacy Projects-classic fields ("Projects
+(classic) is being deprecated", an open upstream `gh` bug). Edit PRs with
+`gh api repos/{owner}/{repo}/pulls/{number} -f title="..." -f body="..."`
+instead, in any agent.
 
 Shell history is managed by atuin. Do not edit `~/.zsh_history`; use
 `atuin search` and `atuin history`.
