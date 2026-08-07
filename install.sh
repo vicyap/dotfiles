@@ -431,6 +431,12 @@ install_agent_skills() {
         return 0
     fi
 
+    npx skills add neondatabase/agent-skills \
+        --global \
+        --agent claude-code codex \
+        --skill neon neon-postgres neon-postgres-branches neon-postgres-egress-optimizer \
+        --yes || echo "  Skipped: neondatabase/agent-skills install failed"
+
     # Registries installed in full (no --skill filter → auto-picks up new upstream skills)
     local registries=(
         "resend/resend-skills"
