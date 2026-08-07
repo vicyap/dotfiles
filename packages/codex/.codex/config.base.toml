@@ -6,6 +6,15 @@ approval_policy = "never"
 sandbox_mode = "danger-full-access"
 web_search = "live"
 
+[model_providers.meta]
+name = "Meta Model API"
+base_url = "https://api.meta.ai/v1"
+env_key = "MODEL_API_KEY"
+wire_api = "responses"
+
+[agents]
+max_concurrent_threads_per_session = 4
+
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp/oauth"
 
