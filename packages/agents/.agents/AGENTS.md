@@ -52,21 +52,6 @@ General safety:
 - Never document, validate, or reference features that are not implemented.
 - Never add AI co-authorship attribution, AI badges, or watermarks.
 
-## Muse Delegation
-
-For bounded repository implementation tasks, first check whether the `muse`
-custom agent is available in the current Codex session. When it is available,
-use it as the sole implementation editor and keep one Muse thread through the
-approach, implementation, and completion gates. The parent Codex agent reviews
-the approach, diff, and evidence before advancing each gate, and advances
-without user confirmation unless requirements are ambiguous, an action needs
-explicit approval, or Victor asks to pause. The parent owns requirements,
-review, acceptance, publishing, and merge decisions.
-
-If `muse` is unavailable, continue with the current agent and say so briefly;
-do not silently substitute another subagent. Do not use Muse for quick answers,
-read-only requests, or trivial documentation changes.
-
 ## Writing And Artifacts
 
 - Write plans, READMEs, saved files, messages, and PR bodies as the current
