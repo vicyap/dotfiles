@@ -24,8 +24,9 @@ Dependencies are not pre-installed in new worktrees. After entering a worktree,
 detect lockfiles and install dependencies before running builds, dev servers, or
 tests.
 
-Use `claude -w <name>` to create a worktree. Include a Linear issue ID in the
-name, such as `claude -w USE-123-fix-bug`, so the branch auto-links.
+Use `claude -w <name>` to create a worktree, named for the work it holds, such
+as `claude -w fix-refill-drop`. Project-specific naming conventions belong to
+each project's own instructions.
 
 Use `git worktree list` to list worktrees. Use
 `git worktree remove .claude/worktrees/<name>` and `git worktree prune` to
