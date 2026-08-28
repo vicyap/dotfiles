@@ -79,7 +79,7 @@
   },
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": false,
-    "context7@claude-plugins-official": true,
+    "context7@claude-plugins-official": false,
     "explanatory-output-style@claude-plugins-official": false,
     "linear@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
@@ -88,10 +88,10 @@
     "skill-creator@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true,
     "usetemi-private@usetemi-private": true,
-    "usetemi@usetemi": true,
+    "usetemi@usetemi": false,
     "stripe@claude-plugins-official": true,
     "vercel@claude-plugins-official": true,
-    "resend@claude-plugins-official": true,
+    "resend@claude-plugins-official": false,
     "slack@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
@@ -109,6 +109,11 @@
     }
   },
   "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "xhigh"
+    }
+  },
   "autoUpdatesChannel": "latest",
   "tui": "default",
   "voice": {
