@@ -1,9 +1,9 @@
 ---
 paths:
-  - "**/*schema*"
-  - "**/*changeset*"
-  - "**/*migration*"
-  - "**/*repo*"
+  - "**/*schema*.ex"
+  - "**/*changeset*.ex"
+  - "**/*migration*.exs"
+  - "**/*repo*.ex"
 ---
 
 ## Ecto Guidelines

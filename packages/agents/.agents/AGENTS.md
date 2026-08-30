@@ -65,8 +65,6 @@ Avoid overusing emojis.
 - Prefer deep modules: substantial functionality behind a simple interface. A
   good abstraction replaces a large implementation burden with a much smaller
   interface burden.
-- Hard limits on lines of code, cyclomatic complexity, or parameters per
-  function are subjective and context dependent, not rules.
 - Do not abstract until there are three real use cases.
 - Prefer functional composition over inheritance.
 - Match surrounding style; consistency within the file wins.

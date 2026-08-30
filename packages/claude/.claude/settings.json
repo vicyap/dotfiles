@@ -87,7 +87,7 @@
     "pyright-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true,
-    "usetemi-private@usetemi-private": true,
+    "usetemi-private@usetemi-private": false,
     "usetemi@usetemi": false,
     "stripe@claude-plugins-official": true,
     "vercel@claude-plugins-official": false,

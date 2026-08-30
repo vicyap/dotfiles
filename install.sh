@@ -329,6 +329,8 @@ setup_claude_plugins() {
         "vercel@claude-plugins-official"
         "context7@claude-plugins-official" # duplicate of the user-scope MCP server
         "usetemi@usetemi"                  # its skills are installed at user scope
+        # Its skills duplicate user-scope copies and resurrect AGENT_SKILL_EXCLUDES entries.
+        "usetemi-private@usetemi-private"
         "resend@claude-plugins-official"
         # Installed for projects that enable it (usetemi/temi); its SessionStart
         # hook injects a persona, so it stays off by default.
@@ -391,18 +393,14 @@ setup_codex_plugins() {
 
     local plugins=(
         "posthog@openai-curated"
-        "linear@openai-curated"
         "google-calendar@openai-curated"
         "gmail@openai-curated"
         "slack@openai-curated"
         "stripe@openai-curated"
-        "vercel@openai-curated"
         "github@openai-curated"
         "google-drive@openai-curated"
-        "expo@openai-curated"
         "cloudflare@openai-curated"
         "openai-developers@openai-curated"
-        "build-web-apps@openai-curated"
     )
 
     # Xcode-dependent plugins (build-ios-apps bundles the xcodebuildmcp MCP
@@ -427,6 +425,9 @@ setup_codex_plugins() {
         "app-69bbcab1ccd08191a6df676440fa37af@openai-curated-remote" # GetMeDesign
         "app-6982cfb482bc81918416ec35e7cc90e5@openai-curated-remote" # Shop
         "app-68de829bf7648191acd70a907364c67c@openai-curated-remote" # Spotify
+        # No recorded use in Codex sessions.
+        "expo@openai-curated"
+        "build-web-apps@openai-curated"
     )
     if [[ "$(detect_os)" != "macos" ]]; then
         excluded_plugins+=("${xcode_plugins[@]}")

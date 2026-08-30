@@ -1,9 +1,9 @@
 ---
 paths:
-  - "**/*_web*"
-  - "**/*router*"
-  - "**/*controller*"
-  - "**/*plug*"
+  - "**/*_web*.ex"
+  - "**/*router*.ex"
+  - "**/*controller*.ex"
+  - "**/*plug*.ex"
 ---
 
 ## Phoenix guidelines

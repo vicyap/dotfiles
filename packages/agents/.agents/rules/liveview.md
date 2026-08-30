@@ -1,6 +1,6 @@
 ---
 paths:
-  - "**/*live*"
+  - "**/*live*.ex"
   - "**/*_live.ex"
   - "**/*_live/*.ex"
   - "**/*_test.exs"
