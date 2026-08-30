@@ -50,25 +50,13 @@ Strict order:
 
 **Do NOT default to Terratest** -- use native tests unless the project is pre-1.6 or has complex multi-cloud needs.
 
-### Set-type blocks CANNOT be indexed with `[0]`
+### Set-type blocks cannot be indexed with `[0]`
 
-This is the most common test failure. Many AWS resource blocks are **sets**, not lists:
-
-    # WRONG -- will fail with "Cannot index a set value"
-    condition = aws_s3_bucket_server_side_encryption_configuration.this.rule[0].bucket_key_enabled
-
-    # CORRECT -- use for expressions
-    condition = alltrue([
-      for rule in aws_s3_bucket_server_side_encryption_configuration.this.rule :
-      rule.bucket_key_enabled == true
-    ])
-
-Common set-type blocks: `rule` in S3 encryption config, `transition` in lifecycle config, IAM policy `statement` blocks.
+Many AWS resource blocks are **sets**, not lists (`rule` in S3 encryption config, `transition` in lifecycle config, IAM policy `statement`); `rule[0].x` fails with "Cannot index a set value". Use a `for` expression: `alltrue([for rule in aws_s3_bucket_server_side_encryption_configuration.this.rule : rule.bucket_key_enabled])`.
 
 ### `command = plan` vs `command = apply` in tests
 
-- `command = plan` -- fast, but computed values are unknown. Use for input validation only.
-- `command = apply` -- required when checking computed attributes (bucket names from `bucket_prefix`, generated ARNs, etc.)
+Prefer `command = plan` (fast) for input-validation tests; asserting a computed attribute (bucket names from `bucket_prefix`, generated ARNs, etc.) requires `command = apply`.
 
 ### Deletion ordering with locals + try()
 

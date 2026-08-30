@@ -6,6 +6,5 @@ paths:
 
 # JS and CSS Guidelines
 
-- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive interfaces.
-- Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`
-- **Never** use `@apply` when writing raw css
+- Tailwind CSS v4: no `tailwind.config.js`; configuration and the import live in `app.css`
+- **Never** use `@apply` in raw CSS

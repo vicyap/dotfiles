@@ -53,16 +53,7 @@ Before writing Go code, check `go.mod` for the project's Go version. Use **all**
 
 - `for i := range n` not `for i := 0; i < n; i++`
 - Loop variables are now safe to capture in goroutines (each iteration gets its own copy)
-- `cmp.Or(flag, env, config, "default")` returns first non-zero value:
-
-      // Instead of:
-      name := os.Getenv("NAME")
-      if name == "" {
-          name = "default"
-      }
-      // Use:
-      name := cmp.Or(os.Getenv("NAME"), "default")
-
+- `cmp.Or(flag, env, config, "default")` returns the first non-zero value, replacing a manual if-empty-then-default chain
 - Enhanced `http.ServeMux`: `mux.HandleFunc("GET /api/{id}", handler)` with `r.PathValue("id")`
 
 ### Go 1.23+
@@ -85,45 +76,14 @@ Before writing Go code, check `go.mod` for the project's Go version. Use **all**
 
 - **`b.Loop()`** not `for i := 0; i < b.N; i++` in benchmarks.
 
-- **`strings.SplitSeq`** / `strings.FieldsSeq` / `bytes.SplitSeq` / `bytes.FieldsSeq` when iterating over split results in a for-range loop:
-
-      // OLD:
-      for _, part := range strings.Split(s, ",") { process(part) }
-      // NEW:
-      for part := range strings.SplitSeq(s, ",") { process(part) }
+- **`strings.SplitSeq`** / `strings.FieldsSeq` / `bytes.SplitSeq` / `bytes.FieldsSeq` iterate split results directly in a for-range loop instead of `strings.Split`/`bytes.Split` then ranging over the slice.
 
 ### Go 1.25+
 
-- **`wg.Go(fn)`** not `wg.Add(1)` + `go func() { defer wg.Done(); ... }()`:
-
-      // OLD:
-      var wg sync.WaitGroup
-      for _, item := range items {
-          wg.Add(1)
-          go func() {
-              defer wg.Done()
-              process(item)
-          }()
-      }
-      // NEW:
-      var wg sync.WaitGroup
-      for _, item := range items {
-          wg.Go(func() { process(item) })
-      }
+- **`wg.Go(fn)`** replaces `wg.Add(1)` + `go func() { defer wg.Done(); ... }()`.
 
 ### Go 1.26+
 
-- **`new(val)`** returns pointer to any value. Type is inferred: `new(0)` -> `*int`, `new("s")` -> `*string`, `new(T{})` -> `*T`. DO NOT use `x := val; &x` pattern.
+- **`new(val)`** returns a pointer to any value with its type inferred (`new(0)` -> `*int`, `new("s")` -> `*string`, `new(T{})` -> `*T`) -- skip the `x := val; &x` temp-variable pattern, including inline in struct literals.
 
-      cfg := Config{
-          Timeout: new(30),   // *int
-          Debug:   new(true), // *bool
-      }
-
-- **`errors.AsType[T](err)`** not `errors.As(err, &target)`:
-
-      // OLD:
-      var pathErr *os.PathError
-      if errors.As(err, &pathErr) { handle(pathErr) }
-      // NEW:
-      if pathErr, ok := errors.AsType[*os.PathError](err); ok { handle(pathErr) }
+- **`errors.AsType[T](err)`** returns `(T, bool)` instead of `errors.As(err, &target)` with a pre-declared target variable.

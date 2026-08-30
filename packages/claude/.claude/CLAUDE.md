@@ -2,33 +2,20 @@
 
 # Claude Code
 
-* Use explore-sonnet agents, not the built-in Explore agent, for codebase
-  exploration: explore-sonnet forces the cheaper, faster sonnet model (the
-  built-in agent now inherits the session model) and guarantees a read-only
-  tool allowlist. Use at least 3 in parallel; more for complex tasks.
+* Use `explore-sonnet` agents, not the built-in Explore agent, for codebase
+  exploration: it pins the cheaper sonnet model and a read-only tool
+  allowlist. Run at least 3 in parallel; more for complex tasks.
 * Context7 here is the `resolve-library-id` then `query-docs` MCP tools.
 * If WebFetch returns a 403, retry with `web`.
-* When dispatched as a subagent or teammate with a reporting obligation, use
-  `SendMessage` to send the complete final report as soon as it is ready. Never
-  go idle without sending it; if a prior reply was truncated, resend it in full
-  on resume.
+* When dispatched as a subagent or teammate with a reporting obligation, send
+  the complete final report with `SendMessage` as soon as it is ready. Never go
+  idle without sending it; if a prior reply was truncated, resend it in full on
+  resume.
 
 ## Worktrees
 
-Claude Code has built-in worktree support via `claude -w`. A global
-WorktreeCreate hook creates `.claude/worktrees/<name>/` with branch
-`worktree-<name>` and copies gitignored `.env*` files from the main repo to
-matching paths.
-
-Dependencies are not pre-installed in new worktrees. After entering a worktree,
-detect lockfiles and install dependencies before running builds, dev servers, or
-tests.
-
-Use `claude -w <name>` to create a worktree, named for the work it holds, such
-as `claude -w fix-refill-drop`. Project-specific naming conventions belong to
-each project's own instructions.
-
-Use `git worktree list` to list worktrees. Use
-`git worktree remove .claude/worktrees/<name>` and `git worktree prune` to
-remove one. If removal fails due to uncommitted changes, inform the user and ask
-before using `--force`.
+`claude -w <name>` (named for the work, e.g. `claude -w fix-refill-drop`)
+creates `.claude/worktrees/<name>/` on branch `worktree-<name>`; a global
+WorktreeCreate hook copies gitignored `.env*` files but does not install
+dependencies, so install from the lockfile before building or testing. Remove
+with `git worktree remove .claude/worktrees/<name>`; ask before `--force`.

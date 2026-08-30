@@ -81,18 +81,20 @@
     "claude-code-setup@claude-plugins-official": false,
     "context7@claude-plugins-official": false,
     "explanatory-output-style@claude-plugins-official": false,
-    "linear@claude-plugins-official": true,
+    "linear@claude-plugins-official": false,
     "playwright@claude-plugins-official": true,
-    "posthog@claude-plugins-official": true,
+    "posthog@claude-plugins-official": false,
     "pyright-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true,
     "usetemi-private@usetemi-private": true,
     "usetemi@usetemi": false,
     "stripe@claude-plugins-official": true,
-    "vercel@claude-plugins-official": true,
+    "vercel@claude-plugins-official": false,
     "resend@claude-plugins-official": false,
-    "slack@claude-plugins-official": true
+    "slack@claude-plugins-official": true,
+    "mattpocock-skills@claude-plugins-official": false,
+    "ponytail@ponytail": false
   },
   "extraKnownMarketplaces": {
     "usetemi": {
@@ -106,14 +108,24 @@
         "source": "github",
         "repo": "usetemi/skills-private"
       }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
     }
   },
   "effortLevel": "xhigh",
   "modelSettings": {
+    "claude-fable-5": {
+      "effortLevel": "xhigh"
+    },
     "claude-opus-5": {
       "effortLevel": "xhigh"
     }
   },
+  "advisorModel": "fable",
   "autoUpdatesChannel": "latest",
   "tui": "default",
   "voice": {

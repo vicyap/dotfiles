@@ -286,6 +286,7 @@ setup_claude_plugins() {
     local marketplaces=(
         "usetemi/skills"
         "usetemi/skills-private"
+        "DietrichGebert/ponytail"
     )
 
     for marketplace in "${marketplaces[@]}"; do
@@ -309,6 +310,7 @@ setup_claude_plugins() {
         "explanatory-output-style@claude-plugins-official"
         "usetemi@usetemi"
         "usetemi-private@usetemi-private"
+        "ponytail@ponytail"
     )
 
     for plugin in "${plugins[@]}"; do
@@ -320,6 +322,17 @@ setup_claude_plugins() {
         "claude-code-setup@claude-plugins-official"
         "explanatory-output-style@claude-plugins-official"
         "skill-creator@claude-plugins-official"
+        # Skill listings load into every session; none of these were ever
+        # invoked (posthog 137 skills, vercel 41, linear MCP).
+        "posthog@claude-plugins-official"
+        "linear@claude-plugins-official"
+        "vercel@claude-plugins-official"
+        "context7@claude-plugins-official" # duplicate of the user-scope MCP server
+        "usetemi@usetemi"                  # its skills are installed at user scope
+        "resend@claude-plugins-official"
+        # Installed for projects that enable it (usetemi/temi); its SessionStart
+        # hook injects a persona, so it stays off by default.
+        "ponytail@ponytail"
     )
 
     for plugin in "${disabled[@]}"; do
@@ -456,12 +469,19 @@ AGENT_SKILL_EXCLUDES=(
     template-skill
     vercel-react-native-skills
     # usetemi registry opt-outs
+    agent-skill-designer
+    ai-sdk
     answer-engine-optimization
+    content-distribution-playbook
     daisyui
+    next-cache-components
+    pdf
     seo-review
     shadcn
     tailwind-plus
     web-scrape
+    # resend registry opt-out (unused)
+    react-email
     # off-stack / one-off PostHog workflow skills (pruned 2026-06)
     signals-scout-csp-violations
     signals-scout-inbox-validation

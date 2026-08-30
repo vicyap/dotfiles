@@ -10,77 +10,48 @@ Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
 
 ### Version, typing, and quality gates
 
-- Use Elixir v1.20+ for new projects. As of May 2026, it is in pre-release; target it anyway because it includes major improvements to Elixir's built-in type checking
-- Maximize Elixir's built-in type checking signal: prefer precise pattern matching, explicit return shapes, typespecs for public contracts, and exhaustive matches over broad catch-alls
-- Do **not** use Dialyzer for new work. Elixir is actively building type checking into the language and Dialyzer should be treated as a legacy path
-- Always use Credo with sane, good defaults for style, consistency, and maintainability checks
-- Recommend adding [`ex_slop`](https://github.com/elixir-vibe/ex_slop) for Credo checks focused on AI-generated Elixir issues and [`ex_dna`](https://github.com/elixir-vibe/ex_dna) for AST-aware duplication detection
+- Target Elixir v1.20+ for new projects even while it's pre-release (as of May 2026) — it carries major improvements to Elixir's built-in type checking
+- Maximize that type-checking signal: prefer precise pattern matching, explicit return shapes, typespecs for public contracts, and exhaustive matches over broad catch-alls
+- Do **not** use Dialyzer for new work — treat it as a legacy path now that Elixir builds type checking into the language itself
+- Always use Credo with sane defaults for style, consistency, and maintainability; consider adding [`ex_slop`](https://github.com/elixir-vibe/ex_slop) (Credo checks for AI-generated-code issues) and [`ex_dna`](https://github.com/elixir-vibe/ex_dna) (AST-aware duplication detection)
 
-- Elixir lists **do not support index based access via the access syntax**
+- Elixir lists don't support index-based access via `list[i]` (it raises at runtime) — use `Enum.at/2`, pattern matching, or `List` instead
 
-  **Never do this (invalid)**:
+- Elixir variables are immutable but rebindable, so for block expressions (`if`, `case`, `cond`, etc.) you *must* bind the result to a variable to use it — you cannot rebind inside the expression, i.e.:
 
-      i = 0
-      mylist = ["blue", "green"]
-      mylist[i]
-
-  Instead, **always** use `Enum.at`, pattern matching, or `List` for index based list access, ie:
-
-      i = 0
-      mylist = ["blue", "green"]
-      Enum.at(mylist, i)
-
-- Elixir variables are immutable, but can be rebound, so for block expressions like `if`, `case`, `cond`, etc
-  you *must* bind the result of the expression to a variable if you want to use it and you CANNOT rebind the result inside the expression, ie:
-
-      # INVALID: we are rebinding inside the `if` and the result never gets assigned
+      # INVALID: rebinding inside the `if`; the result never gets assigned
       if connected?(socket) do
         socket = assign(socket, :val, val)
       end
 
-      # VALID: we rebind the result of the `if` to a new variable
+      # VALID: rebind the result of the `if` itself
       socket =
         if connected?(socket) do
           assign(socket, :val, val)
         end
 
-- **Never** nest multiple modules in the same file as it can cause cyclic dependencies and compilation errors
-- **Never** use map access syntax (`changeset[:field]`) on structs as they do not implement the Access behaviour by default. For regular structs, you **must** access the fields directly, such as `my_struct.field` or use higher level APIs that are available on the struct if they exist, `Ecto.Changeset.get_field/2` for changesets
-- Elixir's standard library has everything necessary for date and time manipulation. Familiarize yourself with the common `Time`, `Date`, `DateTime`, and `Calendar` interfaces by accessing their documentation as necessary. **Never** install additional dependencies unless asked or for date/time parsing (which you can use the `date_time_parser` package)
-- Don't use `String.to_atom/1` on user input (memory leak risk)
-- Predicate function names should not start with `is_` and should end in a question mark. Names like `is_thing` should be reserved for guards
-- Elixir's builtin OTP primitives like `DynamicSupervisor` and `Registry`, require names in the child spec, such as `{DynamicSupervisor, name: MyApp.MyDynamicSup}`, then you can use `DynamicSupervisor.start_child(MyApp.MyDynamicSup, child_spec)`
-- Use `Task.async_stream(collection, callback, options)` for concurrent enumeration with back-pressure. The majority of times you will want to pass `timeout: :infinity` as option
+- **Never** nest multiple modules in the same file — it risks cyclic dependencies and compilation errors
+- **Never** use map access syntax (`my_struct[:field]`) on structs — they don't implement the Access behaviour by default. Access fields directly (`my_struct.field`) or through a higher-level API the struct provides, e.g. `Ecto.Changeset.get_field/2` for changesets
+- Elixir's stdlib covers date/time (`Time`, `Date`, `DateTime`, `Calendar`); never install an extra dependency for it unless asked, except `date_time_parser` for parsing
+- Don't use `String.to_atom/1` on user input (memory leak risk — atoms are never garbage collected)
+- Predicate function names should not start with `is_` and should end in `?`; reserve `is_thing` naming for guards
+- Elixir's OTP primitives like `DynamicSupervisor` and `Registry` require names in the child spec (`{DynamicSupervisor, name: MyApp.MyDynamicSup}`) so callers can address them by name (`DynamicSupervisor.start_child(MyApp.MyDynamicSup, child_spec)`)
+- Use `Task.async_stream(collection, callback, options)` for concurrent enumeration with back-pressure; pass `timeout: :infinity` unless you have a reason not to
 
 ## Anti-patterns
 
-- **`with` else blocks**: Don't flatten errors into a single complex `else` block. Instead, normalize error returns in private helper functions so `with` needs no `else` at all:
+- **`with` else blocks**: normalize error returns in private helper functions so `with` needs no `else` at all, rather than flattening every error into one complex `else` block that re-maps them back to their source
 
-      # Avoid: complex else mapping errors back to their source
-      with {:ok, encoded} <- File.read(path),
-           {:ok, decoded} <- Base.decode64(encoded) do
-        {:ok, String.trim(decoded)}
-      else
-        {:error, _} -> {:error, :badfile}
-        :error -> {:error, :badencoding}
-      end
+- **Use `and`/`or`/`not` when operands are booleans**, not `&&`/`||`/`!`. The strict operators require their first argument to be a strict boolean, catching bugs where a non-boolean like `:error` or `:undefined` would silently pass as truthy under `&&`:
 
-      # Prefer: normalize errors at the source, drop the else
-      with {:ok, encoded} <- file_read(path),
-           {:ok, decoded} <- base_decode64(encoded) do
-        {:ok, String.trim(decoded)}
-      end
-
-- **Use `and`/`or`/`not` when operands are booleans**, not `&&`/`||`/`!`. The strict operators assert their first argument is boolean, catching bugs where `:error` or `:undefined` would be truthy under `&&`:
-
-      # Avoid
+      # Avoid — :error is truthy under &&, so this silently "passes"
       if is_binary(name) && is_integer(age), do: ...
-      # Prefer
+      # Prefer — raises if either isn't a strict boolean
       if is_binary(name) and is_integer(age), do: ...
 
-- **Match specific patterns in `case`, not catch-all `_`**. When the possible return values are known, match each explicitly. Catch-all `_` hides bugs when new return values are added:
+- **Match specific patterns in `case`, not a catch-all `_`**. A catch-all silently swallows new return values as they're added instead of surfacing them:
 
-      # Avoid
+      # Avoid — a new {:error, _} shape falls through unnoticed
       case File.read(path) do
         {:ok, data} -> data
         _ -> nil
@@ -92,36 +63,19 @@ Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
         {:error, _reason} -> nil
       end
 
-- **Use `map.key` for required keys, `map[:key]` for optional keys** -- even on plain maps, not just structs. Bracket access on a required key hides missing-key bugs as `nil` propagation
-
-- **Prefer tuple-returning functions over `try`/`rescue`**. Use `File.read/1` + `case`, not `File.read!/1` + `try/rescue`. Reserve bang functions for scripts, tests, and fire-and-forget calls where crashing is the right response
-
-- **Extract data before sending to processes**. Closures capture entire bindings, so `spawn(fn -> log(conn.remote_ip) end)` copies all of `conn`. Bind the needed value first:
-
-      ip = conn.remote_ip
-      spawn(fn -> log(ip) end)
-
-- **Centralize process interfaces** -- all `GenServer.call/cast` and `Agent` interactions for a process belong in that process's module. Don't scatter `GenServer.call(pid, ...)` across multiple modules
-
-- **Functions over macros** -- don't use `defmacro` when `def` suffices
-
-- **Keep structs under 32 fields** -- the BEAM switches from flat map (shared key tuple) to hash map at 32 fields. Nest optional or rarely-accessed fields if needed
-
-- **Replace overlapping booleans with atoms** -- when multiple boolean fields have dependent states (e.g., `admin: true` makes `editor: true` meaningless), use a single atom field like `role: :admin`
+- **Use `map.key` for required keys, `map[:key]` for optional keys** — even on plain maps. Bracket access on a required key hides a missing-key bug as silent `nil` propagation instead of raising
+- **Prefer tuple-returning functions over `try`/`rescue`** (`File.read/1` + `case`, not `File.read!/1` + `try/rescue`). Reserve bang functions for scripts, tests, and fire-and-forget calls where crashing is correct
+- **Extract data before sending to processes** — a closure captures its entire binding, so `spawn(fn -> log(conn.remote_ip) end)` silently retains all of `conn` in memory. Bind the needed value first: `ip = conn.remote_ip; spawn(fn -> log(ip) end)`
+- **Centralize process interfaces** — all `GenServer.call/cast` and `Agent` interactions for a process belong in that process's own module, not scattered across callers
+- **Functions over macros** — don't reach for `defmacro` when `def` suffices
+- **Keep structs under 32 fields** — the BEAM silently switches from a flat map (shared key tuple) to a hash map at 32 fields, a hidden performance/memory-layout cliff. Nest optional or rarely-accessed fields instead
+- **Replace overlapping booleans with atoms** — when several boolean fields have dependent states (`admin: true` makes `editor: true` meaningless), use one atom field like `role: :admin`
 
 ## Mix guidelines
 
-- Read the docs and options before using tasks (by using `mix help task_name`)
-- To debug test failures, run tests in a specific file with `mix test test/my_test.exs` or run all previously failed tests with `mix test --failed`
-- `mix deps.clean --all` is **almost never needed**. **Avoid** using it unless you have good reason
+- `mix deps.clean --all` is almost never needed — avoid it unless you have good reason
 
 ## Test guidelines
 
-- **Always use `start_supervised!/1`** to start processes in tests as it guarantees cleanup between tests
-- **Avoid** `Process.sleep/1` and `Process.alive?/1` in tests
-  - Instead of sleeping to wait for a process to finish, **always** use `Process.monitor/1` and assert on the DOWN message:
-
-      ref = Process.monitor(pid)
-      assert_receive {:DOWN, ^ref, :process, ^pid, :normal}
-
-   - Instead of sleeping to synchronize before the next call, **always** use `_ = :sys.get_state/1` to ensure the process has handled prior messages
+- **Always use `start_supervised!/1`** to start processes in tests — it guarantees cleanup between tests and prevents cross-test leakage
+- **Avoid** `Process.sleep/1` and `Process.alive?/1` in tests — they make tests flaky. Wait for a process to finish with `Process.monitor/1` + `assert_receive {:DOWN, ^ref, :process, ^pid, :normal}`; to synchronize before the next call, use `_ = :sys.get_state(pid)` to ensure prior messages are handled

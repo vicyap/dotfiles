@@ -10,77 +10,26 @@ paths:
 
 Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
 
-- Phoenix templates **always** use `~H` or .html.heex files (known as HEEx), **never** use `~E`
-- **Always** use the imported `Phoenix.Component.form/1` and `Phoenix.Component.inputs_for/1` function to build forms. **Never** use `Phoenix.HTML.form_for` or `Phoenix.HTML.inputs_for` as they are outdated
-- When building forms **always** use the already imported `Phoenix.Component.to_form/2` (`assign(socket, form: to_form(...))` and `<.form for={@form} id="msg-form">`), then access those forms in the template via `@form[:field]`
-- **Always** add unique DOM IDs to key elements (like forms, buttons, etc) when writing templates, these IDs can later be used in tests (`<.form for={@form} id="product-form">`)
-- For "app wide" template imports, you can import/alias into the `my_app_web.ex`'s `html_helpers` block, so they will be available to all LiveViews, LiveComponent's, and all modules that do `use MyAppWeb, :html` (replace "my_app" by the actual app name)
+- Phoenix templates **always** use `~H` or `.html.heex` files (HEEx), **never** `~E`
 
-- Elixir supports `if/else` but **does NOT support `if/else if` or `if/elsif`**. **Never use `else if` or `elseif` in Elixir**, **always** use `cond` or `case` for multiple conditionals.
+- Build forms with the imported `Phoenix.Component.form/1` and `inputs_for/1` — **never** the outdated `Phoenix.HTML.form_for`/`inputs_for`. Assign a form via `to_form/2` (`assign(socket, form: to_form(...))`) and drive every field reference from it in the template: `<.form for={@form} id="...">`, `<.input field={@form[:field]} />`. **Never** write `<.form let={f} ...>` or read a changeset directly in the template (`@changeset[:field]`) — the form assign is the only sanctioned path
 
-  **Never do this (invalid)**:
+- **Always** add unique DOM IDs to key elements (forms, buttons, etc.) — they're what tests target later, e.g. `<.form for={@form} id="product-form">`
 
-      <%= if condition do %>
-        ...
-      <% else if other_condition %>
-        ...
-      <% end %>
+- For app-wide template imports/aliases, add them to `my_app_web.ex`'s `html_helpers` block so they reach every LiveView, LiveComponent, and `use MyAppWeb, :html` module
 
-  Instead **always** do this:
-
-      <%= cond do %>
-        <% condition -> %>
-          ...
-        <% condition2 -> %>
-          ...
-        <% true -> %>
-          ...
-      <% end %>
-
-- HEEx require special tag annotation if you want to insert literal curly's like `{` or `}`. If you want to show a textual code snippet on the page in a `<pre>` or `<code>` block you *must* annotate the parent tag with `phx-no-curly-interpolation`:
+- Wrap a tag in `phx-no-curly-interpolation` before showing literal `{`/`}` inside it (e.g. a `<pre>`/`<code>` snippet) — without it, HEEx still tries to interpolate the braces:
 
       <code phx-no-curly-interpolation>
         let obj = {key: "val"}
       </code>
 
-  Within `phx-no-curly-interpolation` annotated tags, you can use `{` and `}` without escaping them, and dynamic Elixir expressions can still be used with `<%= ... %>` syntax
+  `<%= ... %>` still works for genuine dynamic expressions inside such a tag
 
-- HEEx class attrs support lists, but you must **always** use list `[...]` syntax. You can use the class list syntax to conditionally add classes, **always do this for multiple class values**:
+- For conditional or multiple class values, **always** use HEEx's `class={[...]}` list syntax — **never** build the class string via interpolation (wrap an `if` in parens: `if(@cond, do: "a", else: "b")`)
 
-      <a class={[
-        "px-2 text-white",
-        @some_flag && "py-5",
-        if(@other_condition, do: "border-red-500", else: "border-blue-100"),
-        ...
-      ]}>Text</a>
+- **Never** use `<% Enum.each %>` or another non-`for` comprehension to generate template content — **always** `<%= for item <- @collection do %>`
 
-  and **always** wrap `if`'s inside `{...}` expressions with parens, like done above (`if(@other_condition, do: "...", else: "...")`)
+- HEEx comments are `<%!-- comment --%>`, not a plain HTML `<!-- -->` — **always** use the HEEx form for template comments
 
-  and **never** do this, since it's invalid (note the missing `[` and `]`):
-
-      <a class={
-        "px-2 text-white",
-        @some_flag && "py-5"
-      }> ...
-      => Raises compile syntax error on invalid HEEx attr syntax
-
-- **Never** use `<% Enum.each %>` or non-for comprehensions for generating template content, instead **always** use `<%= for item <- @collection do %>`
-- HEEx HTML comments use `<%!-- comment --%>`. **Always** use the HEEx HTML comment syntax for template comments (`<%!-- comment --%>`)
-- HEEx allows interpolation via `{...}` and `<%= ... %>`, but the `<%= %>` **only** works within tag bodies. **Always** use the `{...}` syntax for interpolation within tag attributes, and for interpolation of values within tag bodies. **Always** interpolate block constructs (if, cond, case, for) within tag bodies using `<%= ... %>`.
-
-  **Always** do this:
-
-      <div id={@id}>
-        {@my_assign}
-        <%= if @some_block_condition do %>
-          {@another_assign}
-        <% end %>
-      </div>
-
-  and **Never** do this – the program will terminate with a syntax error:
-
-      <%!-- THIS IS INVALID NEVER EVER DO THIS --%>
-      <div id="<%= @invalid_interpolation %>">
-        {if @invalid_block_construct do}
-        {end}
-      </div>
+- Interpolation: `{...}` and `<%= %>` both work for a value in a tag body, but attributes only accept `{...}` and block constructs (`if`/`cond`/`case`/`for`) only work via `<%= ... %>` in the body — prefer `{...}` for plain body values

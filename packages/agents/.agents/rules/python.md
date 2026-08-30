@@ -13,9 +13,6 @@ Source: github.com/trailofbits/skills/tree/main/plugins/modern-python
 ## Python language
 
 - **Never** use mutable objects (lists, dicts) as default argument values. Use `None` and create inside the function.
-- Use `isinstance(obj, list)` not `type(obj) == list` for type checking.
-- Compare to `None` with `is`/`is not`, never `==`/`!=`.
-- Never use bare `except:` -- always catch specific exceptions.
 - Use `from __future__ import annotations` for forward references in type hints (Python < 3.12).
 - Predicate functions should return `bool` and be named with question-style verbs (`is_valid`, `has_access`, `can_edit`).
 
@@ -63,18 +60,9 @@ Always enable isort rules (`I`) in ruff config. Recommended starter:
 
 Use `[dependency-groups]` for dev/test/docs dependencies, **not** `[project.optional-dependencies]`. The latter is for optional runtime features users install (`pip install mylib[postgres]`).
 
-    [dependency-groups]
-    dev = [{include-group = "lint"}, {include-group = "test"}]
-    lint = ["ruff", "ty"]
-    test = ["pytest", "pytest-cov"]
-
 ### Build backend
 
-Use `uv_build` instead of hatchling/setuptools for most projects:
-
-    [build-system]
-    requires = ["uv_build>=0.9,<1"]
-    build-backend = "uv_build"
+Use `uv_build` instead of hatchling/setuptools for most projects.
 
 ### PEP 723 for standalone scripts
 

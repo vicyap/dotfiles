@@ -10,9 +10,9 @@ paths:
 
 Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
 
-- Remember Phoenix router `scope` blocks include an optional alias which is prefixed for all routes within the scope. **Always** be mindful of this when creating routes within a scope to avoid duplicate module prefixes.
+- Phoenix router `scope` blocks include an optional alias that's prefixed onto every route within the scope — be mindful of it when adding routes in a scope, or you'll get duplicate module prefixes
 
-- You **never** need to create your own `alias` for route definitions! The `scope` provides the alias, ie:
+- You **never** need your own `alias` for route definitions — the `scope` already provides one, e.g.:
 
       scope "/admin", AppWeb.Admin do
         pipe_through :browser
@@ -20,8 +20,8 @@ Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
         live "/users", UserLive, :index
       end
 
-  the UserLive route would point to the `AppWeb.Admin.UserLive` module
+  the `UserLive` route points to `AppWeb.Admin.UserLive`
 
-- `Phoenix.View` no longer is needed or included with Phoenix, don't use it
+- `Phoenix.View` is no longer needed or included with Phoenix — don't use it
 
-- Use `Endpoint.url/0` for base URL construction instead of manually reading `Endpoint.config(:url)` and reassembling scheme/host/port. Build distinct paths from the same base rather than deriving one URL from another via `String.replace`.
+- Use `Endpoint.url/0` for base URL construction instead of manually reading `Endpoint.config(:url)` and reassembling scheme/host/port; build distinct paths from the same base rather than deriving one URL from another via `String.replace`

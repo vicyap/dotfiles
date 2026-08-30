@@ -10,10 +10,8 @@ paths:
 
 Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
 
-- **Always** preload Ecto associations in queries when they'll be accessed in templates, ie a message that needs to reference the `message.user.email`
-- Remember `import Ecto.Query` and other supporting modules when you write `seeds.exs`
-- `Ecto.Schema` fields always use the `:string` type, even for `:text`, columns, ie: `field :name, :string`
-- `Ecto.Changeset.validate_number/2` **DOES NOT SUPPORT the `:allow_nil` option**. By default, Ecto validations only run if a change for the given field exists and the change value is not nil, so such as option is never needed
-- You **must** use `Ecto.Changeset.get_field(changeset, :field)` to access changeset fields
-- Fields which are set programmatically, such as `user_id`, must not be listed in `cast` calls or similar for security purposes. Instead they must be explicitly set when creating the struct
-- **Always** invoke `mix ecto.gen.migration migration_name_using_underscores` when generating migration files, so the correct timestamp and conventions are applied
+- **Always** preload Ecto associations in queries when they'll be accessed in templates (e.g. a view referencing `message.user.email`)
+- `Ecto.Changeset.validate_number/2` **does not support the `:allow_nil` option** — passing it is silently ignored rather than erroring, since validations already only run when a change for the field exists and isn't nil
+- You **must** use `Ecto.Changeset.get_field(changeset, :field)` to access changeset fields — bracket access (`changeset[:field]`) raises, since changesets don't implement Access
+- Fields set programmatically (e.g. `user_id`) must **never** appear in `cast` calls, for security purposes — set them explicitly when building the struct instead
+- **Always** invoke `mix ecto.gen.migration migration_name_using_underscores` to generate migration files, so the correct timestamp and conventions are applied
