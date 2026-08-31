@@ -271,7 +271,9 @@ def main():
             "POSTHOG_PROJECT_TOKEN is unset; expected it in "
             "/etc/rhinestone/agent-vm-telemetry.env"
         )
-        return 1
+        # EX_CONFIG, which the unit's RestartPreventExitStatus pins: a missing token is a
+        # setup step, not a transient fault, so stop cleanly instead of restart-looping.
+        return 78
 
     windows = {}
     sample_number = 0

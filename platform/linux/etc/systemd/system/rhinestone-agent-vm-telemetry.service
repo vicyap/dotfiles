@@ -11,10 +11,14 @@ Group=victor
 SupplementaryGroups=libvirt
 # Untracked, holds POSTHOG_PROJECT_TOKEN. Create it before starting the unit:
 #   POSTHOG_PROJECT_TOKEN=phc_... (project 372779; same value as NEXT_PUBLIC_POSTHOG_KEY)
-EnvironmentFile=/etc/rhinestone/agent-vm-telemetry.env
+# The leading `-` keeps a fresh machine from restart-looping before the file exists:
+# setup-system.sh enables this unit, and the program exits with a clear message when the
+# token is missing rather than systemd failing on the absent file.
+EnvironmentFile=-/etc/rhinestone/agent-vm-telemetry.env
 ExecStart=/usr/local/libexec/rhinestone-agent-vm-telemetry
 Restart=always
 RestartSec=30s
+RestartPreventExitStatus=78
 NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectHome=read-only
