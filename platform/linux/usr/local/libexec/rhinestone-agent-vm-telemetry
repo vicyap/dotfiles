@@ -1,0 +1,305 @@
+#!/usr/bin/env python3
+"""Per-guest VM telemetry from the host, aggregated to one PostHog event per VM per minute.
+
+Samples `virsh domstats --balloon --vcpu` every 10s for every running libvirt domain and
+emits one `agentops:vm_sampled` event per domain per minute. Sampling at 10s and emitting
+at 60s keeps spikes (which is the whole point) without 86k events/VM/day.
+
+Gauges are aggregated by their worst case, not their mean: `usable` is reported at its
+minimum over the window, so `working_set_peak_mb` is the true peak and a 60s emit loses
+nothing a 10s emit would have shown. Counters are reported as deltas over the window, so
+they are lossless by construction.
+
+The balloon driver only publishes `usable`/`unused`/`disk_caches`/fault counters when a
+stats collection period is set, and `virsh dommemstat --period ... --config` does not
+survive a Vagrant re-provision rebuilding the domain. Each tick re-arms any domain whose
+`last-update` has gone stale, so a rebuilt domain self-heals instead of silently reporting
+frozen numbers.
+
+Runs as victor (in the libvirt group); needs no root. stdlib only.
+"""
+
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+
+POSTHOG_HOST = "https://us.i.posthog.com"
+# The phc_ project token for PostHog project 372779. It is public by construction — the app
+# ships the same value to every browser as NEXT_PUBLIC_POSTHOG_KEY — but it stays out of
+# this repository, which has never held it, and comes from the untracked
+# /etc/rhinestone/agent-vm-telemetry.env that the systemd unit loads.
+POSTHOG_PROJECT_TOKEN = os.environ.get("POSTHOG_PROJECT_TOKEN", "")
+EVENT = "agentops:vm_sampled"
+
+SAMPLE_INTERVAL_SECONDS = 10
+EMIT_EVERY_SAMPLES = 6
+BALLOON_STALE_SECONDS = 60
+VIRSH = ["virsh", "-c", "qemu:///system"]
+
+DOMAIN_LINE = re.compile(r"^Domain: '(?P<name>.+)'$")
+STAT_LINE = re.compile(r"^\s+(?P<key>[^=]+)=(?P<value>.*)$")
+
+
+def log(message):
+    print(message, file=sys.stderr, flush=True)
+
+
+def run(argv, timeout=20):
+    return subprocess.run(
+        argv, capture_output=True, text=True, timeout=timeout, check=False
+    )
+
+
+def domain_stats():
+    """{domain: {stat key: str}} for every running domain, or {} if virsh fails.
+
+    `--list-running` matters: without it virsh also reports every defined-but-shut-off
+    domain, whose config-level stats would emit meaningless events and whose balloon
+    re-arm always fails.
+    """
+    result = run(VIRSH + ["domstats", "--list-running", "--balloon", "--vcpu"])
+    if result.returncode != 0:
+        log(f"domstats failed ({result.returncode}): {result.stderr.strip()}")
+        return {}
+    domains, current = {}, None
+    for line in result.stdout.splitlines():
+        domain_match = DOMAIN_LINE.match(line)
+        if domain_match:
+            current = domain_match.group("name")
+            domains[current] = {}
+            continue
+        stat_match = STAT_LINE.match(line)
+        if stat_match and current:
+            domains[current][stat_match.group("key")] = stat_match.group("value")
+    return domains
+
+
+def number(stats, key):
+    try:
+        return int(stats[key])
+    except (KeyError, ValueError):
+        return None
+
+
+def rearm_balloon(domain, stats):
+    """Re-enable balloon stats collection when the driver has stopped publishing."""
+    last_update = number(stats, "balloon.last-update")
+    if last_update is not None and time.time() - last_update < BALLOON_STALE_SECONDS:
+        return
+    result = run(VIRSH + ["dommemstat", domain, "--period", "10", "--live"])
+    if result.returncode == 0:
+        log(f"{domain}: re-armed balloon stats collection")
+    else:
+        log(f"{domain}: could not re-arm balloon stats: {result.stderr.strip()}")
+
+
+def qemu_host_memory(domain):
+    """(rss_kib, swap_kib) the host sees for this guest's qemu process.
+
+    balloon.rss covers the resident half; VmSwap is the half domstats cannot see, and it is
+    the one that reveals guest pages the host has pushed into zram or the swapfile.
+    """
+    result = run(["pgrep", "-f", f"guest={domain},"])
+    if result.returncode != 0:
+        return None, None
+    pid = result.stdout.split()[0]
+    rss = swap = None
+    try:
+        with open(f"/proc/{pid}/status", encoding="utf-8") as handle:
+            for line in handle:
+                if line.startswith("VmRSS:"):
+                    rss = int(line.split()[1])
+                elif line.startswith("VmSwap:"):
+                    swap = int(line.split()[1])
+    except (OSError, ValueError, IndexError):
+        return None, None
+    return rss, swap
+
+
+def vcpu_totals(stats):
+    """(summed vcpu time ns, summed runqueue delay ns) across every vCPU."""
+    time_ns = delay_ns = 0
+    for key, value in stats.items():
+        if key.endswith(".time") and key.startswith("vcpu."):
+            time_ns += int(value)
+        elif key.endswith(".delay") and key.startswith("vcpu."):
+            delay_ns += int(value)
+    return time_ns, delay_ns
+
+
+def mib(kib):
+    return None if kib is None else round(kib / 1024, 1)
+
+
+class Window:
+    """One domain's accumulated samples since the last emit."""
+
+    def __init__(self):
+        self.samples = 0
+        self.allocated_kib = None
+        self.usable_min_kib = None
+        self.usable_min_at = None
+        self.usable_last_kib = None
+        self.disk_caches_max_kib = None
+        self.qemu_rss_kib = None
+        self.qemu_swap_kib = None
+        self.vcpu_count = None
+        self.first = {}
+        self.last = {}
+
+    def add(self, stats, now):
+        self.samples += 1
+        self.allocated_kib = number(stats, "balloon.current") or self.allocated_kib
+        self.vcpu_count = number(stats, "vcpu.current") or self.vcpu_count
+
+        usable = number(stats, "balloon.usable")
+        if usable is not None:
+            self.usable_last_kib = usable
+            if self.usable_min_kib is None or usable < self.usable_min_kib:
+                self.usable_min_kib = usable
+                self.usable_min_at = now
+        caches = number(stats, "balloon.disk_caches")
+        if caches is not None and (
+            self.disk_caches_max_kib is None or caches > self.disk_caches_max_kib
+        ):
+            self.disk_caches_max_kib = caches
+
+        counters = {
+            "major_fault": number(stats, "balloon.major_fault"),
+            "swap_in": number(stats, "balloon.swap_in"),
+            "swap_out": number(stats, "balloon.swap_out"),
+        }
+        vcpu_time, vcpu_delay = vcpu_totals(stats)
+        counters["vcpu_time_ns"] = vcpu_time
+        counters["vcpu_delay_ns"] = vcpu_delay
+        for key, value in counters.items():
+            if value is None:
+                continue
+            self.first.setdefault(key, value)
+            self.last[key] = value
+
+    def delta(self, key):
+        if key not in self.first or key not in self.last:
+            return None
+        # A domain reboot resets the guest's counters; report the reset as absent rather
+        # than as a large negative delta.
+        change = self.last[key] - self.first[key]
+        return change if change >= 0 else None
+
+    def properties(self):
+        working_set_peak = None
+        if self.allocated_kib is not None and self.usable_min_kib is not None:
+            working_set_peak = self.allocated_kib - self.usable_min_kib
+        working_set_last = None
+        if self.allocated_kib is not None and self.usable_last_kib is not None:
+            working_set_last = self.allocated_kib - self.usable_last_kib
+
+        vcpu_time = self.delta("vcpu_time_ns")
+        vcpu_delay = self.delta("vcpu_delay_ns")
+        delay_ratio = None
+        if vcpu_time is not None and vcpu_delay is not None and vcpu_time + vcpu_delay > 0:
+            delay_ratio = round(vcpu_delay / (vcpu_time + vcpu_delay), 4)
+
+        return {
+            "samples": self.samples,
+            "allocated_mb": mib(self.allocated_kib),
+            "working_set_peak_mb": mib(working_set_peak),
+            "working_set_last_mb": mib(working_set_last),
+            "usable_min_mb": mib(self.usable_min_kib),
+            "disk_caches_max_mb": mib(self.disk_caches_max_kib),
+            "qemu_rss_mb": mib(self.qemu_rss_kib),
+            "qemu_host_swap_mb": mib(self.qemu_swap_kib),
+            "headroom_pct": (
+                None
+                if working_set_peak is None or not self.allocated_kib
+                else round(100 * (1 - working_set_peak / self.allocated_kib), 1)
+            ),
+            "peak_at": (
+                None
+                if self.usable_min_at is None
+                else time.strftime(
+                    "%Y-%m-%dT%H:%M:%SZ", time.gmtime(self.usable_min_at)
+                )
+            ),
+            "vcpu_count": self.vcpu_count,
+            "vcpu_time_ms": None if vcpu_time is None else round(vcpu_time / 1e6),
+            "vcpu_delay_ms": None if vcpu_delay is None else round(vcpu_delay / 1e6),
+            "vcpu_delay_ratio": delay_ratio,
+            "major_faults": self.delta("major_fault"),
+            "balloon_swap_in_pages": self.delta("swap_in"),
+            "balloon_swap_out_pages": self.delta("swap_out"),
+        }
+
+
+def capture(domain, properties):
+    payload = {
+        "api_key": POSTHOG_PROJECT_TOKEN,
+        "event": EVENT,
+        "distinct_id": domain,
+        "properties": {
+            # These are machines, not people: keep them out of the person graph the
+            # analytics:* events depend on.
+            "$process_person_profile": False,
+            "vm": domain,
+            "host": os.uname().nodename,
+            **{key: value for key, value in properties.items() if value is not None},
+        },
+    }
+    request = urllib.request.Request(
+        f"{POSTHOG_HOST}/i/v0/e",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            if response.status >= 300:
+                log(f"{domain}: capture returned {response.status}")
+    except (urllib.error.URLError, OSError) as error:
+        # Telemetry delivery never takes the loop down with it.
+        log(f"{domain}: capture failed: {error}")
+
+
+def main():
+    if not POSTHOG_PROJECT_TOKEN:
+        log(
+            "POSTHOG_PROJECT_TOKEN is unset; expected it in "
+            "/etc/rhinestone/agent-vm-telemetry.env"
+        )
+        return 1
+
+    windows = {}
+    sample_number = 0
+    while True:
+        started = time.time()
+        try:
+            domains = domain_stats()
+            for domain, stats in domains.items():
+                rearm_balloon(domain, stats)
+                window = windows.setdefault(domain, Window())
+                window.add(stats, started)
+                window.qemu_rss_kib, window.qemu_swap_kib = qemu_host_memory(domain)
+            # A domain that stopped mid-window emits nothing; its partial window is dropped.
+            for domain in list(windows):
+                if domain not in domains:
+                    del windows[domain]
+
+            sample_number += 1
+            if sample_number >= EMIT_EVERY_SAMPLES:
+                for domain, window in windows.items():
+                    capture(domain, window.properties())
+                windows = {}
+                sample_number = 0
+        except Exception as error:  # noqa: BLE001 - the loop outlives any single tick
+            log(f"tick failed: {error}")
+
+        time.sleep(max(0.0, SAMPLE_INTERVAL_SECONDS - (time.time() - started)))
+
+
+if __name__ == "__main__":
+    sys.exit(main())

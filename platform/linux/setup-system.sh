@@ -111,6 +111,7 @@ deploy_system_files() {
     install_etc_file "default/earlyoom" "/etc/default/earlyoom" 0644
     install_etc_file "systemd/system/rhinestone-memory-monitor.service" "/etc/systemd/system/rhinestone-memory-monitor.service" 0644
     install_etc_file "systemd/system/rhinestone-memory-monitor.timer" "/etc/systemd/system/rhinestone-memory-monitor.timer" 0644
+    install_etc_file "systemd/system/rhinestone-agent-vm-telemetry.service" "/etc/systemd/system/rhinestone-agent-vm-telemetry.service" 0644
     install_etc_file "systemd/system/periodic-sync.service" "/etc/systemd/system/periodic-sync.service" 0644
     install_etc_file "systemd/system/periodic-sync.timer" "/etc/systemd/system/periodic-sync.timer" 0644
     install_etc_file "systemd/system/fstrim.timer.d/10-rhinestone-weekly.conf" "/etc/systemd/system/fstrim.timer.d/10-rhinestone-weekly.conf" 0644
@@ -127,6 +128,7 @@ deploy_system_files() {
     install_etc_file "zsh/zshenv" "/etc/zsh/zshenv" 0644
 
     install_program "rhinestone-memory-snapshot"
+    install_program "rhinestone-agent-vm-telemetry"
     install_program "rhinestone-vagrant-tmpdirs"
 }
 
@@ -351,6 +353,7 @@ enable_services() {
 
     # Record structured memory, swap, zram, and pressure metrics in journald.
     sudo systemctl enable --now rhinestone-memory-monitor.timer >/dev/null
+    sudo systemctl enable --now rhinestone-agent-vm-telemetry.service >/dev/null
     sudo systemctl start rhinestone-memory-monitor.service
 
     sudo systemctl enable --now periodic-sync.timer >/dev/null
@@ -421,6 +424,7 @@ summary() {
     echo
     printf "earlyoom: %s\n" "$(systemctl is-active earlyoom.service)"
     printf "memory monitor: %s\n" "$(systemctl is-active rhinestone-memory-monitor.timer)"
+    printf "agent VM telemetry: %s\n" "$(systemctl is-active rhinestone-agent-vm-telemetry.service)"
     printf "periodic sync: %s\n" "$(systemctl is-active periodic-sync.timer)"
     printf "weekly trim: %s\n" "$(systemctl is-active fstrim.timer)"
     systemctl show user.slice machine.slice docker.slice -p Id -p MemoryHigh -p MemoryMax -p CPUWeight

@@ -1,0 +1,28 @@
+[Unit]
+Description=Sample per-guest VM memory and vCPU contention into PostHog
+ConditionHost=rhinestone
+After=network-online.target libvirtd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=victor
+Group=victor
+SupplementaryGroups=libvirt
+# Untracked, holds POSTHOG_PROJECT_TOKEN. Create it before starting the unit:
+#   POSTHOG_PROJECT_TOKEN=phc_... (project 372779; same value as NEXT_PUBLIC_POSTHOG_KEY)
+EnvironmentFile=/etc/rhinestone/agent-vm-telemetry.env
+ExecStart=/usr/local/libexec/rhinestone-agent-vm-telemetry
+Restart=always
+RestartSec=30s
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=read-only
+ProtectSystem=strict
+ProtectControlGroups=yes
+ProtectKernelTunables=yes
+MemoryMax=128M
+TasksMax=32
+
+[Install]
+WantedBy=multi-user.target
