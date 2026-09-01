@@ -1,0 +1,39 @@
+# --- Secrets / credentials (never commit) ---
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.secrets
+*.secrets
+secrets.*
+!secrets.example.*
+
+# Keys & certs
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+id_ecdsa
+*_rsa
+*_ed25519
+
+# Cloud / service credentials
+credentials.json
+client_secret*.json
+service-account*.json
+*serviceAccountKey*.json
+.aws/credentials
+gcloud-key.json
+
+# Tool-level credential files
+.netrc
+.npmrc
+.pypirc
+.htpasswd
+
+tests/

@@ -18,6 +18,11 @@ vagrant ssh hermes
 Hermes is installed for the `vagrant` user at `~/.local/bin/hermes`.
 The default workspace is `~/workspace`.
 
+The guest timezone is `America/Los_Angeles`. The durable email bridge cutover
+configures Hermes to reset sessions at 4:00 AM Pacific and suppresses the
+otherwise user-facing reset message. Session history remains available through
+`hermes sessions` and `/resume` after rotation.
+
 ## Signal Setup
 
 Link `signal-cli` as a Signal linked device from inside the VM:

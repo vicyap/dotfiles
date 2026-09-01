@@ -1,0 +1,34 @@
+app = 'the1000club-hermes'
+primary_region = 'sjc'
+kill_signal = 'SIGTERM'
+kill_timeout = '90s'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  AWS_ENDPOINT_URL_S3 = 'https://t3.storage.dev'
+  AWS_REGION = 'auto'
+  BRIDGE_URL = 'https://the1000club-mail-bridge.fly.dev'
+  HERMES_GATEWAY_BOOTSTRAP_STATE = 'running'
+  HERMES_HOME = '/opt/data'
+  TZ = 'America/Los_Angeles'
+
+[[mounts]]
+  source = 'hermes_data'
+  destination = '/opt/data'
+  initial_size = '5GB'
+  snapshot_retention = 30
+  scheduled_snapshots = true
+  auto_extend_size_threshold = 80
+  auto_extend_size_increment = '1GB'
+  auto_extend_size_limit = '10GB'
+
+[[restart]]
+  policy = 'always'
+  processes = ['app']
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '2gb'
+  processes = ['app']

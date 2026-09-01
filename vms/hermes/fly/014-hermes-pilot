@@ -1,0 +1,42 @@
+#!/command/with-contenv sh
+set -e
+
+export HOME=/opt/data
+export HERMES_HOME=/opt/data
+
+install -d -o hermes -g hermes \
+    "$HERMES_HOME/data" \
+    "$HERMES_HOME/plugins/email" \
+    "$HERMES_HOME/scripts" \
+    "$HERMES_HOME/skills/health/fitness-personal-trainer/references"
+
+for filename in __init__.py adapter.py message_policy.py plugin.yaml; do
+    install -m 0644 -o hermes -g hermes \
+        "/opt/hermes-pilot/email-plugin/$filename" \
+        "$HERMES_HOME/plugins/email/$filename"
+done
+install -m 0755 -o hermes -g hermes \
+    /opt/hermes-pilot/training_reminder_dispatcher.py \
+    "$HERMES_HOME/scripts/training_reminder_dispatcher.py"
+install -m 0644 -o hermes -g hermes \
+    /opt/hermes-pilot/trainer/SKILL.md \
+    "$HERMES_HOME/skills/health/fitness-personal-trainer/SKILL.md"
+install -m 0644 -o hermes -g hermes \
+    /opt/hermes-pilot/trainer/references/workout-email-logging.md \
+    "$HERMES_HOME/skills/health/fitness-personal-trainer/references/workout-email-logging.md"
+
+s6-setuidgid hermes /opt/hermes/.venv/bin/python /opt/hermes-pilot/bootstrap_pilot.py
+
+if [ -f "$HERMES_HOME/config.yaml" ]; then
+    s6-setuidgid hermes hermes plugins disable platforms/email >/dev/null
+    s6-setuidgid hermes hermes plugins enable durable-email-bridge \
+        --no-allow-tool-override >/dev/null
+    s6-setuidgid hermes hermes config set platforms.email.enabled true >/dev/null
+    s6-setuidgid hermes hermes config set display.platforms.email.streaming false >/dev/null
+    s6-setuidgid hermes hermes config set display.platforms.email.interim_assistant_messages false >/dev/null
+    s6-setuidgid hermes hermes config set display.platforms.email.tool_progress off >/dev/null
+    s6-setuidgid hermes hermes config set display.platforms.email.long_running_notifications false >/dev/null
+    s6-setuidgid hermes hermes config set display.platforms.email.busy_ack_detail false >/dev/null
+    s6-setuidgid hermes hermes config set session_reset.at_hour 4 >/dev/null
+    s6-setuidgid hermes hermes config set session_reset.notify false >/dev/null
+fi

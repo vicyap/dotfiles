@@ -4,72 +4,74 @@ set -e
 export DEBIAN_FRONTEND=noninteractive
 export NEEDRESTART_MODE=a
 
+timedatectl set-timezone America/Los_Angeles
+
 apt-get update
 apt-get install -y \
-  apt-transport-https \
-  build-essential \
-  ca-certificates \
-  curl \
-  dbus-x11 \
-  fd-find \
-  ffmpeg \
-  fonts-liberation \
-  fonts-noto-color-emoji \
-  git \
-  jq \
-  libasound2t64 \
-  libatk-bridge2.0-0 \
-  libatk1.0-0 \
-  libcairo2 \
-  libcups2 \
-  libdrm2 \
-  libgbm1 \
-  libgtk-3-0 \
-  libnss3 \
-  libpango-1.0-0 \
-  libx11-xcb1 \
-  libxcomposite1 \
-  libxdamage1 \
-  libxfixes3 \
-  libxkbcommon0 \
-  libxrandr2 \
-  pkg-config \
-  python3-dev \
-  qrencode \
-  ripgrep \
-  rsync \
-  tmux \
-  unzip \
-  vim \
-  wget \
-  x11-utils \
-  xauth \
-  xvfb \
-  zsh
+    apt-transport-https \
+    build-essential \
+    ca-certificates \
+    curl \
+    dbus-x11 \
+    fd-find \
+    ffmpeg \
+    fonts-liberation \
+    fonts-noto-color-emoji \
+    git \
+    jq \
+    libasound2t64 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcairo2 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnss3 \
+    libpango-1.0-0 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    pkg-config \
+    python3-dev \
+    qrencode \
+    ripgrep \
+    rsync \
+    tmux \
+    unzip \
+    vim \
+    wget \
+    x11-utils \
+    xauth \
+    xvfb \
+    zsh
 
 java_version="25"
 java_home="/opt/jre-${java_version}"
 if [ ! -x "${java_home}/bin/java" ]; then
-  java_tmp="$(mktemp -d)"
-  curl -fsSL "https://api.adoptium.net/v3/binary/latest/${java_version}/ga/linux/x64/jre/hotspot/normal/eclipse" \
-    -o "$java_tmp/jre.tar.gz"
-  rm -rf "$java_home"
-  mkdir -p "$java_home"
-  tar -xzf "$java_tmp/jre.tar.gz" -C "$java_home" --strip-components=1
-  rm -rf "$java_tmp"
-  ln -sfn "${java_home}/bin/java" /usr/local/bin/java
+    java_tmp="$(mktemp -d)"
+    curl -fsSL "https://api.adoptium.net/v3/binary/latest/${java_version}/ga/linux/x64/jre/hotspot/normal/eclipse" \
+        -o "$java_tmp/jre.tar.gz"
+    rm -rf "$java_home"
+    mkdir -p "$java_home"
+    tar -xzf "$java_tmp/jre.tar.gz" -C "$java_home" --strip-components=1
+    rm -rf "$java_tmp"
+    ln -sfn "${java_home}/bin/java" /usr/local/bin/java
 fi
 
 signal_cli_version="0.14.3"
 signal_cli_home="/opt/signal-cli-${signal_cli_version}"
 signal_cli_url="https://github.com/AsamK/signal-cli/releases/download/v${signal_cli_version}/signal-cli-${signal_cli_version}.tar.gz"
-if [ ! -x "${signal_cli_home}/bin/signal-cli" ] ||
-  [ "$("${signal_cli_home}/bin/signal-cli" --version 2>/dev/null)" != "signal-cli ${signal_cli_version}" ]; then
-  signal_cli_tmp="$(mktemp -d)"
-  curl -fsSL "$signal_cli_url" -o "$signal_cli_tmp/signal-cli.tar.gz"
-  rm -rf "$signal_cli_home"
-  tar -xzf "$signal_cli_tmp/signal-cli.tar.gz" -C /opt
-  rm -rf "$signal_cli_tmp"
+if [ ! -x "${signal_cli_home}/bin/signal-cli" ] \
+    || [ "$("${signal_cli_home}/bin/signal-cli" --version 2>/dev/null)" != "signal-cli ${signal_cli_version}" ]; then
+    signal_cli_tmp="$(mktemp -d)"
+    curl -fsSL "$signal_cli_url" -o "$signal_cli_tmp/signal-cli.tar.gz"
+    rm -rf "$signal_cli_home"
+    tar -xzf "$signal_cli_tmp/signal-cli.tar.gz" -C /opt
+    rm -rf "$signal_cli_tmp"
 fi
 ln -sfn "${signal_cli_home}/bin/signal-cli" /usr/local/bin/signal-cli
 
@@ -112,8 +114,8 @@ sudo -H -u vagrant bash -lc '
 '
 
 profile_path_line="export PATH=\"\$HOME/.local/bin:\$PATH\""
-grep -qxF "$profile_path_line" /home/vagrant/.profile ||
-  printf '%s\n' "$profile_path_line" >>/home/vagrant/.profile
+grep -qxF "$profile_path_line" /home/vagrant/.profile \
+    || printf '%s\n' "$profile_path_line" >>/home/vagrant/.profile
 
 cat >/home/vagrant/.zshenv <<'PROFILE'
 export PATH="$HOME/.local/bin:$PATH"
@@ -121,7 +123,7 @@ PROFILE
 chown vagrant:vagrant /home/vagrant/.profile /home/vagrant/.zshenv
 
 if [ -x /usr/bin/zsh ]; then
-  chsh -s /usr/bin/zsh vagrant || true
+    chsh -s /usr/bin/zsh vagrant || true
 fi
 
 sudo -H -u vagrant bash -lc '
