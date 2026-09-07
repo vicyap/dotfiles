@@ -53,6 +53,6 @@
       InitialKeyRepeat = 15;
       KeyRepeat = 2;
     };
-    trackpad.Clicking = true;
+    trackpad.Clicking = false;
   };
 }
