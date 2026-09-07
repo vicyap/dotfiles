@@ -1,0 +1,93 @@
+# Kagi search settings as code. This file is the full truth: `kagi apply`
+# creates, updates, and deletes account resources until the account matches.
+#
+# Design: lenses are exclude-only so search keeps its discovery value. Sites
+# you already trust are raised globally under [ranked] instead of fenced into
+# an allowlist, and junk is blocked globally rather than per lens, because
+# personalized results have no cap while a lens allows only 10 excluded domains.
+
+[ranked]
+# Never shown, anywhere, including Assistant answers.
+block = [
+  "dev.to",       # engagement-ranked beginner content and AI flood
+  "medium.com",   # same dynamic, paywalled
+  "geeksforgeeks.org",  # SEO tutorial farm
+  "tutorialspoint.com", # SEO tutorial farm
+  "bestreviews.guide",  # affiliate listicle aggregator
+  "top10.com",          # affiliate listicle aggregator
+]
+lower = []
+# Ranked above equals everywhere. Practitioner blogs and price/review sources.
+raise = [
+  "simonwillison.net",
+  "martinfowler.com",
+  "nytimes.com",  # for Wirecutter; Kagi ranks whole domains, so NYT news rises too
+  "camelcamelcamel.com",
+  "reddit.com",
+  "news.ycombinator.com",
+  "lobste.rs",
+]
+pin = []
+
+# Built-in lenses by the name shown on kagi.com/settings/lenses. Kagi ships
+# these nine active; remove a name to switch that lens off on apply. The rest
+# (Fediverse Forums, Kagi Documentation, Fediverse Social, Jobs) are off.
+[builtin_lenses]
+enabled = [
+  "News 360",
+  "Usenet/Archive",
+  "Academic",
+  "Forums",
+  "Programming",
+  "PDFs",
+  "Cyber Security",
+  "Small Web",
+  "Recipes",
+]
+
+[[lens]]
+name = "Product Search"
+# Exclude-only: the open web stays visible. Domains already blocked under
+# [ranked] are not repeated here; the lens cap is 10 and blocks are global.
+exclude_domains = [
+  "consumersadvocate.org",
+  "reviews.org",
+]
+# Listicle title patterns; five is the cap.
+exclude_keywords = ["top 10", "best of 2026", "ultimate guide", "buyer's guide", "editor's picks"]
+
+[[lens]]
+name = "Engineering Blogs"
+# Exclude-only for the same reason: good engineers publish on their own domains.
+# dev.to, medium.com, and the tutorial farms are already blocked under [ranked].
+exclude_domains = [
+  "hashnode.dev",
+  "freecodecamp.org",
+]
+exclude_keywords = ["tutorial", "for beginners", "roadmap", "cheat sheet", "in 5 minutes"]
+
+# Assistants need a model id; Kagi rejects an empty one. `ki_research` is the
+# Kagi Research model, the account default when this file was written. Other
+# ids: ki_quick, claude-5-sonnet, claude-5-opus, gpt-6-astra, gemini-3-pro.
+# `bang` is typed after `!` in the search box to start a thread with it.
+[[assistant]]
+name = "Product Compare"
+lens = "Product Search"
+model = "ki_research"
+bang = "compare"
+instructions = """
+Compare products spec by spec in a table, then give a short recommendation.
+Cite the source for every spec and price. Note the price and where it was
+seen. Flag any spec you could not verify instead of guessing.
+"""
+
+[[assistant]]
+name = "Engineering Research"
+lens = "Engineering Blogs"
+model = "ki_research"
+bang = "engblogs"
+instructions = """
+Prefer primary sources and practitioner blogs over aggregators. Distinguish
+opinion from evidence and say which is which. Name the authors you are
+drawing on. Keep answers concrete: patterns, trade-offs, and examples.
+"""

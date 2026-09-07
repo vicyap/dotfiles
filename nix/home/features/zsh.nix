@@ -145,6 +145,9 @@
       # Cheatsheet
       oma = "glow ~/.dotfiles/CHEATSHEET.md";
 
+      # Kagi settings as code (tools/kagi); needs KAGI_SESSION_LINK in ~/.secrets
+      kagi = "uv run --project \"$HOME/.dotfiles/tools/kagi\" kagi";
+
       # AI agents
       cc = "claude";
       # `cx = "codex"` is macOS-only (codex is a Homebrew cask) — see lima.nix.

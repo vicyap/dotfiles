@@ -1,0 +1,9 @@
+# Everything derived from the account or browser history lives in
+# ~/.local/state/kagi/, never here. These patterns are a backstop only.
+state/
+exports/
+*.sqlite*
+History*
+*.png
+.venv/
+__pycache__/

@@ -93,6 +93,18 @@ echo "✓ tmux-status installed to ~/.local/bin/tmux-status"
 # typescript-language-server are pipx:/npm: backend tools above, so
 # `mise upgrade` keeps them current — no setup tasks needed.
 
+[tasks."setup:kagi"]
+description = "Install the kagi settings-as-code CLI (tools/kagi) and its Chromium"
+run = """
+#!/usr/bin/env bash
+set -e
+cd "$HOME/.dotfiles/tools/kagi"
+uv sync --frozen
+uv run playwright install chromium
+echo "✓ kagi CLI ready: uv run --project ~/.dotfiles/tools/kagi kagi plan"
+echo "  Set KAGI_SESSION_LINK in ~/.secrets (Kagi Settings > Account > session link)"
+"""
+
 [tasks."update:tools"]
-description = "Update all CLI tools (web, ask, ssh-opener, tmux-status)"
-depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:tmux-status"]
+description = "Update all CLI tools (web, ask, ssh-opener, tmux-status, kagi)"
+depends = ["setup:web", "setup:ask", "setup:ssh-opener", "setup:tmux-status", "setup:kagi"]
