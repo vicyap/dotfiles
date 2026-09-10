@@ -2,8 +2,7 @@
 
 Kagi has no settings API, but its settings pages are server-rendered forms and
 the Assistant is a JSON API. `read` scrapes the pages with a logged-in browser
-and `apply` posts the same requests the pages would. Endpoints and field names
-were verified against the live pages on 2026-09-07; PLAN.md lists them.
+and `apply` posts the same requests the pages would.
 
 Login uses the Kagi session link from `KAGI_SESSION_LINK` (set in ~/.secrets).
 The link is a bearer credential: it is never printed, and any Playwright error
