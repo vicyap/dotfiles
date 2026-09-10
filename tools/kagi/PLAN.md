@@ -28,11 +28,10 @@ rule are in `AGENTS.md`.
 ## Design
 
 **Discovery over allowlists.** Both custom lenses are exclude-only so the open
-web stays visible; a lens only strips junk and gives Assistant something to
-bind to. Known-good sites are raised globally in `[ranked]` rather than fenced
-into a lens. Because the lens exclude cap is 10 domains while `[ranked] block`
-allows 1000, domain blocking belongs in `[ranked]`; the lens's real payload is
-its 5 exclude keywords and the assistant binding.
+web stays visible. Known-good sites are raised globally in `[ranked]` rather
+than fenced into a lens. Lowered sites remain discoverable outside the selective
+lens exclusions. Neither lens uses included-domain allowlists or keyword
+filters. There are no global blocks or pins.
 
 **Config is the full truth.** `apply` creates, updates, and deletes so the
 account matches `kagi.toml`, deletions included. There is no state file; every
@@ -54,12 +53,34 @@ defaults on each apply.
 | `src/kagi_config/mine.py` | Brave history and Assistant export mining. Writes a proposal to the state dir, never to `kagi.toml`. |
 | `src/kagi_config/cli.py` | `read`, `plan`, `apply`, `mine`. |
 
-**Seed content.** Global blocks for dev.to, medium.com, and a few SEO
-listicle farms. Global raises for simonwillison.net, martinfowler.com,
-nytimes.com (Wirecutter), camelcamelcamel, and forum sources. Two
-exclude-only lenses, `Product Search` and `Engineering Blogs`. The nine
-built-in lenses Kagi ships active stay active. Two custom assistants bound to
-the custom lenses on `ki_research`, with bangs `!compare` and `!engblogs`.
+**Declared personalization.** Global lowers for dev.to, medium.com,
+geeksforgeeks.org, tutorialspoint.com, bestreviews.guide, top10.com,
+consumersadvocate.org, reviews.org, hashnode.dev, and freecodecamp.org. Global
+raises for simonwillison.net, martinfowler.com, camelcamelcamel.com, reddit.com,
+news.ycombinator.com, lobste.rs, rtings.com, and developer.mozilla.org.
+NYT/Wirecutter and NapLab remain neutral. `Product Search` excludes only
+bestreviews.guide and top10.com; `Engineering Blogs` excludes only dev.to,
+medium.com, geeksforgeeks.org, and tutorialspoint.com. The five enabled
+built-in lenses are Forums, Programming, PDFs, Small Web, and Recipes.
+All other built-in lenses are disabled.
+
+**Assistants.** Both use `ki_research`, web access, and personalized results,
+with instructions to honor their bound lens's domain exclusions in searches
+and citations.
+`Engineering Research` (`!engblogs`, bound to `Engineering Blogs`) prioritizes
+firsthand engineering experience, maintainability, architecture, postmortems,
+and substantive explanations, including agent workflows. It names authors,
+cites original sources, distinguishes evidence from opinion, explains examples
+and tradeoffs, and treats forum discussions as leads to corroborate.
+`Product Compare` (`!compare`, bound to `Product Search`) compares exact models
+using specifications, measured tests, prices, durability, repairability,
+warranty, and owner complaints. It defaults to US availability and USD, asks
+about material ambiguities before researching and waits for an answer,
+separates claims from measurements and anecdotes,
+does not generalize owner polls into failure probabilities or individual
+warranty denials into blanket exclusions,
+scrutinizes affiliate evidence and disclosed incentives without asserting
+undisclosed payments, and ends with a compact table and conditional recommendation.
 
 ## Verified against the live account (2026-09-07)
 

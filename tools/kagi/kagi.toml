@@ -3,68 +3,63 @@
 #
 # Design: lenses are exclude-only so search keeps its discovery value. Sites
 # you already trust are raised globally under [ranked] instead of fenced into
-# an allowlist, and junk is blocked globally rather than per lens, because
-# personalized results have no cap while a lens allows only 10 excluded domains.
+# an allowlist. Lowered sites remain discoverable globally; each lens excludes
+# only selected domains, without keyword filters.
 
 [ranked]
-# Never shown, anywhere, including Assistant answers.
-block = [
-  "dev.to",       # engagement-ranked beginner content and AI flood
-  "medium.com",   # same dynamic, paywalled
-  "geeksforgeeks.org",  # SEO tutorial farm
-  "tutorialspoint.com", # SEO tutorial farm
-  "bestreviews.guide",  # affiliate listicle aggregator
-  "top10.com",          # affiliate listicle aggregator
+block = []
+lower = [
+  "dev.to",
+  "medium.com",
+  "geeksforgeeks.org",
+  "tutorialspoint.com",
+  "bestreviews.guide",
+  "top10.com",
+  "consumersadvocate.org",
+  "reviews.org",
+  "hashnode.dev",
+  "freecodecamp.org",
 ]
-lower = []
 # Ranked above equals everywhere. Practitioner blogs and price/review sources.
 raise = [
   "simonwillison.net",
   "martinfowler.com",
-  "nytimes.com",  # for Wirecutter; Kagi ranks whole domains, so NYT news rises too
   "camelcamelcamel.com",
   "reddit.com",
   "news.ycombinator.com",
   "lobste.rs",
+  "rtings.com",
+  "developer.mozilla.org",
 ]
+# NYT/Wirecutter and NapLab remain neutral.
 pin = []
 
-# Built-in lenses by the name shown on kagi.com/settings/lenses. Kagi ships
-# these nine active; remove a name to switch that lens off on apply. The rest
-# (Fediverse Forums, Kagi Documentation, Fediverse Social, Jobs) are off.
+# Built-in lenses by the name shown on kagi.com/settings/lenses.
+# Only listed lenses are enabled; all other built-ins are switched off on apply.
 [builtin_lenses]
 enabled = [
-  "News 360",
-  "Usenet/Archive",
-  "Academic",
   "Forums",
   "Programming",
   "PDFs",
-  "Cyber Security",
   "Small Web",
   "Recipes",
 ]
 
 [[lens]]
 name = "Product Search"
-# Exclude-only: the open web stays visible. Domains already blocked under
-# [ranked] are not repeated here; the lens cap is 10 and blocks are global.
 exclude_domains = [
-  "consumersadvocate.org",
-  "reviews.org",
+  "bestreviews.guide",
+  "top10.com",
 ]
-# Listicle title patterns; five is the cap.
-exclude_keywords = ["top 10", "best of 2026", "ultimate guide", "buyer's guide", "editor's picks"]
 
 [[lens]]
 name = "Engineering Blogs"
-# Exclude-only for the same reason: good engineers publish on their own domains.
-# dev.to, medium.com, and the tutorial farms are already blocked under [ranked].
 exclude_domains = [
-  "hashnode.dev",
-  "freecodecamp.org",
+  "dev.to",
+  "medium.com",
+  "geeksforgeeks.org",
+  "tutorialspoint.com",
 ]
-exclude_keywords = ["tutorial", "for beginners", "roadmap", "cheat sheet", "in 5 minutes"]
 
 # Assistants need a model id; Kagi rejects an empty one. `ki_research` is the
 # Kagi Research model, the account default when this file was written. Other
@@ -76,9 +71,25 @@ lens = "Product Search"
 model = "ki_research"
 bang = "compare"
 instructions = """
-Compare products spec by spec in a table, then give a short recommendation.
-Cite the source for every spec and price. Note the price and where it was
-seen. Flag any spec you could not verify instead of guessing.
+Compare exact product models using cited specifications, measured tests,
+prices, durability, repairability, warranty terms, and owner complaints.
+Default to US availability and USD. Before researching, check whether the exact
+models and material requirements are clear. If model variants, sizes, generations,
+or other missing details materially affect the comparison, respond only with
+concise clarification questions and wait for the user's answer. Do not assume
+a variant or begin a comparison while waiting. Honor the bound lens's domain
+exclusions in searches and citations. Cite sources for specifications
+and prices, including where and when each price was seen. Flag anything you
+could not verify instead of guessing.
+
+Separate manufacturer claims, independent test measurements, and owner anecdotes.
+Self-selected owner polls and complaints are not representative failure rates;
+do not turn them into a buyer's failure probability or infer blanket warranty
+exclusions from individual claim denials. Verify coverage in the warranty terms.
+Evaluate affiliate articles by their evidence; scrutinize recommendations and
+disclosed incentives. Never assert undisclosed payments. Explain concrete
+tradeoffs and finish with a compact comparison table and a conditional
+recommendation based on the user's needs.
 """
 
 [[assistant]]
@@ -87,7 +98,12 @@ lens = "Engineering Blogs"
 model = "ki_research"
 bang = "engblogs"
 instructions = """
-Prefer primary sources and practitioner blogs over aggregators. Distinguish
-opinion from evidence and say which is which. Name the authors you are
-drawing on. Keep answers concrete: patterns, trade-offs, and examples.
+Prioritize firsthand engineering experience, maintainability, architecture,
+postmortems, and substantive technical explanations, including agent workflows.
+Name the authors and cite original sources. Distinguish evidence from opinion
+and honor the bound lens's domain exclusions in searches and citations.
+Explain concrete examples and tradeoffs, including the context in which
+an approach works or fails. Treat forum discussions as leads to corroborate
+with original sources, not as established evidence. Flag uncertainty and
+unsupported claims instead of guessing.
 """
