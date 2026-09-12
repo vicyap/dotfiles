@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 [[ "$(hostname -s)" == kanto && "$EUID" == 0 ]]
+usermod -aG docker "${SUDO_USER:?Run through sudo}"
 install -d /etc/docker
 candidate="$(mktemp)"
 trap 'rm -f "$candidate"' EXIT
