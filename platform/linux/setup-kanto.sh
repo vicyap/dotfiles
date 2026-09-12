@@ -31,6 +31,20 @@ sudo systemctl daemon-reload
 sudo systemctl enable kanto-firewall.service
 sudo systemctl reload-or-restart kanto-firewall.service
 
+if [[ ! -f /etc/apt/sources.list.d/docker.sources ]]; then
+    sudo install -d -m 0755 /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod 0644 /etc/apt/keyrings/docker.asc
+    sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: noble
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+fi
+
 if [[ ! -f /etc/apt/sources.list.d/hashicorp.list ]]; then
     curl -fsSL https://apt.releases.hashicorp.com/gpg \
         | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.asc >/dev/null
@@ -64,6 +78,9 @@ for guest in gtm-agent engr-agent pidgey-agent; do
         sudo virsh -c qemu:///system autostart "$guest"
     fi
 done
+if sudo virsh -c qemu:///system pool-info default >/dev/null 2>&1; then
+    sudo virsh -c qemu:///system pool-autostart default
+fi
 if sudo virsh -c qemu:///system net-info vagrant-libvirt >/dev/null 2>&1; then
     sudo virsh -c qemu:///system net-autostart vagrant-libvirt
 fi

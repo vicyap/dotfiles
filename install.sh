@@ -928,6 +928,11 @@ converge() {
     ensure_codex_cli
     echo
 
+    if [[ "$(detect_supported_platform)" == ubuntu ]] && ! has_cmd claude; then
+        curl -fsSL https://claude.ai/install.sh | bash \
+            || echo "  Warning: Claude Code install failed"
+    fi
+
     echo "=== Generating codex config ==="
     generate_codex_config
     echo
@@ -946,6 +951,7 @@ converge() {
     if has_cmd mise; then
         echo "=== Converging mise runtimes (pinned) ==="
         mise install --yes || echo "  Warning: mise install failed"
+        prepend_path "$HOME/.local/share/mise/shims"
         echo
 
         echo "=== Installing/upgrading modal CLI ==="
