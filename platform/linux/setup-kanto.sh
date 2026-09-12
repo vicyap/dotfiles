@@ -17,6 +17,10 @@ source /etc/os-release
     exit 1
 }
 
+# Host clocks, journal display, and status bars use Pacific time; guests keep their own.
+sudo timedatectl set-timezone America/Los_Angeles
+# timedatectl leaves the legacy /etc/timezone stale; tzdata rewrites it from /etc/localtime.
+sudo dpkg-reconfigure -f noninteractive tzdata
 sudo env DEBIAN_FRONTEND=noninteractive apt-get update -qq
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ca-certificates curl git jq qemu-system-x86 libvirt-daemon-system libvirt-clients \
