@@ -76,7 +76,7 @@ tools, company/vendor CLIs, and Python CLIs published primarily through PyPI.
 
 `mise` manages language runtimes (Go, Node, Python, Bun, Erlang, Elixir), pinned
 in `packages/mise/.config/mise/config.toml`, plus a few setup-task tools
-(`setup:web`, `setup:ask`, `setup:ssh-opener`). Use `uv tool` for Python CLIs
+(`setup:web`, `setup:ssh-opener`). Use `uv tool` for Python CLIs
 that should track PyPI more closely than nixpkgs. The general stable CLI tool
 set comes from Nix home-manager (`nix/home/features/packages.nix`). Before
 adding or moving a CLI, check for PATH shadowing so the intended package manager

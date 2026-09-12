@@ -999,7 +999,7 @@ refresh_upstream() {
         fi
         mise upgrade --yes || echo "  Warning: mise upgrade failed"
         # update:tools depends on the setup:* tasks, so this is also the
-        # single place the extra CLI tools (web, ask, ssh-opener, tmux-status)
+        # single place the extra CLI tools (web, ssh-opener, tmux-status)
         # get built. pyright/typescript-language-server are mise backend tools
         # now, covered by `mise upgrade` above.
         mise run update:tools || echo "  Warning: mise update:tools failed"

@@ -1,0 +1,25 @@
+table inet kanto_firewall
+flush table inet kanto_firewall
+
+table inet kanto_firewall {
+    chain input {
+        type filter hook input priority -10; policy drop;
+        iifname "lo" accept
+        iifname != "tailscale0" tcp dport 22 counter drop
+        ct state established,related accept
+        ct state invalid drop
+        iifname "tailscale0" tcp dport 22 accept
+        iifname "virbr*" udp dport { 53, 67 } accept
+        iifname "virbr*" tcp dport 53 accept
+        # IPv6 neighbor/router discovery is required for outbound connectivity.
+        ip6 hoplimit 255 icmpv6 type { nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept
+        counter drop
+    }
+
+    chain forward {
+        type filter hook forward priority -10; policy accept;
+        ct state established,related accept
+        # Filter before libvirt or container port-publication rules can accept.
+        iifname { "eno1", "eno2" } counter drop
+    }
+}

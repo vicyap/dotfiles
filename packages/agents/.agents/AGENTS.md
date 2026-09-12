@@ -135,7 +135,7 @@ follow its routing to referenced files before acting. Dotfiles-owned:
   shells. Do not call interactive helpers such as `ff` from tool calls.
 - Before proposing a CLI install or alias, check what the dotfiles already
   manage (`oma`, or `~/.dotfiles/AGENTS.md`).
-- `ask` gives an external AI second opinion; `web` fetches a page as markdown.
+- `web` fetches a page as markdown.
   Run `--help` before relying on less obvious options.
 - Shell history is atuin's. Never edit `~/.zsh_history`; use `atuin search`
   and `atuin history`.

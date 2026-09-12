@@ -20,7 +20,16 @@ source /etc/os-release
 sudo env DEBIAN_FRONTEND=noninteractive apt-get update -qq
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ca-certificates curl git jq qemu-system-x86 libvirt-daemon-system libvirt-clients \
-    libvirt-dev build-essential pkg-config rsync
+    libvirt-dev build-essential pkg-config rsync nftables
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+sudo install -m 0644 "$script_dir/etc/kanto-firewall.nft" /etc/kanto-firewall.nft
+sudo nft --check -f /etc/kanto-firewall.nft
+sudo install -m 0644 "$script_dir/etc/systemd/system/kanto-firewall.service" \
+    /etc/systemd/system/kanto-firewall.service
+sudo systemctl daemon-reload
+sudo systemctl enable kanto-firewall.service
+sudo systemctl reload-or-restart kanto-firewall.service
 
 if [[ ! -f /etc/apt/sources.list.d/hashicorp.list ]]; then
     curl -fsSL https://apt.releases.hashicorp.com/gpg \
