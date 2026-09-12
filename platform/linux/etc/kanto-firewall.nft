@@ -11,6 +11,7 @@ table inet kanto_firewall {
         iifname "tailscale0" tcp dport 22 accept
         iifname "virbr*" udp dport { 53, 67 } accept
         iifname "virbr*" tcp dport 53 accept
+        iifname "virbr*" ip saddr 192.168.121.0/24 tcp dport 19999 accept
         # IPv6 neighbor/router discovery is required for outbound connectivity.
         ip6 hoplimit 255 icmpv6 type { nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept
         counter drop

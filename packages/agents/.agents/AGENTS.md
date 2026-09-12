@@ -123,8 +123,10 @@ domain's rule before implementing:
 User-level skills live in `~/.agents/skills/`. Use a skill when the user names
 it or the task clearly matches its trigger. Read its `SKILL.md` completely and
 follow its routing to referenced files before acting. Dotfiles-owned:
-`ask-clarifying-questions`, `ddd`, `design-interfaces`, `event-sourcing`,
-`simplify`, `writer-editor`.
+`ddd`, `design-interfaces`, `event-sourcing`, `simplify`, `writer-editor`.
+`software-design` and `ask-clarifying-questions` are installed from `vicyap/skills`.
+Edit them upstream; refresh dotfiles and Temi together using
+`~/.dotfiles/scripts/refresh-shared-skills.sh /path/to/temi FULL_UPSTREAM_COMMIT`.
 
 ## Tools
 

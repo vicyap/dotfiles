@@ -23,6 +23,7 @@ sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
     libvirt-dev build-essential pkg-config rsync nftables
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+sudo bash "$script_dir/setup-kanto-memory.sh"
 sudo install -m 0644 "$script_dir/etc/kanto-firewall.nft" /etc/kanto-firewall.nft
 sudo nft --check -f /etc/kanto-firewall.nft
 sudo install -m 0644 "$script_dir/etc/systemd/system/kanto-firewall.service" \
@@ -33,6 +34,7 @@ sudo netplan generate
 sudo systemctl daemon-reload
 sudo systemctl enable kanto-firewall.service
 sudo systemctl reload-or-restart kanto-firewall.service
+sudo bash "$script_dir/setup-kanto-monitoring.sh"
 
 if [[ ! -f /etc/apt/sources.list.d/docker.sources ]]; then
     sudo install -d -m 0755 /etc/apt/keyrings
@@ -47,6 +49,10 @@ Architectures: $(dpkg --print-architecture)
 Signed-By: /etc/apt/keyrings/docker.asc
 EOF
 fi
+sudo apt-get update -qq
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo bash "$script_dir/setup-kanto-docker.sh"
 
 if [[ ! -f /etc/apt/sources.list.d/hashicorp.list ]]; then
     curl -fsSL https://apt.releases.hashicorp.com/gpg \

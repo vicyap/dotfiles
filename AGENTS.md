@@ -88,7 +88,19 @@ System-level changes that are not `$HOME` symlinks and must apply to a single ho
 
 `platform/linux/setup-kanto.sh` owns Ubuntu 24.04 KVM/libvirt, Vagrant, and Tailscale setup for `kanto`. It gives host user and system slices CPU weight 200 and the guest machine slice weight 100, without CPU quotas or memory limits. It enables autostart for existing coworker guests. `install.sh` selects the host script by hostname; coworker guest provisioning stays in Temi.
 
+Kanto's memory, Docker storage, and native Netdata setup live in the adjacent
+`setup-kanto-memory.sh`, `setup-kanto-docker.sh`, and `setup-kanto-monitoring.sh`.
+They retain 128 GiB disk swap with zswap, disable earlyoom, rotate Docker logs,
+and store the three guests' streamed history on the host. See
+`platform/linux/kanto-monitoring.md` for private dashboard access and measurement.
+
 ## Agent Configuration
+
+`software-design` and `ask-clarifying-questions` are installed copies from
+`vicyap/skills`, pinned in `packages/agents/.agents/shared-skills.commit`.
+Edit them upstream and refresh both consumers using
+`scripts/refresh-shared-skills.sh /path/to/temi FULL_UPSTREAM_COMMIT`.
+The existing skill mirroring deploys them to the personal agent directories.
 
 `packages/agents/.agents`, `packages/claude/.claude`, and `packages/codex/.codex` deploy to `~/.agents`, `~/.claude`, and `~/.codex`. `converge` mirrors `packages/agents/.agents/skills/` into `~/.agents/skills`, links `~/.agents/rules/*.md` into `~/.claude/rules`, and generates `~/.codex/AGENTS.md` from the shared `~/.agents/AGENTS.md` plus the untracked `~/.agents/AGENTS.local.md`. Do not add root-level `.agents/` or `.claude/` directories in this repository.
 
