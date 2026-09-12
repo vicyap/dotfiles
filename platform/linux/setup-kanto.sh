@@ -27,6 +27,9 @@ sudo install -m 0644 "$script_dir/etc/kanto-firewall.nft" /etc/kanto-firewall.nf
 sudo nft --check -f /etc/kanto-firewall.nft
 sudo install -m 0644 "$script_dir/etc/systemd/system/kanto-firewall.service" \
     /etc/systemd/system/kanto-firewall.service
+# The unaddressed secondary NIC must not hold up network-online.target.
+sudo netplan set --origin-hint=90-kanto ethernets.eno2.optional=true
+sudo netplan generate
 sudo systemctl daemon-reload
 sudo systemctl enable kanto-firewall.service
 sudo systemctl reload-or-restart kanto-firewall.service
