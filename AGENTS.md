@@ -82,9 +82,11 @@ set comes from Nix home-manager (`nix/home/features/packages.nix`). Before
 adding or moving a CLI, check for PATH shadowing so the intended package manager
 owns the executable users will actually run.
 
-### Host-Scoped System Setup (`platform/linux/setup-system.sh`)
+### Host-Scoped System Setup
 
-System-level changes that are not `$HOME` symlinks and must apply to a single host live in `platform/linux/setup-system.sh`. Currently it is `rhinestone`-only memory-pressure hardening (24 GiB zram + a 96 GiB disk swapfile + `earlyoom`, with `vm.swappiness=30`), soft cgroup pressure controls, VM autostart, and memory observability, added after the 2026-06-17 livelock postmortem. A one-minute `rhinestone-memory-monitor.timer` records structured memory, swap, zram, PSI, reclaim, NVMe write, and cgroup metrics in the persistent journal; inspect them with `journalctl -u rhinestone-memory-monitor.service`. The script is idempotent, refuses to run on any host whose hostname is not `rhinestone`, and deploys root-owned `/etc` files stashed under `platform/linux/etc/` plus its sampler under `/usr/local/libexec/`. `install.sh` invokes it from `main()` via `setup_linux_system`, guarded by hostname plus passwordless-sudo/interactive checks, so it is a no-op on macOS and every other machine.
+System-level changes that are not `$HOME` symlinks and must apply to a single host live in `platform/linux/setup-system.sh`. Currently it is `rhinestone`-only memory-pressure hardening (24 GiB zram + a 96 GiB disk swapfile + `earlyoom`, with `vm.swappiness=30`), soft cgroup pressure controls, VM autostart, and memory observability, added after the 2026-06-17 livelock postmortem. A one-minute `rhinestone-memory-monitor.timer` records structured memory, swap, zram, PSI, reclaim, NVMe write, and cgroup metrics in the persistent journal; inspect them with `journalctl -u rhinestone-memory-monitor.service`. The script is idempotent, refuses to run on any host whose hostname is not `rhinestone`, and deploys root-owned `/etc` files stashed under `platform/linux/etc/` plus its sampler under `/usr/local/libexec/`. `install.sh` invokes it from `main()` via `setup_linux_system`, guarded by hostname plus passwordless-sudo/interactive checks, so it is a no-op on macOS and unsupported hosts.
+
+`platform/linux/setup-kanto.sh` owns Ubuntu 24.04 KVM/libvirt, Vagrant, and Tailscale setup for `kanto`. It gives host user and system slices CPU weight 200 and the guest machine slice weight 100, without CPU quotas or memory limits. It enables autostart for existing coworker guests. `install.sh` selects the host script by hostname; coworker guest provisioning stays in Temi.
 
 ## Agent Configuration
 

@@ -244,24 +244,25 @@ setup_nix() {
 }
 
 setup_linux_system() {
-    # rhinestone-only memory-pressure hardening (zram + disk swapfile + earlyoom).
-    # Intentionally host-scoped — see platform/linux/setup-system.sh and the
-    # 2026-06-17 postmortem. A no-op on every other machine.
+    # Each supported Linux host owns its system configuration.
     [[ "$(uname -s)" == "Linux" ]] || {
         echo "  Skipped: not Linux"
         return 0
     }
-    [[ "$(hostname -s 2>/dev/null || hostname)" == "rhinestone" ]] \
-        || {
-            echo "  Skipped: not rhinestone"
+    local script
+    case "$(hostname -s 2>/dev/null || hostname)" in
+        rhinestone) script="$DOTFILES_DIR/platform/linux/setup-system.sh" ;;
+        kanto) script="$DOTFILES_DIR/platform/linux/setup-kanto.sh" ;;
+        *)
+            echo "  Skipped: no system configuration for this host"
             return 0
-        }
+            ;;
+    esac
     has_cmd apt || {
         echo "  Skipped: apt not available"
         return 0
     }
 
-    local script="$DOTFILES_DIR/platform/linux/setup-system.sh"
     [[ -f "$script" ]] || {
         echo "  Skipped: $script not found"
         return 0
@@ -907,8 +908,7 @@ converge() {
     wire_git_hooks
     echo
 
-    # rhinestone-only: graceful memory-pressure handling (zram + swapfile + earlyoom)
-    echo "=== Configuring memory safety (rhinestone) ==="
+    echo "=== Configuring host system ==="
     setup_linux_system
     echo
 
