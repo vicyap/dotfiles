@@ -1,14 +1,14 @@
 # Kanto monitoring
 
 Kanto retains its own and the three coworker guests' Netdata history. The native
-agents use Netdata's stable APT channel. Dashboard access is through private SSH:
+agents use Netdata's stable APT channel. Open
+`https://kanto.llama-bull.ts.net` from a device connected to the tailnet.
+Tailscale Serve proxies HTTPS to Netdata on `127.0.0.1:19999`; its background
+configuration persists across restarts. `setup-kanto.sh` configures the proxy
+when Tailscale is signed in. Funnel is not enabled.
 
-```sh
-ssh -N -L 19999:127.0.0.1:19999 victor@kanto.llama-bull.ts.net
-```
-
-Open `http://127.0.0.1:19999` on the SSH client. The four nodes' metrics, history,
-and alerts are available without a Cloud account. Guest streaming uses
+The four nodes' metrics, history, and alerts are available without a Netdata
+Cloud account or SSH tunnel. Guest streaming uses
 `192.168.121.1:19999` on the libvirt network; dashboard requests from guests are
 denied. No public interface listens on port 19999.
 
