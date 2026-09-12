@@ -12,7 +12,10 @@ elixir = "1.19"
 # CLI tools (starship, delta, atuin, lazygit, lazydocker, fastfetch, dust,
 # procs, sd, gping, yq, jless, just, glow, doggo) are now provided by
 # home-manager and removed from here. mise keeps language runtimes, the LSP
-# servers below, and op.
+# servers below, and vendor CLIs.
+
+# Cloud / infra
+flyctl = "latest"
 
 # LSP servers. The pipx backend delegates to uvx automatically since uv is
 # managed above; npm uses the mise-managed node.

@@ -39,7 +39,6 @@ brew "zig"
 
 # Cloud / infra
 brew "awscli"
-brew "flyctl"
 
 # AI tools
 cask "codex"
