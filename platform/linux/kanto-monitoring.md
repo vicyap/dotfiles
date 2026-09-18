@@ -1,28 +1,26 @@
 # Kanto monitoring
 
-Kanto sends its own resource metrics to PostHog project `temi-engr` (589356).
+Kanto sends its own resource metrics to a PostHog project.
 `setup-kanto-monitoring.sh` installs Ubuntu's `prometheus-node-exporter` and
 `prometheus-process-exporter` on `127.0.0.1:9100` and `127.0.0.1:9256`, a pinned
 `otelcol-contrib` that scrapes both every 30 seconds and forwards to
 `https://us.i.posthog.com/i/v1/metrics`, and `smartmontools` with a five-minute
 `kanto-nvme-smart.timer` that writes both drives' SMART health to
 `/var/lib/prometheus/node-exporter/nvme.prom` for the textfile collector.
-Nothing listens beyond loopback and there is no dashboard on the host; the
-public Tailscale hostname serves the Beauty Rep iframe demo.
+Nothing listens beyond loopback and there is no dashboard on the host.
 
 The write token is `POSTHOG_METRICS_TOKEN` in the host user's mode-0600
 `~/.secrets`; the script copies it into root-owned, group-`otelcol-contrib`
 `/etc/otelcol-contrib/config.yaml`. Host series carry `service.name =
-machine-resources` and `host = kanto`; the three coworker guests send the same
-metric set from Temi's `apps/agent-runtime/deploy/monitoring.sh` labelled
-`host` and `agent`, so a host query filters on `host = 'kanto'` and a guest
-query on `agent`. Query series and attributes through
-`posthog.metric_series` and `posthog.metrics`.
+machine-resources` and `host = kanto`; the guests send the same metric set
+from their own provisioning, labelled `host` and `agent`, so a host query
+filters on `host = 'kanto'` and a guest query on `agent`. Query series and
+attributes through `posthog.metric_series` and `posthog.metrics`.
 
 `setup-kanto.sh` invokes the three host setup scripts. For attended changes,
 each can also run independently, for example with
 `sudo bash platform/linux/setup-kanto-monitoring.sh`. Restarting the
-exporters or the collector does not touch libvirt or the coworkers.
+exporters or the collector does not touch libvirt or the guests.
 
 ## Storage and memory
 
@@ -62,26 +60,24 @@ Retention is PostHog's.
 
 ## Alerts
 
-Nothing on the host evaluates alerts; `smartd` is disabled. PostHog project
-`temi-engr` owns them, all on the `Kanto disk health` dashboard (2109259) and
-delivered to `#alerts-engr` through the project's Slack integration:
+Nothing on the host evaluates alerts; `smartd` is disabled. The PostHog
+project owns them, on a dashboard built from two SQL insights over
+`posthog.metrics`, delivered to Slack through the project's Slack integration:
 
-- `Kanto NVMe SMART: latest per drive` (insight 11994361) is one row per
-  drive from the last hour. Hourly alerts fire on `healthy` below 1,
-  `critical_warning` above 0, and `media_errors` above 0; daily alerts fire on
-  `percentage_used` at or above 80 (warning) and 90 (critical) and on
-  `available_spare` at or below the drives' own threshold of 10.
-- `Kanto collector samples in the last 60 minutes` (insight 11994366) counts
-  `node_load1` samples from `host = kanto`; an hourly alert fires when it
-  reaches 0, which is how a dead collector, exporter, or host shows up.
-- A weekly dashboard subscription posts a snapshot of both insights every
-  Sunday at 00:00 Pacific.
+- One row per drive from the last hour of `nvme_smart_*`. Hourly alerts fire
+  on `healthy` below 1, `critical_warning` above 0, and `media_errors` above
+  0; daily alerts fire on `percentage_used` at or above 80 (warning) and 90
+  (critical) and on `available_spare` at or below the drives' own threshold.
+- A count of `node_load1` samples from `host = kanto` in the last 60 minutes;
+  an hourly alert fires when it reaches 0, which is how a dead collector,
+  exporter, or host shows up.
+- A weekly dashboard subscription posts a snapshot of both insights.
 
 PostHog re-posts a firing alert on every evaluation until it clears or is
 snoozed in the UI, and does not announce clearing, so the evaluation interval
-is the repeat cadence. Alerts and the subscription only see what the collector
-sends: a drive that has already taken the array down is reported by the
-no-data alert, not by the SMART rows.
+is the repeat cadence. Alerts only see what the collector sends: a drive that
+has already taken the array down is reported by the no-data alert, not by the
+SMART rows.
 
 Read-only checks:
 

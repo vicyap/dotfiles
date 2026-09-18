@@ -14,7 +14,7 @@ secrets_file="$(getent passwd "${SUDO_USER:?Run through sudo}")"
 secrets_file="$(cut -d: -f6 <<<"$secrets_file")/.secrets"
 token="$(sed -n 's/^POSTHOG_METRICS_TOKEN=//p' "$secrets_file" 2>/dev/null || true)"
 [[ "$token" =~ ^phc_[A-Za-z0-9]+$ ]] || {
-    echo "POSTHOG_METRICS_TOKEN (the temi-engr project write token) is missing from $secrets_file." >&2
+    echo "POSTHOG_METRICS_TOKEN (the PostHog project write token) is missing from $secrets_file." >&2
     exit 1
 }
 
