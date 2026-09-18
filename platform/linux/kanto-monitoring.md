@@ -58,7 +58,30 @@ The SMART textfile exposes `nvme_smart_healthy` and `nvme_smart_<field>` for
 serial. SMART cannot predict every failure; the accepted RAID0 array holds both
 the workloads and the swapfile.
 
-No alerts are configured anywhere; retention is PostHog's.
+Retention is PostHog's.
+
+## Alerts
+
+Nothing on the host evaluates alerts; `smartd` is disabled. PostHog project
+`temi-engr` owns them, all on the `Kanto disk health` dashboard (2109259) and
+delivered to `#alerts-engr` through the project's Slack integration:
+
+- `Kanto NVMe SMART: latest per drive` (insight 11994361) is one row per
+  drive from the last hour. Hourly alerts fire on `healthy` below 1,
+  `critical_warning` above 0, and `media_errors` above 0; daily alerts fire on
+  `percentage_used` at or above 80 (warning) and 90 (critical) and on
+  `available_spare` at or below the drives' own threshold of 10.
+- `Kanto collector samples in the last 60 minutes` (insight 11994366) counts
+  `node_load1` samples from `host = kanto`; an hourly alert fires when it
+  reaches 0, which is how a dead collector, exporter, or host shows up.
+- A weekly dashboard subscription posts a snapshot of both insights every
+  Sunday at 00:00 Pacific.
+
+PostHog re-posts a firing alert on every evaluation until it clears or is
+snoozed in the UI, and does not announce clearing, so the evaluation interval
+is the repeat cadence. Alerts and the subscription only see what the collector
+sends: a drive that has already taken the array down is reported by the
+no-data alert, not by the SMART rows.
 
 Read-only checks:
 
