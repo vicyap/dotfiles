@@ -88,11 +88,12 @@ System-level changes that are not `$HOME` symlinks and must apply to a single ho
 
 `platform/linux/setup-kanto.sh` owns Ubuntu 24.04 KVM/libvirt, Vagrant, and Tailscale setup for `kanto`. It sets the host system timezone to `America/Los_Angeles`; guests keep their own. It gives host user and system slices CPU weight 200 and the guest machine slice weight 100, without CPU quotas or memory limits. It enables autostart for existing coworker guests. `install.sh` selects the host script by hostname; coworker guest provisioning stays in Temi.
 
-Kanto's memory, Docker storage, and native Netdata setup live in the adjacent
+Kanto's memory, Docker storage, and resource telemetry live in the adjacent
 `setup-kanto-memory.sh`, `setup-kanto-docker.sh`, and `setup-kanto-monitoring.sh`.
 They retain 128 GiB disk swap with zswap, disable earlyoom, rotate Docker logs,
-and store the three guests' streamed history on the host. See
-`platform/linux/kanto-monitoring.md` for private dashboard access and measurement.
+and send host metrics (node and process exporters, NVMe SMART) to PostHog through
+an OpenTelemetry collector using `POSTHOG_METRICS_TOKEN` from `~/.secrets`. See
+`platform/linux/kanto-monitoring.md` for what is collected and how to query it.
 
 ## Agent Configuration
 

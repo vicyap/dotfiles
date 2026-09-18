@@ -1,41 +1,30 @@
 # Kanto monitoring
 
-Kanto retains its own and the three coworker guests' Netdata history. The native
-agents use Netdata's stable APT channel. Open
-`https://kanto.llama-bull.ts.net` from a device connected to the tailnet.
-Tailscale Serve proxies HTTPS to Netdata on `127.0.0.1:19999`; its background
-configuration persists across restarts. `setup-kanto.sh` configures the proxy
-when Tailscale is signed in. Funnel is not enabled.
+Kanto sends its own resource metrics to PostHog project `temi-engr` (589356).
+`setup-kanto-monitoring.sh` installs Ubuntu's `prometheus-node-exporter` and
+`prometheus-process-exporter` on `127.0.0.1:9100` and `127.0.0.1:9256`, a pinned
+`otelcol-contrib` that scrapes both every 30 seconds and forwards to
+`https://us.i.posthog.com/i/v1/metrics`, and `smartmontools` with a five-minute
+`kanto-nvme-smart.timer` that writes both drives' SMART health to
+`/var/lib/prometheus/node-exporter/nvme.prom` for the textfile collector.
+Nothing listens beyond loopback and there is no dashboard on the host; the
+public Tailscale hostname serves the Beauty Rep iframe demo.
 
-The four nodes' metrics, history, and alerts are available without a Netdata
-Cloud account or SSH tunnel. Guest streaming uses
-`192.168.121.1:19999` on the libvirt network; dashboard requests from guests are
-denied. No public interface listens on port 19999.
+The write token is `POSTHOG_METRICS_TOKEN` in the host user's mode-0600
+`~/.secrets`; the script copies it into root-owned, group-`otelcol-contrib`
+`/etc/otelcol-contrib/config.yaml`. Host series carry `service.name =
+machine-resources` and `host = kanto`; the three coworker guests send the same
+metric set from Temi's `apps/agent-runtime/deploy/monitoring.sh` labelled
+`host` and `agent`, so a host query filters on `host = 'kanto'` and a guest
+query on `agent`. Query series and attributes through
+`posthog.metric_series` and `posthog.metrics`.
 
 `setup-kanto.sh` invokes the three host setup scripts. For attended changes,
 each can also run independently, for example with
-`sudo bash platform/linux/setup-kanto-monitoring.sh`. Netdata restarts do not restart coworkers.
-Temi's `apps/agent-runtime/deploy/monitoring.sh` owns guest monitoring and Docker
-configuration, with its provisioning contract in `docs/agent-provisioning.md`.
-
-The streaming key is `NETDATA_STREAM_API_KEY` in the host user's mode-0600
-`~/.secrets`. The parent installs `/etc/netdata/stream.conf` as root:netdata 0640.
-Guest inputs are mode-0600 `netdata-stream.secrets` beside each deployment
-Vagrantfile, or in `AGENT_CREDENTIALS_DIR`; they contain the `[stream]` section,
-`enabled = yes`, `destination = 192.168.121.1:19999`, and the matching `api key`.
-They never enter Git or the coworker session environment.
+`sudo bash platform/linux/setup-kanto-monitoring.sh`. Restarting the
+exporters or the collector does not touch libvirt or the coworkers.
 
 ## Storage and memory
-
-| Tier | Resolution | Retention target | Shared disk budget |
-| --- | --- | --- | --- |
-| 0 | 1 second | 24 hours | 4 GiB |
-| 1 | 1 minute | 7 days | 4 GiB |
-| 2 | 1 hour | 30 days | 2 GiB |
-
-The budgets cover all four nodes. Netdata deletes data at whichever limit is
-reached first; budgets are soft limits. Guest buffers are in RAM, with durable
-history on kanto under `/var/cache/netdata`.
 
 Kanto has a fully allocated 128 GiB `/swapfile`, persisted through `/etc/fstab`.
 Zswap uses a 20% RAM ceiling and the kernel's existing compressor/pool defaults.
@@ -49,40 +38,42 @@ pruning is configured. Logging defaults apply to newly created containers.
 
 ## Measurement
 
-The parent collects NVMe health for both physical drives, zswap compression and
-writeback, CPU/memory/I/O pressure, reclaim, swap traffic, filesystem capacity,
-disk I/O, and VM/container resource metrics. All four nodes enable eBPF disk,
-filesystem, swap, and OOM collectors. NVMe health is sampled every ten seconds.
+node_exporter runs only the `cpu`, `meminfo`, `vmstat`, `pressure`, `loadavg`,
+`diskstats`, `filesystem`, `netdev`, and `textfile` collectors, so the host
+reports CPU time, memory and swap, reclaim and swap traffic, CPU/memory/I/O
+pressure (PSI), load, disk I/O, filesystem capacity, and per-interface traffic
+including each guest's `vnet*` tap. Docker's `veth`, `docker*`, and `br-*`
+interfaces and its overlay mounts are excluded.
 
-Stock capacity and disk-health alerts remain enabled. Sustained full memory
-pressure above 1% over a minute raises a dashboard warning. The parent's alert
-handler is `/bin/true`: no email, chat, or webhook delivery. Guest alerts are
-evaluated on the parent.
+process_exporter groups processes by first match: `guest:<name>` for each
+qemu process from its `-name guest=` flag, then `claude`, `codex`, `node`,
+`docker`, and `other`. Each group reports CPU seconds, resident and virtual
+memory, I/O bytes, open file descriptors, and process count, so a hot guest or
+a host-side build is attributable without a series per PID.
 
-Use these read-only checks after 24 hours, seven days, and 30 days of collection:
+The SMART textfile exposes `nvme_smart_healthy` and `nvme_smart_<field>` for
+`critical_warning`, `temperature`, `available_spare`, `percentage_used`,
+`media_errors`, `num_err_log_entries`, `unsafe_shutdowns`, `power_on_hours`,
+`data_units_written`, and `data_units_read`, labelled by device, model, and
+serial. SMART cannot predict every failure; the accepted RAID0 array holds both
+the workloads and the swapfile.
+
+No alerts are configured anywhere; retention is PostHog's.
+
+Read-only checks:
 
 ```sh
-curl -fsS http://127.0.0.1:19999/api/v1/info | jq .mirrored_hosts
-curl -fsS http://127.0.0.1:19999/api/v3/info | jq '.agents[0].db_size'
-curl -fsS 'http://127.0.0.1:19999/api/v1/alarms?all' | jq '.alarms'
-sudo journalctl --namespace=netdata --since today
+systemctl is-active prometheus-node-exporter prometheus-process-exporter otelcol-contrib kanto-nvme-smart.timer
+curl -fsS http://127.0.0.1:9100/metrics | grep -E '^(node_pressure|nvme_smart_healthy)'
+curl -fsS http://127.0.0.1:9256/metrics | grep '^namedprocess_namegroup_num_procs'
+sudo journalctl -u otelcol-contrib --since today
 ```
 
-Compare pressure duration with swap-in/out, zswap compression and writeback,
-disk-latency histograms, NVMe writes, and actual per-tier retention. Idle swap
-and OOM charts can legitimately stay at zero. Do not induce host exhaustion to
-test them. The first 30 days establish retention; a newly configured target is
-not evidence that that much history exists.
-
-Manual rollout verification on 2026-09-12 confirmed four nodes, all four eBPF
-modules on each, both NVMe devices, private listeners, and identical historical
-CPU samples before and after a parent Netdata restart. Coworker supervisor PIDs
-were unchanged. A host reboot was not performed.
-
 Guest-local OOM remains possible with fixed guest RAM and no guest swap. Swap
-cannot guarantee freedom from stalls or OOM. SMART cannot predict every failure;
-the accepted RAID0 array holds both the workloads and their local history.
+cannot guarantee freedom from stalls or OOM. Do not induce host exhaustion to
+test the pressure metrics.
 
-References: [Netdata retention](https://learn.netdata.cloud/docs/netdata-agent/configuration/database),
-[anonymous dashboard access](https://learn.netdata.cloud/docs/security-and-privacy-design/access-control-and-feature-availability),
+References: [node_exporter collectors](https://github.com/prometheus/node_exporter),
+[process-exporter configuration](https://github.com/ncabatoff/process-exporter),
+[PostHog OpenTelemetry metrics](https://posthog.com/docs/metrics),
 [Linux 6.8 zswap](https://docs.kernel.org/6.8/admin-guide/mm/zswap.html).

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Writes NVMe SMART health as a node_exporter textfile; the RAID0 array loses everything
+# when either drive fails, so wear and errors are worth a series each.
+set -euo pipefail
+
+textfile_dir=/var/lib/prometheus/node-exporter
+candidate="$(mktemp -p "$textfile_dir" .nvme.prom.XXXXXX)"
+trap 'rm -f "$candidate"' EXIT
+{
+    echo '# HELP nvme_smart_healthy 1 when smartctl reports the overall SMART status as passed.'
+    echo '# TYPE nvme_smart_healthy gauge'
+    for field in critical_warning temperature available_spare percentage_used media_errors \
+        num_err_log_entries unsafe_shutdowns power_on_hours data_units_written data_units_read; do
+        echo "# TYPE nvme_smart_${field} gauge"
+    done
+    for device in /dev/nvme[0-9]; do
+        smartctl -j -i -H -A "$device" | jq -r --arg device "$device" '
+            "device=\"\($device)\",model=\"\(.model_name)\",serial=\"\(.serial_number)\"" as $labels
+            | "nvme_smart_healthy{\($labels)} \(if .smart_status.passed then 1 else 0 end)",
+              (.nvme_smart_health_information_log
+               | to_entries[]
+               | select(.key | IN("critical_warning", "temperature", "available_spare", "percentage_used",
+                   "media_errors", "num_err_log_entries", "unsafe_shutdowns", "power_on_hours",
+                   "data_units_written", "data_units_read"))
+               | "nvme_smart_\(.key){\($labels)} \(.value)")'
+    done
+} >"$candidate"
+chmod 0644 "$candidate"
+mv "$candidate" "$textfile_dir/nvme.prom"
+trap - EXIT

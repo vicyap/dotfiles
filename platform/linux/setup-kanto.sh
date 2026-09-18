@@ -79,9 +79,6 @@ if [[ ! -f /etc/apt/sources.list.d/tailscale.list ]]; then
 fi
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y tailscale
 sudo systemctl enable --now libvirtd tailscaled
-if tailscale status --json | jq -e '.BackendState == "Running"' >/dev/null; then
-    sudo tailscale serve --bg --yes --https=443 http://127.0.0.1:19999
-fi
 sudo usermod -aG libvirt,kvm "${SUDO_USER:-$USER}"
 
 # Relative weights leave CPUs available to either workload when the other is idle.
