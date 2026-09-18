@@ -21,6 +21,8 @@ token="$(sed -n 's/^POSTHOG_METRICS_TOKEN=//p' "$secrets_file" 2>/dev/null || tr
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y --no-install-recommends prometheus-node-exporter prometheus-process-exporter smartmontools
+# Only smartctl is wanted; the package also enables smartd, a second poller that mails root.
+systemctl disable --now smartmontools
 if [[ "$(dpkg-query -W -f='${Version}' otelcol-contrib 2>/dev/null)" != "$otelcol_version" ]]; then
     package="$(mktemp --suffix=.deb)"
     curl -fsSL "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${otelcol_version}/otelcol-contrib_${otelcol_version}_linux_amd64.deb" \
