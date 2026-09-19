@@ -12,7 +12,7 @@
   "permissions": {
     "defaultMode": "bypassPermissions"
   },
-  "model": "claude-fable-5[1m]",
+  "model": "claude-fable-5-1",
   "hooks": {
     "PostToolUse": [
       {
@@ -116,13 +116,16 @@
       }
     }
   },
-  "effortLevel": "xhigh",
+  "effortLevel": "medium",
   "modelSettings": {
     "claude-fable-5": {
       "effortLevel": "xhigh"
     },
     "claude-opus-5": {
       "effortLevel": "xhigh"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "medium"
     }
   },
   "advisorModel": "fable",
@@ -134,6 +137,7 @@
   },
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true,
+  "theme": "auto",
   "preferredNotifChannel": "ghostty",
   "autoCompactEnabled": true,
   "switchModelsOnFlag": false,
