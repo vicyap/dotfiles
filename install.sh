@@ -287,7 +287,6 @@ setup_claude_plugins() {
     local marketplaces=(
         "usetemi/skills"
         "usetemi/skills-private"
-        "DietrichGebert/ponytail"
     )
 
     for marketplace in "${marketplaces[@]}"; do
@@ -311,7 +310,6 @@ setup_claude_plugins() {
         "explanatory-output-style@claude-plugins-official"
         "usetemi@usetemi"
         "usetemi-private@usetemi-private"
-        "ponytail@ponytail"
     )
 
     for plugin in "${plugins[@]}"; do
@@ -333,9 +331,6 @@ setup_claude_plugins() {
         # Its skills duplicate user-scope copies and resurrect AGENT_SKILL_EXCLUDES entries.
         "usetemi-private@usetemi-private"
         "resend@claude-plugins-official"
-        # Installed for projects that enable it (usetemi/temi); its SessionStart
-        # hook injects a persona, so it stays off by default.
-        "ponytail@ponytail"
     )
 
     for plugin in "${disabled[@]}"; do
