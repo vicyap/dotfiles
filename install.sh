@@ -464,6 +464,10 @@ install_agent_skills() {
 # Registries are installed in full to auto-pick up new upstream skills, so
 # opt-outs are listed here and pruned after install.
 AGENT_SKILL_EXCLUDES=(
+    bfl-api
+    flux-best-practices
+    humanize
+    xlsx
     # resend registry opt-outs
     agent-email-inbox
     email-best-practices
