@@ -20,6 +20,7 @@ brew "cmake"
 
 # Development
 brew "mise"
+brew "cocoapods"
 brew "imagemagick"
 brew "aria2"
 brew "rclone"

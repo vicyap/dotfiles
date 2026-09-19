@@ -170,10 +170,26 @@ checksum = "sha256:4acd7d16824e8733447a28eaab92bd6d3284044a273ffafec5d5f98bd3453
 url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_arm64.tar.gz"
 url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/555646667"
 
+[tools.flyctl."platforms.linux-arm64-musl"]
+checksum = "sha256:4acd7d16824e8733447a28eaab92bd6d3284044a273ffafec5d5f98bd3453ebb"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_arm64.tar.gz"
+
 [tools.flyctl."platforms.linux-x64"]
 checksum = "sha256:94a7219201660d57705d6f92fc4a75199aa0c491c349325fd67dca0b43bc588e"
 url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_x86_64.tar.gz"
 url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/555646671"
+
+[tools.flyctl."platforms.linux-x64-baseline"]
+checksum = "sha256:94a7219201660d57705d6f92fc4a75199aa0c491c349325fd67dca0b43bc588e"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_x86_64.tar.gz"
+
+[tools.flyctl."platforms.linux-x64-musl"]
+checksum = "sha256:94a7219201660d57705d6f92fc4a75199aa0c491c349325fd67dca0b43bc588e"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_x86_64.tar.gz"
+
+[tools.flyctl."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:94a7219201660d57705d6f92fc4a75199aa0c491c349325fd67dca0b43bc588e"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_x86_64.tar.gz"
 
 [tools.flyctl."platforms.macos-arm64"]
 checksum = "sha256:4780d045c38d4ff7e7bc296e2d2f3e0f093b0fcece5f6022afc948ddf94288a8"
@@ -184,6 +200,18 @@ url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/55564667
 checksum = "sha256:167d9f926f307e4a0799c76267f7b0002174df56a57f69fefd52d8e9a4285f55"
 url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_macOS_x86_64.tar.gz"
 url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/555646672"
+
+[tools.flyctl."platforms.macos-x64-baseline"]
+checksum = "sha256:167d9f926f307e4a0799c76267f7b0002174df56a57f69fefd52d8e9a4285f55"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_macOS_x86_64.tar.gz"
+
+[tools.flyctl."platforms.windows-x64"]
+checksum = "sha256:ff344363ae486274b7e730c23803cce91470ee83aafe61fb6439923feea287c6"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Windows_x86_64.zip"
+
+[tools.flyctl."platforms.windows-x64-baseline"]
+checksum = "sha256:ff344363ae486274b7e730c23803cce91470ee83aafe61fb6439923feea287c6"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Windows_x86_64.zip"
 
 [[tools.go]]
 version = "1.26.4"
