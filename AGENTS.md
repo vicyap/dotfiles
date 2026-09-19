@@ -98,15 +98,10 @@ an OpenTelemetry collector using `POSTHOG_METRICS_TOKEN` from `~/.secrets`. See
 
 ## Agent Configuration
 
-`software-design` is an installed copy from
-`vicyap/skills`, pinned in `packages/agents/.agents/shared-skills.commit`.
-Edit it upstream and refresh both consumers using
-`scripts/refresh-shared-skills.sh /path/to/temi FULL_UPSTREAM_COMMIT`.
-The entry in `agent-skills.txt` deploys it to the personal agent directories.
-
 `agent-skills.txt` is the explicit list of managed user skills and their sources,
-including `ask-clarifying-questions` from `usetemi/skills` and the local skill
-sources under `packages/agents/.agents/skills/`. `sync_agent_skills` refreshes all
+including `software-design` and `ask-clarifying-questions` from `usetemi/skills`
+(edit them there) and the local skill sources under
+`packages/agents/.agents/skills/`. `sync_agent_skills` refreshes all
 listed skills during every convergence, including `dotfiles pull`. Removing a
 name removes its previously managed installation and Claude/Codex links on the
 next successful sync. `~/.agents/.dotfiles-skills.txt` records ownership;
