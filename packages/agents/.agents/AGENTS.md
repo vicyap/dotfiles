@@ -81,7 +81,7 @@ Avoid overusing emojis.
 - When replicating a pattern or text edit, fuzzy-search for comparable
   instances and update every case that belongs to the same pattern, not only
   the named one.
-- Cleanup passes (`/simplify`, review fixes) must not touch copy,
+- Cleanup passes and review fixes must not touch copy,
   documentation, or agent instructions as a side effect unless that is the
   target.
 - Run `git status` before staging; never `git add -A` or `git add .` without
@@ -123,7 +123,7 @@ domain's rule before implementing:
 User-level skills live in `~/.agents/skills/`. Use a skill when the user names
 it or the task clearly matches its trigger. Read its `SKILL.md` completely and
 follow its routing to referenced files before acting. Dotfiles-owned:
-`ddd`, `design-interfaces`, `event-sourcing`, `simplify`, `writer-editor`.
+`ddd`, `design-interfaces`, `event-sourcing`, `writer-editor`.
 `software-design` and `ask-clarifying-questions` are maintained in
 `usetemi/skills` and installed globally through dotfiles' existing skill
 registry installer. Temi commits its own project installation through the
