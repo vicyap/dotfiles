@@ -8,7 +8,7 @@ NEVER commit API keys, tokens, passwords, private keys, personal emails, or any 
 
 ## What This Repo Is
 
-Personal dotfiles repo. An installer (`install.sh`) applies config two ways: symlinks from `packages/` into `$HOME`, and Nix home-manager (`nix/home/`) for the shell, several core programs, and the CLI tool set. No build system, no tests, no linting. Supports macOS and Ubuntu Linux.
+Personal dotfiles repo. An installer (`install.sh`) applies config two ways: symlinks from `packages/` into `$HOME`, and Nix home-manager (`nix/home/`) for the shell, several core programs, and the CLI tool set. Run `scripts/test-sync.sh` for shell checks and isolated symlink/skill convergence tests. Supports macOS and Ubuntu Linux.
 
 ## Philosophy: Omakase Dotfiles
 
@@ -26,10 +26,11 @@ dotfiles cd               # cd into the dotfiles repo
 ```
 
 `install.sh` and `dotfiles pull`/`upgrade` share the same `converge`/`refresh_upstream`
-functions in `install.sh`: `converge` does fast local steps (symlinks, home-manager
-`switch` against the locked flake, generated config, pinned mise runtimes);
+functions in `install.sh`: `converge` applies symlinks, home-manager `switch`
+against the locked flake, generated config, pinned mise runtimes, and refreshed
+declared agent skills.
 `refresh_upstream` does the expensive network refresh (flake update, Brewfile/apt,
-mise upgrades, the codex CLI, Claude/Codex plugins, skill registries).
+mise upgrades, the codex CLI, Claude/Codex plugins).
 
 Platform packages are installed by `install_platform_packages`:
 ```bash
@@ -101,16 +102,20 @@ an OpenTelemetry collector using `POSTHOG_METRICS_TOKEN` from `~/.secrets`. See
 `vicyap/skills`, pinned in `packages/agents/.agents/shared-skills.commit`.
 Edit it upstream and refresh both consumers using
 `scripts/refresh-shared-skills.sh /path/to/temi FULL_UPSTREAM_COMMIT`.
-The existing skill mirroring deploys it to the personal agent directories.
+The entry in `agent-skills.txt` deploys it to the personal agent directories.
 
-`ask-clarifying-questions` is maintained in `usetemi/skills` and installed by
-the existing registry entry in `install_agent_skills` for Claude Code and Codex.
-When migrating a mirrored copy, run `sync_dotfiles_agent_skills` before the
-registry installation so its old ownership manifest entry is cleared.
+`agent-skills.txt` is the explicit list of managed user skills and their sources,
+including `ask-clarifying-questions` from `usetemi/skills` and the local skill
+sources under `packages/agents/.agents/skills/`. `sync_agent_skills` refreshes all
+listed skills during every convergence, including `dotfiles pull`. Removing a
+name removes its previously managed installation and Claude/Codex links on the
+next successful sync. `~/.agents/.dotfiles-skills.txt` records ownership;
+unmanaged skills, built-in skills, and plugin bundles are left alone. Failed
+installs fail convergence and do not prune removed skills.
 
-`packages/agents/.agents`, `packages/claude/.claude`, and `packages/codex/.codex` deploy to `~/.agents`, `~/.claude`, and `~/.codex`. `converge` mirrors `packages/agents/.agents/skills/` into `~/.agents/skills`, links `~/.agents/rules/*.md` into `~/.claude/rules`, and generates `~/.codex/AGENTS.md` from the shared `~/.agents/AGENTS.md` plus the untracked `~/.agents/AGENTS.local.md`. Do not add root-level `.agents/` or `.claude/` directories in this repository.
+`packages/agents/.agents`, `packages/claude/.claude`, and `packages/codex/.codex` deploy to `~/.agents`, `~/.claude`, and `~/.codex`. Skills are installed into `~/.agents/skills` for Codex and linked into `~/.claude/skills`. `converge` also links `~/.agents/rules/*.md` into `~/.claude/rules` and generates `~/.codex/AGENTS.md` from the shared `~/.agents/AGENTS.md` plus the untracked `~/.agents/AGENTS.local.md`. Do not add root-level `.agents/` or `.claude/` directories in this repository.
 
-Third-party skills in `~/.agents/skills` come from the registries in `install_agent_skills`; opt out by adding the name to `AGENT_SKILL_EXCLUDES` in `install.sh`. Claude Code plugins are installed by `setup_claude_plugins` and enabled or disabled in `packages/claude/.claude/settings.json`; mirror a disable in that function's `disabled` array, since install auto-enables.
+Claude Code plugins are installed by `setup_claude_plugins` and enabled or disabled in `packages/claude/.claude/settings.json`; mirror a disable in that function's `disabled` array, since install auto-enables.
 
 ## Tools
 

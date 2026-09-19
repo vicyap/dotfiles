@@ -64,6 +64,17 @@ Home Manager activation is generic by OS and architecture. Ubuntu hosts use the
 `ubuntu-<nix-system>` flake output, and macOS hosts use nix-darwin when a
 host-specific Darwin config exists, otherwise `macos-<nix-system>`.
 
+## Agent skills
+
+`agent-skills.txt` lists each managed skill alongside its source. Every
+`dotfiles pull` refreshes these skills for Claude Code and Codex. Add a skill
+name to install it; remove its name to uninstall it on the next successful
+pull. Local skills must be listed too.
+
+Dotfiles records its ownership in `~/.agents/.dotfiles-skills.txt`. Unmanaged
+skills, built-in skills, and plugin bundles are preserved. If a listed skill
+fails to install, convergence fails without pruning removed skills.
+
 ## Structure
 
 ```

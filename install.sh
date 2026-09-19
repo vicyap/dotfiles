@@ -330,7 +330,7 @@ setup_claude_plugins() {
         "vercel@claude-plugins-official"
         "context7@claude-plugins-official" # duplicate of the user-scope MCP server
         "usetemi@usetemi"                  # its skills are installed at user scope
-        # Its skills duplicate user-scope copies and resurrect AGENT_SKILL_EXCLUDES entries.
+        # Its skills duplicate user-scope copies and bypass agent-skills.txt.
         "usetemi-private@usetemi-private"
         "resend@claude-plugins-official"
         # Installed for projects that enable it (usetemi/temi); its SessionStart
@@ -440,144 +440,8 @@ setup_codex_plugins() {
     done
 }
 
-install_agent_skills() {
-    if ! has_cmd npx; then
-        echo "  Skipped: npx not installed"
-        return 0
-    fi
-
-    # Registries installed in full (no --skill filter → auto-picks up new upstream skills)
-    local registries=(
-        "resend/resend-skills"
-        "usetemi/skills"
-    )
-
-    for registry in "${registries[@]}"; do
-        npx --yes skills add "$registry" \
-            --global \
-            --agent claude-code codex \
-            --yes || echo "  Skipped: $registry install failed"
-    done
-}
-
-# Skills to remove from ~/.agents/skills after registry installs run.
-# Registries are installed in full to auto-pick up new upstream skills, so
-# opt-outs are listed here and pruned after install.
-AGENT_SKILL_EXCLUDES=(
-    bfl-api
-    flux-best-practices
-    humanize
-    xlsx
-    # resend registry opt-outs
-    agent-email-inbox
-    email-best-practices
-    resend-cli
-    template-skill
-    vercel-react-native-skills
-    # usetemi registry opt-outs
-    agent-skill-designer
-    ai-sdk
-    answer-engine-optimization
-    content-distribution-playbook
-    daisyui
-    next-cache-components
-    pdf
-    seo-review
-    shadcn
-    tailwind-plus
-    web-scrape
-    # resend registry opt-out (unused)
-    react-email
-    # off-stack / one-off PostHog workflow skills (pruned 2026-06)
-    signals-scout-csp-violations
-    signals-scout-inbox-validation
-    signals-scout-surveys
-    signals-scout-session-replay
-    copying-flags-across-projects
-    finding-deleted-feature-flags
-    formatting-insight-axes
-    managing-path-cleaning-rules
-    downloading-batch-export-files
-    suggesting-data-imports
-    tuning-incremental-sync-config
-    # stale / malformed skill directories
-    posthog-cli
-    time-machine-prune
-    "ui=componentize"
-)
-
-prune_excluded_agent_skills() {
-    local agents_skills="$HOME/.agents/skills"
-
-    if [[ ! -d "$agents_skills" ]]; then
-        return 0
-    fi
-
-    local pruned=0
-    local name
-    for name in "${AGENT_SKILL_EXCLUDES[@]}"; do
-        if [[ -e "$agents_skills/$name" ]]; then
-            rm -rf "${agents_skills:?}/$name"
-            echo "  - $name (excluded)"
-            pruned=$((pruned + 1))
-        fi
-    done
-
-    echo "  Pruned $pruned excluded agent skills"
-}
-
-install_codex_skills() {
-    echo "  Codex loads shared skills from $HOME/.agents/skills"
-    echo "  Usetemi skills are installed by install_agent_skills"
-}
-
-sync_dotfiles_agent_skills() {
-    local source_skills="$DOTFILES_DIR/packages/agents/.agents/skills"
-    local agents_skills="$HOME/.agents/skills"
-    local manifest="$HOME/.agents/.dotfiles-skills.txt"
-
-    if [[ ! -d "$source_skills" ]]; then
-        echo "  Skipped: $source_skills does not exist"
-        return 0
-    fi
-
-    mkdir -p "$agents_skills"
-
-    # Mirror current source.
-    local mirrored=0
-    local -a current=()
-    local entry name
-    for entry in "$source_skills"/*/; do
-        [[ -d "$entry" ]] || continue
-        name="$(basename "$entry")"
-        [[ "$name" == .* ]] && continue
-
-        rm -rf "${agents_skills:?}/$name"
-        cp -R -L -p "$entry" "$agents_skills/$name"
-        current+=("$name")
-        mirrored=$((mirrored + 1))
-    done
-
-    # Remove dirs we copied previously (per the manifest) that are no longer
-    # in source, without touching skills installed by other means (Anthropic
-    # packs, npx skills, etc.).
-    local prev removed=0
-    while IFS= read -r prev; do
-        if [[ -d "$agents_skills/$prev" ]]; then
-            rm -rf "${agents_skills:?}/$prev"
-            removed=$((removed + 1))
-            echo "  - $prev (removed from dotfiles)"
-        fi
-    done < <(manifest_stale_entries "$manifest" "${current[@]}")
-
-    # Record what we own now so the next sync can detect future removals.
-    if ((${#current[@]} > 0)); then
-        printf '%s\n' "${current[@]}" | sort >"$manifest"
-    else
-        : >"$manifest"
-    fi
-
-    echo "  Synced $mirrored dotfiles agent skills into $agents_skills (pruned $removed stale)"
+sync_agent_skills() {
+    python3 "$DOTFILES_DIR/lib/sync-agent-skills.py" "$DOTFILES_DIR"
 }
 
 sync_claude_rules() {
@@ -678,59 +542,6 @@ sync_claude_rules() {
     fi
 
     echo "  Synced $linked Claude Code rule links (skipped $skipped, pruned $stale_removed stale)"
-}
-
-sync_claude_skills() {
-    local claude_skills="$HOME/.claude/skills"
-    local agents_skills="$HOME/.agents/skills"
-
-    if [[ ! -d "$agents_skills" ]]; then
-        echo "  Skipped: $agents_skills does not exist"
-        return 0
-    fi
-
-    # Convert directory symlink to real directory
-    if [[ -L "$claude_skills" ]]; then
-        rm -f "$claude_skills"
-    fi
-    mkdir -p "$claude_skills"
-
-    # Mirror the shared skills root into Claude Code's native skills directory.
-    # skills.sh uses .skill-lock.json pluginName as package metadata (for example
-    # usetemi/skills -> pluginName=usetemi), not as Claude Code plugin ownership.
-    local name
-    for entry in "$agents_skills"/*/; do
-        [[ -d "$entry" ]] || continue
-        name="$(basename "$entry")"
-
-        # Skip hidden dirs (.system is Codex-only)
-        [[ "$name" == .* ]] && continue
-
-        local target="$claude_skills/$name"
-
-        # Create or verify symlink
-        if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$agents_skills/$name" ]]; then
-            echo "  ok $name"
-        else
-            if [[ -e "$target" && ! -L "$target" ]]; then
-                echo "  Skipped: $target exists and is not a symlink"
-                continue
-            fi
-            rm -f "$target"
-            ln -s "$agents_skills/$name" "$target"
-            echo "  + $name"
-        fi
-    done
-
-    # Remove stale symlinks
-    for entry in "$claude_skills"/*; do
-        [[ -L "$entry" ]] || continue
-        name="$(basename "$entry")"
-        if [[ ! -d "$agents_skills/$name" ]]; then
-            rm -f "$entry"
-            echo "  - $name (stale)"
-        fi
-    done
 }
 
 migrate_skill_configs() {
@@ -967,25 +778,15 @@ converge() {
         echo
     fi
 
-    # Mirror dotfiles-owned skills into the shared and Claude skill trees.
-    echo "=== Installing Codex skills ==="
-    install_codex_skills
-    echo
-    echo "=== Syncing dotfiles agent skills ==="
-    sync_dotfiles_agent_skills
-    echo
-    echo "=== Pruning excluded agent skills ==="
-    prune_excluded_agent_skills
-    echo
-    echo "=== Syncing Claude Code skills ==="
-    sync_claude_skills
+    echo "=== Syncing agent skills ==="
+    sync_agent_skills
     echo
 }
 
 # --- Upstream refresh: expensive, network-bound ----------------------------
 # Runs only on a fresh install.sh and `dotfiles upgrade`. Pulls newer upstream
 # state: flake inputs, Homebrew/apt packages, mise upgrades, extra CLI tools,
-# and Claude/Codex plugins plus agent-skill registries.
+# and Claude/Codex plugins.
 refresh_upstream() {
     if has_cmd nix && [[ -f "$DOTFILES_DIR/flake.nix" ]]; then
         echo "=== Updating Nix flake inputs ==="
@@ -1027,9 +828,6 @@ refresh_upstream() {
     echo
     echo "=== Installing Claude Code plugins ==="
     setup_claude_plugins
-    echo
-    echo "=== Installing agent skills ==="
-    install_agent_skills
     echo
 }
 

@@ -69,6 +69,9 @@ note "temp-\$HOME symlink convergence"
     fi
 ) || status=1
 
+note "temp-\$HOME skill convergence (real skills CLI)"
+uv run "$REPO/scripts/test-agent-skills.py" || status=1
+
 echo
 if [ "$status" -eq 0 ]; then
     echo "All checks passed."

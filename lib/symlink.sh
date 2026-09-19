@@ -164,7 +164,7 @@ symlink_package() {
         fi
 
         # Dotfiles-owned skills are copied into ~/.agents/skills by
-        # sync_dotfiles_agent_skills so Codex sees regular SKILL.md files.
+        # sync_agent_skills so Codex sees regular SKILL.md files.
         if [[ "$pkg_name" == "agents" && "$rel_path" == .agents/skills/* ]]; then
             continue
         fi
