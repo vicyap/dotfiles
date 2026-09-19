@@ -93,8 +93,7 @@
     "vercel@claude-plugins-official": false,
     "resend@claude-plugins-official": false,
     "slack@claude-plugins-official": true,
-    "mattpocock-skills@claude-plugins-official": false,
-    "ponytail@ponytail": false
+    "mattpocock-skills@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "usetemi": {
@@ -107,12 +106,6 @@
       "source": {
         "source": "github",
         "repo": "usetemi/skills-private"
-      }
-    },
-    "ponytail": {
-      "source": {
-        "source": "github",
-        "repo": "DietrichGebert/ponytail"
       }
     }
   },

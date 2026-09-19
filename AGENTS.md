@@ -97,16 +97,15 @@ an OpenTelemetry collector using `POSTHOG_METRICS_TOKEN` from `~/.secrets`. See
 
 ## Agent Configuration
 
-`software-design` is an installed copy from
-`vicyap/skills`, pinned in `packages/agents/.agents/shared-skills.commit`.
-Edit it upstream and refresh both consumers using
-`scripts/refresh-shared-skills.sh /path/to/temi FULL_UPSTREAM_COMMIT`.
-The existing skill mirroring deploys it to the personal agent directories.
+`software-design` and `ask-clarifying-questions` are maintained in
+`usetemi/skills` and installed globally by the existing `usetemi/skills`
+registry entry in `install_agent_skills` for Claude Code and Codex. When
+migrating a mirrored copy, `converge` runs `sync_dotfiles_agent_skills` before
+the registry installation so its old ownership manifest entry is cleared.
 
-`ask-clarifying-questions` is maintained in `usetemi/skills` and installed by
-the existing registry entry in `install_agent_skills` for Claude Code and Codex.
-When migrating a mirrored copy, run `sync_dotfiles_agent_skills` before the
-registry installation so its old ownership manifest entry is cleared.
+The mirrored `packages/agents/.agents/skills/` directory contains only
+dotfiles-owned skills. Registry-installed skills are not tracked there and are
+preserved by later mirroring.
 
 `packages/agents/.agents`, `packages/claude/.claude`, and `packages/codex/.codex` deploy to `~/.agents`, `~/.claude`, and `~/.codex`. `converge` mirrors `packages/agents/.agents/skills/` into `~/.agents/skills`, links `~/.agents/rules/*.md` into `~/.claude/rules`, and generates `~/.codex/AGENTS.md` from the shared `~/.agents/AGENTS.md` plus the untracked `~/.agents/AGENTS.local.md`. Do not add root-level `.agents/` or `.claude/` directories in this repository.
 
