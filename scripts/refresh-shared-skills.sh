@@ -15,15 +15,12 @@ checkout="$(mktemp -d)"
 trap 'rm -rf "$checkout"' EXIT
 git clone --quiet https://github.com/vicyap/skills.git "$checkout"
 git -C "$checkout" checkout --quiet --detach "$commit"
-for skill in software-design ask-clarifying-questions; do
-    test -f "$checkout/skills/$skill/SKILL.md"
-done
+skill=software-design
+test -f "$checkout/skills/$skill/SKILL.md"
 for target in "$dotfiles_dir/packages/agents/.agents" "$temi_dir/.agents"; do
-    for skill in software-design ask-clarifying-questions; do
-        mkdir -p "$target/skills/$skill"
-        rsync -a --delete "$checkout/skills/$skill/" "$target/skills/$skill/"
-        diff -r "$checkout/skills/$skill" "$target/skills/$skill"
-    done
+    mkdir -p "$target/skills/$skill"
+    rsync -a --delete "$checkout/skills/$skill/" "$target/skills/$skill/"
+    diff -r "$checkout/skills/$skill" "$target/skills/$skill"
     printf '%s\n' "$commit" >"$target/shared-skills.commit"
 done
 echo "Refreshed both consumers from vicyap/skills@$commit"

@@ -96,11 +96,16 @@ and store the three guests' streamed history on the host. See
 
 ## Agent Configuration
 
-`software-design` and `ask-clarifying-questions` are installed copies from
+`software-design` is an installed copy from
 `vicyap/skills`, pinned in `packages/agents/.agents/shared-skills.commit`.
-Edit them upstream and refresh both consumers using
+Edit it upstream and refresh both consumers using
 `scripts/refresh-shared-skills.sh /path/to/temi FULL_UPSTREAM_COMMIT`.
-The existing skill mirroring deploys them to the personal agent directories.
+The existing skill mirroring deploys it to the personal agent directories.
+
+`ask-clarifying-questions` is maintained in `usetemi/skills` and installed by
+the existing registry entry in `install_agent_skills` for Claude Code and Codex.
+When migrating a mirrored copy, run `sync_dotfiles_agent_skills` before the
+registry installation so its old ownership manifest entry is cleared.
 
 `packages/agents/.agents`, `packages/claude/.claude`, and `packages/codex/.codex` deploy to `~/.agents`, `~/.claude`, and `~/.codex`. `converge` mirrors `packages/agents/.agents/skills/` into `~/.agents/skills`, links `~/.agents/rules/*.md` into `~/.claude/rules`, and generates `~/.codex/AGENTS.md` from the shared `~/.agents/AGENTS.md` plus the untracked `~/.agents/AGENTS.local.md`. Do not add root-level `.agents/` or `.claude/` directories in this repository.
 
