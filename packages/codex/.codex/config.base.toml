@@ -6,6 +6,10 @@ approval_policy = "never"
 sandbox_mode = "danger-full-access"
 web_search = "live"
 
+[features]
+worktrees = true
+realtime_conversation = true
+
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp/oauth"
 
