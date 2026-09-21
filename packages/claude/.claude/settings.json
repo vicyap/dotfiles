@@ -129,6 +129,13 @@
     }
   },
   "advisorModel": "fable",
+  "pluginConfigs": {
+    "agents-md@builtin": {
+      "options": {
+        "instructionFiles": "claude-md-or-agents-md"
+      }
+    }
+  },
   "autoUpdatesChannel": "latest",
   "tui": "default",
   "voice": {
@@ -145,5 +152,6 @@
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": false,
   "useAutoModeDuringPlan": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "autoCompactWindow": 500000
 }
