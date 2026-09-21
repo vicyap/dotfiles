@@ -343,6 +343,25 @@ setup_claude_plugins() {
     done
 }
 
+# User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
+# constantly, so they are registered here instead of symlinked. Args mirror
+# [mcp_servers.chrome-devtools] in packages/codex/.codex/config.base.toml.
+setup_claude_mcp_servers() {
+    if ! has_cmd claude; then
+        echo "  Skipped: claude not installed"
+        return 0
+    fi
+
+    if claude mcp get chrome-devtools >/dev/null 2>&1; then
+        echo "  ok chrome-devtools mcp"
+        return 0
+    fi
+
+    claude mcp add --scope user chrome-devtools -- \
+        npx -y chrome-devtools-mcp@latest --autoConnect --no-usage-statistics --no-performance-crux \
+        || echo "  Skipped: chrome-devtools mcp registration failed"
+}
+
 # `codex update` can only self-update the official standalone layout
 # (~/.codex/packages/standalone + the ~/.local/bin/codex symlink), so the CLI
 # comes from the official installer instead of Nix/npm/brew. The installer is
@@ -828,6 +847,7 @@ refresh_upstream() {
     echo
     echo "=== Installing Claude Code plugins ==="
     setup_claude_plugins
+    setup_claude_mcp_servers
     echo
 }
 

@@ -13,5 +13,9 @@ realtime_conversation = true
 [mcp_servers.context7]
 url = "https://mcp.context7.com/mcp/oauth"
 
+[mcp_servers.chrome-devtools]
+command = "npx"
+args = ["-y", "chrome-devtools-mcp@latest", "--autoConnect", "--no-usage-statistics", "--no-performance-crux"]
+
 [tui]
 alternate_screen = "never"
