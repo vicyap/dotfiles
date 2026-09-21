@@ -123,8 +123,8 @@ domain's rule before implementing:
 User-level skills live in `~/.agents/skills/`. Use a skill when the user names
 it or the task clearly matches its trigger. Read its `SKILL.md` completely and
 follow its routing to referenced files before acting. Dotfiles-owned:
-`ddd`, `design-interfaces`, `event-sourcing`, `simplify`, `writer-editor`.
-`software-design` and `ask-clarifying-questions` are maintained in `usetemi/skills`
+`design-interfaces`, `event-sourcing`, `simplify`, `writer-editor`.
+`software-design`, `ask-clarifying-questions`, and `ddd` are maintained in `usetemi/skills`
 and installed globally through dotfiles' explicit `agent-skills.txt` list on every
 pull. Edit them upstream. Temi commits its own project installation through the
 skills CLI.

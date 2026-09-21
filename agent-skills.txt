@@ -1,4 +1,4 @@
 # Source followed by the skills managed from that source.
-./packages/agents/.agents/skills ddd design-interfaces event-sourcing simplify writer-editor
+./packages/agents/.agents/skills design-interfaces event-sourcing simplify writer-editor
 resend/resend-skills resend
-usetemi/skills ask-clarifying-questions fly-io google-analytics google-drive google-search-console node-26 software-design tailscale
+usetemi/skills ask-clarifying-questions ddd fly-io google-analytics google-drive google-search-console node-26 software-design tailscale
