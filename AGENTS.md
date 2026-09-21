@@ -95,7 +95,7 @@ the host script by hostname.
 ## Agent Configuration
 
 `agent-skills.txt` is the explicit list of managed user skills and their sources,
-including `software-design` and `ask-clarifying-questions` from `usetemi/skills`
+including `software-design`, `ask-clarifying-questions`, and `ddd` from `usetemi/skills`
 (edit them there) and the local skill sources under
 `packages/agents/.agents/skills/`. `sync_agent_skills` refreshes all
 listed skills during every convergence, including `dotfiles pull`. Removing a
