@@ -27,7 +27,6 @@
     };
     casks = [
       "codex"
-      "lm-studio"
       "secretive"
       "font-jetbrains-mono-nerd-font"
     ];

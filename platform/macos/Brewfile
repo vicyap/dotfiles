@@ -21,6 +21,7 @@ brew "cmake"
 # Development
 brew "mise"
 brew "cocoapods"
+brew "watchman"
 brew "imagemagick"
 brew "aria2"
 brew "rclone"
@@ -43,7 +44,6 @@ brew "awscli"
 
 # AI tools
 cask "codex"
-cask "lm-studio"
 
 # Fonts
 cask "font-jetbrains-mono-nerd-font"
