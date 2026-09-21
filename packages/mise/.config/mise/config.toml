@@ -16,6 +16,8 @@ elixir = "1.19"
 
 # Cloud / infra
 flyctl = "latest"
+depot = "latest"
+"npm:@tigrisdata/cli" = "latest"
 
 # LSP servers. The pipx backend delegates to uvx automatically since uv is
 # managed above; npm uses the mise-managed node.

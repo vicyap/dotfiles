@@ -83,7 +83,7 @@
     "explanatory-output-style@claude-plugins-official": false,
     "linear@claude-plugins-official": false,
     "playwright@claude-plugins-official": true,
-    "posthog@claude-plugins-official": false,
+    "posthog@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": false,
     "typescript-lsp@claude-plugins-official": true,

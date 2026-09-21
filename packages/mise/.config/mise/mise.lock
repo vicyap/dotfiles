@@ -96,6 +96,65 @@ url = "https://dl.deno.land/release/v2.9.6/deno-x86_64-pc-windows-msvc.zip"
 checksum = "sha256:15e5300b0ba3c3695a7621d90160a746ec9e710228cee639afa9d580f6e3cd11"
 url = "https://dl.deno.land/release/v2.9.6/deno-x86_64-pc-windows-msvc.zip"
 
+[[tools.depot]]
+version = "2.102.9"
+backend = "github:depot/cli"
+
+[tools.depot."platforms.linux-arm64"]
+checksum = "sha256:0b29c8548abe96ed4818ab97939fbbbb2c38a94c3543529f0e9ced90b86507c6"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835477"
+
+[tools.depot."platforms.linux-arm64-musl"]
+checksum = "sha256:0b29c8548abe96ed4818ab97939fbbbb2c38a94c3543529f0e9ced90b86507c6"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835477"
+
+[tools.depot."platforms.linux-x64"]
+checksum = "sha256:007a909cb500a6b9ad74914b3f25f27fa9bda207ff7169b056a17a90f83d9b12"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835480"
+
+[tools.depot."platforms.linux-x64-baseline"]
+checksum = "sha256:007a909cb500a6b9ad74914b3f25f27fa9bda207ff7169b056a17a90f83d9b12"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835480"
+
+[tools.depot."platforms.linux-x64-musl"]
+checksum = "sha256:007a909cb500a6b9ad74914b3f25f27fa9bda207ff7169b056a17a90f83d9b12"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835480"
+
+[tools.depot."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:007a909cb500a6b9ad74914b3f25f27fa9bda207ff7169b056a17a90f83d9b12"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835480"
+
+[tools.depot."platforms.macos-arm64"]
+checksum = "sha256:8d9b6983eb54f3953139122d7487ba654de94599f95e5a2b8e9937cac87c7ea9"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835475"
+
+[tools.depot."platforms.macos-x64"]
+checksum = "sha256:c3b20f26a0aa5b167819bd994d3c75631b9aa1d6c6f3aa2546345134cff1710f"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835484"
+
+[tools.depot."platforms.macos-x64-baseline"]
+checksum = "sha256:c3b20f26a0aa5b167819bd994d3c75631b9aa1d6c6f3aa2546345134cff1710f"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835484"
+
+[tools.depot."platforms.windows-x64"]
+checksum = "sha256:0eef874708de7539279e95a9f2d3c25bac9a37beaf66e01752c5088f24a020c3"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_windows_amd64.zip"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835488"
+
+[tools.depot."platforms.windows-x64-baseline"]
+checksum = "sha256:0eef874708de7539279e95a9f2d3c25bac9a37beaf66e01752c5088f24a020c3"
+url = "https://github.com/depot/cli/releases/download/v2.102.9/depot_2.102.9_windows_amd64.zip"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/572835488"
+
 [[tools.elixir]]
 version = "1.19.6-otp-28"
 backend = "core:elixir"
@@ -364,6 +423,10 @@ url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-win-x64.zip"
 [tools.node."platforms.windows-x64-baseline"]
 checksum = "sha256:158f7685b44de51f6c0df1d153526cbcd3e1bc739a8dfc607721cef75de9e541"
 url = "https://nodejs.org/dist/v24.21.0/node-v24.21.0-win-x64.zip"
+
+[[tools."npm:@tigrisdata/cli"]]
+version = "3.12.1"
+backend = "npm:@tigrisdata/cli"
 
 [[tools."npm:typescript"]]
 version = "7.0.2"
