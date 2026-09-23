@@ -2,7 +2,8 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
-    "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "100"
+    "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "100",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
   },
   "attribution": {
     "commit": "",
