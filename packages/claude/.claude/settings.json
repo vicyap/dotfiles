@@ -123,15 +123,19 @@
       "effortLevel": "xhigh"
     },
     "claude-opus-5": {
-      "effortLevel": "xhigh"
+      "effortLevel": "medium"
     },
     "claude-fable-5-1": {
-      "effortLevel": "medium"
+      "effortLevel": "low"
     },
     "claude-opus-5-5": {
       "effortLevel": "medium"
+    },
+    "claude-sonnet-5": {
+      "effortLevel": "low"
     }
   },
+  "autoCompactWindow": 500000,
   "advisorModel": "fable",
   "pluginConfigs": {
     "agents-md@builtin": {
@@ -156,6 +160,5 @@
   "remoteControlAtStartup": true,
   "agentPushNotifEnabled": false,
   "useAutoModeDuringPlan": true,
-  "voiceEnabled": true,
-  "autoCompactWindow": 500000
+  "voiceEnabled": true
 }
