@@ -10,7 +10,7 @@ Source: github.com/phoenixframework/phoenix/tree/main/usage-rules
 
 ### Version, typing, and quality gates
 
-- Target Elixir v1.20+ for new projects even while it's pre-release (as of May 2026) — it carries major improvements to Elixir's built-in type checking
+- Target Elixir v1.20+ for new projects, including its release candidates — it carries major improvements to Elixir's built-in type checking
 - Maximize that type-checking signal: prefer precise pattern matching, explicit return shapes, typespecs for public contracts, and exhaustive matches over broad catch-alls
 - Do **not** use Dialyzer for new work — treat it as a legacy path now that Elixir builds type checking into the language itself
 - Always use Credo with sane defaults for style, consistency, and maintainability; consider adding [`ex_slop`](https://github.com/elixir-vibe/ex_slop) (Credo checks for AI-generated-code issues) and [`ex_dna`](https://github.com/elixir-vibe/ex_dna) (AST-aware duplication detection)
