@@ -17,5 +17,8 @@ url = "https://mcp.context7.com/mcp/oauth"
 command = "npx"
 args = ["-y", "chrome-devtools-mcp@latest", "--autoConnect", "--no-usage-statistics", "--no-performance-crux"]
 
+[mcp_servers.superhuman-mail]
+url = "https://mcp.mail.superhuman.com/mcp"
+
 [tui]
 alternate_screen = "never"
