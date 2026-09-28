@@ -67,6 +67,32 @@ note "temp-\$HOME symlink convergence"
         echo "  FAIL: no repo-backed symlinks created"
         exit 1
     fi
+
+    note "temp-\$HOME shared Codex instructions"
+    export DOTFILES_FORCE=0
+    # Exercise the exact targeted step used by converge without running its
+    # machine-wide installers or upstream refreshes.
+    link_step="$(sed -n '/^    DOTFILES_FORCE=1 create_symlink .*AGENTS.md/p' "$REPO/install.sh")"
+    [[ -n "$link_step" ]] || exit 1
+    eval "$link_step" || exit 1
+    [[ "$(readlink "$HOME/.codex/AGENTS.md")" == "$HOME/.agents/AGENTS.md" ]] || exit 1
+    cmp "$HOME/.codex/AGENTS.md" "$REPO/packages/agents/.agents/AGENTS.md" || exit 1
+
+    rm "$HOME/.codex/AGENTS.md"
+    printf 'existing generated instructions\n' >"$HOME/.codex/AGENTS.md"
+    cp "$HOME/.codex/AGENTS.md" "$tmp/expected-backup"
+    eval "$link_step" || exit 1
+    cmp "$BACKUP_DIR/AGENTS.md" "$tmp/expected-backup" || exit 1
+    [[ "$(readlink "$HOME/.codex/AGENTS.md")" == "$HOME/.agents/AGENTS.md" ]] || exit 1
+
+    eval "$link_step" || exit 1
+    cmp "$BACKUP_DIR/AGENTS.md" "$tmp/expected-backup" || exit 1
+    cmp "$HOME/.codex/AGENTS.md" "$REPO/packages/agents/.agents/AGENTS.md" || exit 1
+    [[ "$DOTFILES_FORCE" == 0 ]] || exit 1
+    printf 'keep unrelated conflict\n' >"$HOME/unrelated"
+    create_symlink "$HOME/.agents/AGENTS.md" "$HOME/unrelated"
+    [[ ! -L "$HOME/unrelated" ]] || exit 1
+    echo "  ok fresh link, replacement backup, repeated convergence, scoped force"
 ) || status=1
 
 note "temp-\$HOME skill convergence (real skills CLI)"

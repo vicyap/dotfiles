@@ -131,6 +131,10 @@ skills CLI.
 
 ## Tools
 
+- Prefer Chrome/Brave DevTools MCP for browser interaction and debugging when
+  available; fall back to other browser tools when needed. Discover the active
+  connection rather than assuming a fixed debugging port.
+
 - Use Context7 proactively for current library, framework, SDK, API, CLI, or
   cloud service documentation; do not rely on memory for dependency APIs.
 - Prefer the managed CLIs (`rg`, `fd`, `bat`, `eza`, `dust`, `procs`, `sd`) for
@@ -147,4 +151,4 @@ skills CLI.
 
 Per-machine notes live in `~/.agents/AGENTS.local.md` (untracked).
 
-@~/.agents/AGENTS.local.md
+Read `~/.agents/AGENTS.local.md` if it exists for machine-specific instructions.
