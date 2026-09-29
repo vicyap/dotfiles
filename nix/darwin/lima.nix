@@ -16,6 +16,11 @@
   # (home.username comes from the home-manager.users.<name> attribute).
   users.users.victoryap.home = "/Users/victoryap";
 
+  # Lets agents toggle sleep around long-running jobs without a password.
+  security.sudo.extraConfig = ''
+    victoryap ALL=(root) NOPASSWD: /usr/bin/pmset
+  '';
+
   # GUI apps / fonts with no good nixpkgs equivalent on macOS. CLI tools come
   # from home-manager (nixpkgs), so only casks live here.
   homebrew = {
