@@ -566,35 +566,6 @@ sync_claude_rules() {
     echo "  Synced $linked Claude Code rule links (skipped $skipped, pruned $stale_removed stale)"
 }
 
-migrate_skill_configs() {
-    # Move config dirs created by the old internal layout to the new public layout.
-    # Idempotent: only moves when old exists and new does not.
-    local migrations=(
-        "$HOME/.config/usetemi/skills/google-drive:$HOME/.config/gdrive"
-        "$HOME/.config/usetemi/skills/google-search-console:$HOME/.config/gsc"
-    )
-
-    local entry old new
-    for entry in "${migrations[@]}"; do
-        old="${entry%%:*}"
-        new="${entry##*:}"
-
-        if [[ -d "$old" && ! -e "$new" ]]; then
-            mkdir -p "$(dirname "$new")"
-            mv "$old" "$new"
-            echo "  + moved $(basename "$old") → $new"
-        elif [[ -d "$old" && -d "$new" ]]; then
-            echo "  ! $old and $new both exist — manual review needed"
-        else
-            echo "  ok $(basename "$new")"
-        fi
-    done
-
-    # Clean up the now-empty Temi-branded parent directories.
-    rmdir "$HOME/.config/usetemi/skills" 2>/dev/null || true
-    rmdir "$HOME/.config/usetemi" 2>/dev/null || true
-}
-
 generate_codex_config() {
     local codex_dir="$HOME/.codex"
     local base="$DOTFILES_DIR/packages/codex/.codex/config.base.toml"
@@ -730,10 +701,6 @@ converge() {
 
     echo "=== Syncing Claude Code rules ==="
     sync_claude_rules
-    echo
-
-    echo "=== Migrating skill config directories ==="
-    migrate_skill_configs
     echo
 
     echo "=== Ensuring codex CLI (standalone) ==="
