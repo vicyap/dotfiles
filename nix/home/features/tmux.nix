@@ -37,14 +37,6 @@
           set -g @resurrect-processes '"~claude->claude" "~npm run dev->npm run dev"'
         '';
       }
-      {
-        # continuum must load after resurrect (it depends on it).
-        plugin = continuum;
-        extraConfig = ''
-          set -g @continuum-restore 'on'
-          set -g @continuum-save-interval '15'
-        '';
-      }
     ];
 
     extraConfig = ''
@@ -115,6 +107,13 @@
 
       # Theme (colors, status bar) -- switched live by `dark`/`light`
       source-file ~/.tmux/themes/dark.conf
+
+      # continuum autosaves by prepending its save script to status-right, so
+      # it loads last; the themes must not set status-right.
+      set -g status-right '#(~/.local/bin/tmux-status)'
+      set -g @continuum-restore 'on'
+      set -g @continuum-save-interval '5'
+      run-shell ${pkgs.tmuxPlugins.continuum}/share/tmux-plugins/continuum/continuum.tmux
 
       # Machine-local overrides (optional)
       source -q ~/.tmux.conf.local
