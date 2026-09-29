@@ -94,7 +94,6 @@
     "vercel@claude-plugins-official": false,
     "resend@claude-plugins-official": false,
     "slack@claude-plugins-official": true,
-    "mattpocock-skills@claude-plugins-official": false,
     "ponytail@ponytail": false
   },
   "extraKnownMarketplaces": {
