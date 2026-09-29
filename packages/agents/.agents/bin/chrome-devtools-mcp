@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Launches chrome-devtools-mcp for this host. Extra arguments pass through.
+#
+# macOS (lima): attaches to the running Brave through the websocket endpoint in
+# its DevToolsActivePort file; --autoConnect only finds Chrome. Turn on Brave's
+# remote debugging server at brave://inspect/#remote-debugging first.
+#
+# Linux (kanto): no display, so the MCP launches headed Chrome with its default
+# persistent profile on a private Xvfb. Xvfb runs under `setpriv --pdeathsig` and
+# the MCP is exec'd in this PID, so Xvfb dies with the MCP however it exits.
+set -euo pipefail
+
+mcp=(npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux)
+
+if [[ "$(uname -s)" == Darwin ]]; then
+    active_port_file="$HOME/Library/Application Support/BraveSoftware/Brave-Browser/DevToolsActivePort"
+    port="$(sed -n 1p "$active_port_file" 2>/dev/null || true)"
+    path="$(sed -n 2p "$active_port_file" 2>/dev/null || true)"
+    # A Brave that quit leaves a stale file behind, so require the port to answer.
+    if [[ -z "$port" ]] || ! (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
+        echo "chrome-devtools-mcp: Brave remote debugging is off; turn it on at brave://inspect/#remote-debugging" >&2
+        exit 1
+    fi
+    exec "${mcp[@]}" --wsEndpoint "ws://127.0.0.1:$port$path" "$@"
+fi
+
+for tool in Xvfb setpriv; do
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        echo "chrome-devtools-mcp: '$tool' is required on Linux but was not found on PATH" >&2
+        exit 127
+    fi
+done
+
+# -displayfd has Xvfb claim a free display and write its number once ready.
+displayfd_file="$(mktemp)"
+setpriv --pdeathsig TERM -- \
+    Xvfb -displayfd 3 -screen 0 1920x1080x24 -nolisten tcp 3>"$displayfd_file" >/dev/null 2>&1 &
+xvfb_pid=$!
+
+display_num=
+for _ in $(seq 1 100); do
+    display_num="$(tr -dc '0-9' <"$displayfd_file")"
+    [[ -n "$display_num" ]] && break
+    kill -0 "$xvfb_pid" 2>/dev/null || break
+    sleep 0.1
+done
+rm -f "$displayfd_file"
+
+if [[ -z "$display_num" ]]; then
+    echo "chrome-devtools-mcp: Xvfb did not report a display" >&2
+    exit 1
+fi
+
+export DISPLAY=":$display_num"
+exec "${mcp[@]}" "$@"

@@ -344,21 +344,24 @@ setup_claude_plugins() {
 }
 
 # User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
-# constantly, so they are registered here instead of symlinked. Args mirror
-# [mcp_servers.chrome-devtools] in packages/codex/.codex/config.base.toml.
+# constantly, so they are registered here instead of symlinked. The wrapper
+# attaches to Brave on macOS and runs headed Chrome on Xvfb on Linux;
+# [mcp_servers.chrome-devtools] in packages/codex/.codex/config.base.toml runs
+# the same wrapper.
 setup_claude_mcp_servers() {
     if ! has_cmd claude; then
         echo "  Skipped: claude not installed"
         return 0
     fi
 
-    if claude mcp get chrome-devtools >/dev/null 2>&1; then
+    local wrapper="$HOME/.agents/bin/chrome-devtools-mcp"
+    if claude mcp get chrome-devtools 2>/dev/null | grep -qF "$wrapper"; then
         echo "  ok chrome-devtools mcp"
         return 0
     fi
 
-    claude mcp add --scope user chrome-devtools -- \
-        npx -y chrome-devtools-mcp@latest --autoConnect --no-usage-statistics --no-performance-crux \
+    claude mcp remove --scope user chrome-devtools >/dev/null 2>&1 || true
+    claude mcp add --scope user chrome-devtools -- "$wrapper" \
         || echo "  Skipped: chrome-devtools mcp registration failed"
 }
 
