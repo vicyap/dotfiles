@@ -514,6 +514,65 @@ checksum = "sha256:ca3c33ca924dfcab3b74205a7a58a88b0255135c53f95497b26b5e60700fd
 url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260901/cpython-3.14.7+20260901-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
+[[tools.stripe]]
+version = "1.52.0"
+backend = "aqua:stripe/stripe-cli"
+
+[tools.stripe."platforms.linux-arm64"]
+checksum = "sha256:f60d34b6b6ec5bfa7d408839b5a5096a25fcc1111f6ff3cd694d87296ea21932"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586607357"
+
+[tools.stripe."platforms.linux-arm64-musl"]
+checksum = "sha256:f60d34b6b6ec5bfa7d408839b5a5096a25fcc1111f6ff3cd694d87296ea21932"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586607357"
+
+[tools.stripe."platforms.linux-x64"]
+checksum = "sha256:d18bd167981ae9549f1297c2ed9729ae60849ec232fd09e813ccd1d135406335"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586607355"
+
+[tools.stripe."platforms.linux-x64-baseline"]
+checksum = "sha256:d18bd167981ae9549f1297c2ed9729ae60849ec232fd09e813ccd1d135406335"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586607355"
+
+[tools.stripe."platforms.linux-x64-musl"]
+checksum = "sha256:d18bd167981ae9549f1297c2ed9729ae60849ec232fd09e813ccd1d135406335"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586607355"
+
+[tools.stripe."platforms.linux-x64-musl-baseline"]
+checksum = "sha256:d18bd167981ae9549f1297c2ed9729ae60849ec232fd09e813ccd1d135406335"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586607355"
+
+[tools.stripe."platforms.macos-arm64"]
+checksum = "sha256:5946baab218d43d4d7e3f43ec30a05e0dd3deadbcded5d11b67398e3cfe30830"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_mac-os_arm64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586605047"
+
+[tools.stripe."platforms.macos-x64"]
+checksum = "sha256:924aa8056f894241ce664b6ae0a5558a020c9bcf3c1b2879b5b2acbb080ec416"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_mac-os_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586605042"
+
+[tools.stripe."platforms.macos-x64-baseline"]
+checksum = "sha256:924aa8056f894241ce664b6ae0a5558a020c9bcf3c1b2879b5b2acbb080ec416"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_mac-os_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586605042"
+
+[tools.stripe."platforms.windows-x64"]
+checksum = "sha256:6c85771c4714644d65895e01fa7df3800141e03244e91d64a147319820fd7035"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_windows_x86_64.zip"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586606889"
+
+[tools.stripe."platforms.windows-x64-baseline"]
+checksum = "sha256:6c85771c4714644d65895e01fa7df3800141e03244e91d64a147319820fd7035"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.52.0/stripe_1.52.0_windows_x86_64.zip"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/586606889"
+
 [[tools.uv]]
 version = "0.12.13"
 backend = "aqua:astral-sh/uv"

@@ -19,6 +19,9 @@ flyctl = "latest"
 depot = "latest"
 "npm:@tigrisdata/cli" = "latest"
 
+# Payments
+stripe = "latest"
+
 # LSP servers. The pipx backend delegates to uvx automatically since uv is
 # managed above; npm uses the mise-managed node.
 "npm:typescript-language-server" = "latest"
