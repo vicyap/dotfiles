@@ -306,6 +306,43 @@ checksum = "sha256:ff344363ae486274b7e730c23803cce91470ee83aafe61fb6439923feea28
 url = "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Windows_x86_64.zip"
 url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/555646779"
 
+[[tools.gcloud]]
+version = "587.0.0"
+backend = "vfox:mise-plugins/vfox-gcloud"
+
+[tools.gcloud."platforms.linux-arm64"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-linux-arm.tar.gz"
+
+[tools.gcloud."platforms.linux-arm64-musl"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-linux-arm.tar.gz"
+
+[tools.gcloud."platforms.linux-x64"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-linux-x86_64.tar.gz"
+
+[tools.gcloud."platforms.linux-x64-baseline"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-linux-x86_64.tar.gz"
+
+[tools.gcloud."platforms.linux-x64-musl"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-linux-x86_64.tar.gz"
+
+[tools.gcloud."platforms.linux-x64-musl-baseline"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-linux-x86_64.tar.gz"
+
+[tools.gcloud."platforms.macos-arm64"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-darwin-arm.tar.gz"
+
+[tools.gcloud."platforms.macos-x64"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-darwin-x86_64.tar.gz"
+
+[tools.gcloud."platforms.macos-x64-baseline"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-darwin-x86_64.tar.gz"
+
+[tools.gcloud."platforms.windows-x64"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-windows-x86_64-bundled-python.zip"
+
+[tools.gcloud."platforms.windows-x64-baseline"]
+url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-587.0.0-windows-x86_64-bundled-python.zip"
+
 [[tools.go]]
 version = "1.26.8"
 backend = "core:go"

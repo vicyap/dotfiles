@@ -16,6 +16,7 @@ elixir = "1.19"
 
 # Cloud / infra
 flyctl = "latest"
+gcloud = "latest"
 depot = "latest"
 "npm:@tigrisdata/cli" = "latest"
 
