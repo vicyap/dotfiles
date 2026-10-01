@@ -14,7 +14,7 @@ note() { printf '\n== %s ==\n' "$1"; }
 shopt -s nullglob
 # All bash scripts in the repo (bin/* are all #!/usr/bin/env bash, as is
 # hooks/pre-commit). Keep this list exhaustive so no script escapes shellcheck.
-shell_files=(install.sh bin/* hooks/pre-commit lib/*.sh scripts/*.sh)
+shell_files=(install.sh bin/* hooks/pre-commit lib/*.sh scripts/*.sh nix/darwin/*.sh)
 shopt -u nullglob
 
 note "bash -n (syntax)"
@@ -34,6 +34,9 @@ fi
 
 note "git diff --check (whitespace / conflict markers)"
 git diff --check || status=1
+
+note "Keep Awake input and unavailable-service checks"
+bash "$REPO/scripts/test-keep-awake.sh" || status=1
 
 note "temp-\$HOME symlink convergence"
 (

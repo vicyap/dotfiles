@@ -4,7 +4,10 @@
 # `darwin-rebuild switch --flake .#lima` activates everything.
 { ... }:
 {
-  imports = [ ./common.nix ];
+  imports = [
+    ./common.nix
+    ./keep-awake.nix
+  ];
 
   networking.hostName = "lima";
   networking.computerName = "lima";
