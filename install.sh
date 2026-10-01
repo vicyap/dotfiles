@@ -344,25 +344,36 @@ setup_claude_plugins() {
 }
 
 # User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
-# constantly, so they are registered here instead of symlinked. The wrapper
-# attaches to Brave on macOS and runs headed Chrome on Xvfb on Linux;
-# [mcp_servers.chrome-devtools] in packages/codex/.codex/config.base.toml runs
-# the same wrapper.
+# constantly, so they are registered here instead of symlinked. The
+# chrome-devtools wrapper attaches to Brave on macOS and runs headed Chrome on
+# Xvfb on Linux; [mcp_servers.chrome-devtools] in
+# packages/codex/.codex/config.base.toml runs the same wrapper. safari-mcp is
+# macOS-only, so its Codex entry lives in lima's untracked config.local.toml.
+# It needs Safari > Settings > Advanced > "Show features for web developers" and
+# Safari > Settings > Developer > "Allow remote automation and external agents".
 setup_claude_mcp_servers() {
     if ! has_cmd claude; then
         echo "  Skipped: claude not installed"
         return 0
     fi
 
-    local wrapper="$HOME/.agents/bin/chrome-devtools-mcp"
-    if claude mcp get chrome-devtools 2>/dev/null | grep -qF "$wrapper"; then
-        echo "  ok chrome-devtools mcp"
+    register_claude_mcp_server chrome-devtools "$HOME/.agents/bin/chrome-devtools-mcp"
+    if [[ "$(uname -s)" == Darwin ]]; then
+        register_claude_mcp_server safari-mcp /usr/bin/safaridriver --mcp
+    fi
+}
+
+register_claude_mcp_server() {
+    local name="$1"
+    shift
+    if claude mcp get "$name" 2>/dev/null | grep -qF "$1"; then
+        echo "  ok $name mcp"
         return 0
     fi
 
-    claude mcp remove --scope user chrome-devtools >/dev/null 2>&1 || true
-    claude mcp add --scope user chrome-devtools -- "$wrapper" \
-        || echo "  Skipped: chrome-devtools mcp registration failed"
+    claude mcp remove --scope user "$name" >/dev/null 2>&1 || true
+    claude mcp add --scope user "$name" -- "$@" \
+        || echo "  Skipped: $name mcp registration failed"
 }
 
 # `codex update` can only self-update the official standalone layout

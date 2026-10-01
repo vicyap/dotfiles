@@ -134,6 +134,9 @@ skills CLI.
 - Prefer Chrome/Brave DevTools MCP for browser interaction and debugging when
   available; fall back to other browser tools when needed. Discover the active
   connection rather than assuming a fixed debugging port.
+- On macOS, use the Safari MCP (`safari-mcp`, `/usr/bin/safaridriver --mcp`)
+  for Safari rendering and compatibility checks. It sees only the tabs it
+  creates, not the user's open tabs, so open the URL with `create_tab`.
 
 - Use Context7 proactively for current library, framework, SDK, API, CLI, or
   cloud service documentation; do not rely on memory for dependency APIs.
