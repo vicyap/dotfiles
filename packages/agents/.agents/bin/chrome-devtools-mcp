@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Launches chrome-devtools-mcp for this host. Extra arguments pass through.
 #
-# macOS (lima): attaches to the running Brave through the websocket endpoint in
-# its DevToolsActivePort file; --autoConnect only finds Chrome. Turn on Brave's
-# remote debugging server at brave://inspect/#remote-debugging first.
+# macOS (lima): --autoConnect attaches to the running stable Chrome. Turn on its
+# remote debugging server at chrome://inspect/#remote-debugging first; Chrome
+# asks to allow the connection once per MCP process.
 #
 # Linux (kanto): no display, so the MCP launches headed Chrome with its default
 # persistent profile on a private Xvfb. Xvfb runs under `setpriv --pdeathsig` and
@@ -13,15 +13,7 @@ set -euo pipefail
 mcp=(npx -y chrome-devtools-mcp@latest --no-usage-statistics --no-performance-crux)
 
 if [[ "$(uname -s)" == Darwin ]]; then
-    active_port_file="$HOME/Library/Application Support/BraveSoftware/Brave-Browser/DevToolsActivePort"
-    port="$(sed -n 1p "$active_port_file" 2>/dev/null || true)"
-    path="$(sed -n 2p "$active_port_file" 2>/dev/null || true)"
-    # A Brave that quit leaves a stale file behind, so require the port to answer.
-    if [[ -z "$port" ]] || ! (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
-        echo "chrome-devtools-mcp: Brave remote debugging is off; turn it on at brave://inspect/#remote-debugging" >&2
-        exit 1
-    fi
-    exec "${mcp[@]}" --wsEndpoint "ws://127.0.0.1:$port$path" "$@"
+    exec "${mcp[@]}" --autoConnect "$@"
 fi
 
 for tool in Xvfb setpriv; do

@@ -131,9 +131,13 @@ skills CLI.
 
 ## Tools
 
-- Prefer Chrome/Brave DevTools MCP for browser interaction and debugging when
+- Prefer the Chrome DevTools MCP for browser interaction and debugging when
   available; fall back to other browser tools when needed. Discover the active
   connection rather than assuming a fixed debugging port.
+- Chrome asks Victor to allow every new remote-debugging connection, so hold
+  one connection for the whole task: reuse the MCP's existing connection, and
+  when driving CDP directly, open one long-lived session and send every command
+  through it. Never open a fresh connection per command.
 - On macOS, use the Safari MCP (`safari-mcp`, `/usr/bin/safaridriver --mcp`)
   for Safari rendering and compatibility checks. It sees only the tabs it
   creates, not the user's open tabs, so open the URL with `create_tab`.

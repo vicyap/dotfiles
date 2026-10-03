@@ -345,7 +345,7 @@ setup_claude_plugins() {
 
 # User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
 # constantly, so they are registered here instead of symlinked. The
-# chrome-devtools wrapper attaches to Brave on macOS and runs headed Chrome on
+# chrome-devtools wrapper attaches to the running Chrome on macOS and runs headed Chrome on
 # Xvfb on Linux; [mcp_servers.chrome-devtools] in
 # packages/codex/.codex/config.base.toml runs the same wrapper. safari-mcp is
 # macOS-only, so its Codex entry lives in lima's untracked config.local.toml.
