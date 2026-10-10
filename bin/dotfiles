@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+# Dotfiles CLI — a thin dispatcher over the shared install/converge/refresh
+# helpers defined in install.sh. `install.sh` is the fresh-machine entrypoint;
+# this command keeps an already-cloned machine in sync.
+set -eo pipefail
+
+# Resolve the repo root from this script (follows symlinks, so it works for
+# worktree checkouts and a ~/.local/bin symlink). DOTFILES_DIR overrides it.
+if [[ -z "${DOTFILES_DIR:-}" ]]; then
+    src="${BASH_SOURCE[0]}"
+    while [[ -L "$src" ]]; do
+        dir="$(cd -P "$(dirname "$src")" && pwd)"
+        src="$(readlink "$src")"
+        [[ "$src" != /* ]] && src="$dir/$src"
+    done
+    DOTFILES_DIR="$(cd -P "$(dirname "$src")/.." && pwd)"
+fi
+export DOTFILES_DIR
+export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
+
+usage() {
+    cat <<EOF
+Usage: dotfiles <command>
+
+Commands:
+  pull          Pull latest, then converge this machine: symlinks, home-manager,
+                generated config, pinned tools, declared skills. Alias: sync.
+  upgrade       Pull + refresh upstream: Nix flake inputs, Homebrew/apt packages,
+                mise upgrades, Claude/Codex plugins.
+  cd            Print the dotfiles directory (the shell wraps this to actually cd).
+  agents-local  Edit ~/.agents/AGENTS.local.md (machine-specific agent notes).
+  help          Show this help message.
+
+Fresh machine:
+  Run ./install.sh (or pipe it from curl); see README.
+EOF
+}
+
+load_libs() {
+    # shellcheck source=/dev/null
+    source "$DOTFILES_DIR/lib/platform.sh"
+    # shellcheck source=/dev/null
+    source "$DOTFILES_DIR/lib/symlink.sh"
+    # install.sh defines converge/refresh_upstream and the helpers they call;
+    # its main() is guarded so sourcing only defines functions.
+    # shellcheck source=/dev/null
+    source "$DOTFILES_DIR/install.sh"
+}
+
+# Serialize mutating runs, like apt's dpkg lock: concurrent pull/upgrade
+# would race git, symlinks, and home-manager. mkdir is atomic and portable
+# (macOS has no flock(1)); a stale lock from a dead run is reclaimed via a
+# PID liveness check.
+DOTFILES_LOCK_DIR="${TMPDIR:-/tmp}/dotfiles-$(id -u).lock"
+
+release_lock() {
+    rm -rf "$DOTFILES_LOCK_DIR"
+}
+
+acquire_lock() {
+    if ! mkdir "$DOTFILES_LOCK_DIR" 2>/dev/null; then
+        local pid
+        pid="$(cat "$DOTFILES_LOCK_DIR/pid" 2>/dev/null || true)"
+        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+            echo "Could not get lock $DOTFILES_LOCK_DIR: another dotfiles run is in progress (pid $pid)"
+            exit 1
+        fi
+        echo "  (removing stale lock left by pid ${pid:-unknown})"
+        rm -rf "$DOTFILES_LOCK_DIR"
+        mkdir "$DOTFILES_LOCK_DIR"
+    fi
+    echo $$ >"$DOTFILES_LOCK_DIR/pid"
+    trap release_lock EXIT
+}
+
+# Pull with rebase, stashing local edits around it. Without --autostash a
+# dirty tree aborts the rebase with a raw git error and no guidance.
+pull_latest() {
+    if [[ -n "$(git -C "$DOTFILES_DIR" status --porcelain --untracked-files=no)" ]]; then
+        echo "  (local changes detected — carrying them through with --autostash)"
+    fi
+    git -C "$DOTFILES_DIR" pull --rebase --autostash
+}
+
+cmd_pull() {
+    acquire_lock
+    echo "Pulling + converging dotfiles..."
+    pull_latest
+    echo
+    load_libs
+    converge
+}
+
+cmd_upgrade() {
+    acquire_lock
+    echo "Upgrading dotfiles (pull + converge + upstream refresh)..."
+    pull_latest
+    echo
+    load_libs
+    converge
+    refresh_upstream
+}
+
+cmd_cd() {
+    echo "$DOTFILES_DIR"
+}
+
+cmd_agents_local() {
+    # Machine-specific agent instructions, @-imported by ~/.agents/AGENTS.md.
+    # Not tracked by git. ensure_agents_local (install.sh) scaffolds it,
+    # including the one-time legacy rules/local.md migration — reuse it rather
+    # than duplicating a migration-less copy here.
+    load_libs
+    ensure_agents_local
+    ${EDITOR:-vim} "$HOME/.agents/AGENTS.local.md"
+}
+
+main() {
+    local cmd="${1:-help}"
+
+    case "$cmd" in
+        pull | sync) cmd_pull ;;
+        upgrade) cmd_upgrade ;;
+        update)
+            echo "'dotfiles update' was renamed to 'dotfiles upgrade'"
+            exit 1
+            ;;
+        cd) cmd_cd ;;
+        agents-local) cmd_agents_local ;;
+        help | -h | --help) usage ;;
+        *)
+            echo "Unknown command: $cmd"
+            usage
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

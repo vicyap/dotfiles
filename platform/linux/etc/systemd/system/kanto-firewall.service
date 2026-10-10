@@ -1,0 +1,17 @@
+[Unit]
+Description=Kanto public inbound firewall
+DefaultDependencies=no
+After=local-fs.target
+Before=network-pre.target shutdown.target
+Wants=network-pre.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/kanto-firewall.nft
+ExecReload=/usr/sbin/nft -f /etc/kanto-firewall.nft
+ExecStop=/usr/sbin/nft delete table inet kanto_firewall
+
+[Install]
+WantedBy=multi-user.target

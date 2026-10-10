@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# agent-system-info — SessionStart hook for Claude Code and Codex CLI.
+# Injects static machine identity (fastfetch) into agent context so both
+# agents know which machine they're on (rhinestone vs lima) without baking
+# it into the dotfiles-managed AGENTS.md.
+set -euo pipefail
+
+# Drain hook stdin — the agent passes a JSON payload we don't need here.
+cat >/dev/null 2>&1 || true
+
+info=$(fastfetch \
+    --pipe \
+    --logo none \
+    --structure "Title:OS:Host:Kernel:CPU:GPU:Shell:Terminal:LocalIP" \
+    2>/dev/null) || info=""
+
+[[ -z "$info" ]] && exit 0
+
+# shellcheck disable=SC2016 # $info is a printf arg, not in single-quoted format string
+context=$(printf 'System info:\n```\n%s\n```' "$info")
+
+if command -v jq >/dev/null 2>&1; then
+    jq -nc --arg ctx "$context" '{
+        hookSpecificOutput: {
+            hookEventName: "SessionStart",
+            additionalContext: $ctx
+        }
+    }'
+else
+    printf '%s\n' "$context"
+fi

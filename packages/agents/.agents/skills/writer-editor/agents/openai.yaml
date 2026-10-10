@@ -1,0 +1,4 @@
+interface:
+  display_name: "Writer Editor"
+  short_description: "Write and revise clear work prose"
+  default_prompt: "Use $writer-editor to diagnose and improve this work prose."

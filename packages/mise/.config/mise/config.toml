@@ -1,0 +1,107 @@
+[tools]
+# Languages
+go = "1.26"
+node = "24"
+python = "3.14"
+bun = "latest"
+deno = "latest"
+uv = "latest"
+erlang = "28"
+elixir = "1.19"
+
+# CLI tools (starship, delta, atuin, lazygit, lazydocker, fastfetch, dust,
+# procs, sd, gping, yq, jless, just, glow, doggo) are now provided by
+# home-manager and removed from here. mise keeps language runtimes, the LSP
+# servers below, and vendor CLIs.
+
+# Cloud / infra
+flyctl = "latest"
+gcloud = "latest"
+depot = "latest"
+"npm:@tigrisdata/cli" = "latest"
+
+# Payments
+stripe = "latest"
+
+# LSP servers. The pipx backend delegates to uvx automatically since uv is
+# managed above; npm uses the mise-managed node.
+"npm:typescript-language-server" = "latest"
+"npm:typescript" = "latest"
+"pipx:pyright" = "latest"
+
+# Secrets / credentials (1Password CLI — `op`; auth via OP_SERVICE_ACCOUNT_TOKEN in ~/.secrets).
+# nixpkgs ships `_1password-cli`, but it's unfree and this Nix config sets no
+# allowUnfree, so op stays mise-managed.
+op = "latest"
+
+[settings]
+# Re-evaluate hook-env only on directory change instead of before every
+# prompt (~15ms per precmd otherwise). Tools are pinned globally here, so the
+# env only actually changes when entering a project with its own mise.toml;
+# in-place config edits take effect on the next cd or new shell.
+hook_env.chpwd_only = true
+
+# Pin resolved versions in mise.lock (tracked in the repo) so the "latest"
+# pins above converge to identical versions on every machine. Versions move
+# only when `dotfiles upgrade` runs `mise upgrade`.
+lockfile = true
+
+[tasks."setup:web"]
+description = "Install web CLI from source (requires Go)"
+run = """
+#!/usr/bin/env bash
+set -e
+repo="/tmp/web-cli-build"
+if [[ -d "$repo" ]]; then
+  git -C "$repo" pull --quiet
+else
+  git clone --quiet https://github.com/chrismccord/web.git "$repo"
+fi
+cd "$repo" && go build -o "$HOME/.local/bin/web" .
+rm -rf "$repo"
+echo "✓ web CLI installed to ~/.local/bin/web"
+"""
+
+[tasks."setup:ssh-opener"]
+description = "Install ssh-opener (open URLs on local browser from headless remote)"
+run = """
+#!/usr/bin/env bash
+set -e
+mkdir -p "$HOME/.local/bin"
+curl -fsSL "https://raw.githubusercontent.com/vicyap/ssh-opener/main/ssh-opener" -o "$HOME/.local/bin/ssh-opener"
+chmod +x "$HOME/.local/bin/ssh-opener"
+echo "✓ ssh-opener installed to ~/.local/bin/ssh-opener"
+echo "  Set SSH_OPENER_LOCALHOST in ~/.secrets to use ssh-opener"
+"""
+
+[tasks."setup:tmux-status"]
+description = "Build and install tmux-status (Go binary for tmux status line)"
+run = """
+#!/usr/bin/env bash
+set -e
+mkdir -p "$HOME/.local/bin"
+cd "$HOME/.dotfiles/packages/tmux/.tmux/status/tmux-status"
+go build -ldflags="-s -w" -o "$HOME/.local/bin/tmux-status" .
+echo "✓ tmux-status installed to ~/.local/bin/tmux-status"
+"""
+
+# gitleaks and shfmt are provided by Nix/home-manager (see
+# nix/home/features/packages.nix), not bespoke mise tasks. pyright and
+# typescript-language-server are pipx:/npm: backend tools above, so
+# `mise upgrade` keeps them current — no setup tasks needed.
+
+[tasks."setup:kagi"]
+description = "Install the kagi settings-as-code CLI (tools/kagi) and its Chromium"
+run = """
+#!/usr/bin/env bash
+set -e
+cd "$HOME/.dotfiles/tools/kagi"
+uv sync --frozen
+uv run playwright install chromium
+echo "✓ kagi CLI ready: uv run --project ~/.dotfiles/tools/kagi kagi plan"
+echo "  Set KAGI_SESSION_LINK in ~/.secrets (Kagi Settings > Account > session link)"
+"""
+
+[tasks."update:tools"]
+description = "Update all CLI tools (web, ssh-opener, tmux-status, kagi)"
+depends = ["setup:web", "setup:ssh-opener", "setup:tmux-status", "setup:kagi"]

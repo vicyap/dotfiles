@@ -1,0 +1,73 @@
+# Global CLI tools, shared across hosts. Nix owns these; mise is narrowed to
+# language runtimes. Comments note the binary name where it differs from the
+# nixpkgs attribute.
+#
+# Tools with a dedicated home-manager module are NOT listed here — their
+# `programs.<name>.enable` installs the package: bat, delta, fzf, starship,
+# atuin, zoxide, direnv, tmux, git, gh, lazygit, fastfetch. vim's binary stays
+# apt/brew-managed (only ~/.vimrc is Nix-owned).
+{ pkgs, lib, ... }:
+{
+  home.packages = with pkgs; [
+    # modern CLI replacements
+    ripgrep
+    fd
+    eza
+    dust
+    procs
+    sd
+    duf
+
+    # search / nav / data
+    jq
+    yq-go # yq
+    jless
+    tree
+
+    # system / process
+    htop
+    btop
+
+    # network
+    w3m
+    browsh # high-fidelity terminal browser: drives the headless firefox below (full JS)
+    firefox # engine for browsh; runs headless, no display needed
+    gping
+    mosh
+    doggo # dig replacement (took over from the unmaintained `dog`, which nixpkgs 26.05 dropped)
+
+    # git / dev tooling
+    # NOTE: codex moved to the official standalone installer (install.sh
+    # install_codex_cli) — `codex update` can't self-update a Nix-owned binary.
+    postgresql # psql client (nixpkgs has no client-only package)
+    lazydocker
+    just
+    entr
+
+    # formatters / linters / security (consolidated here from Brewfile + mise
+    # so both OSes get the same versions; shell.md requires shellcheck + shfmt
+    # on every shell-script edit)
+    gitleaks
+    shfmt
+    shellcheck
+    typos
+    taplo
+    yamlfmt
+    clang-tools # clang-format
+
+    # media
+    ffmpeg # transcode-video-* / img conversions
+
+    # misc
+    glow
+    tealdeer # tldr
+    chafa
+    cloc
+    hyperfine # CLI benchmarking
+  ]
+  ++ lib.optionals stdenv.isDarwin [
+    # macOS-only: AI image upscaler (models bundled in share/models); uses the
+    # Apple GPU via Vulkan/MoltenVK. Verified working on Apple Silicon.
+    realesrgan-ncnn-vulkan
+  ];
+}

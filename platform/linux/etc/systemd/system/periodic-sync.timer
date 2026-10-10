@@ -1,0 +1,11 @@
+[Unit]
+Description=Run sync every 5 minutes for data safety
+Documentation=man:sync(1)
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

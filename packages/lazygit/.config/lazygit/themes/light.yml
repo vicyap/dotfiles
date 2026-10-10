@@ -1,0 +1,30 @@
+# lazygit — light (Catppuccin Latte) theme overlay.
+# Layered on top of ../config.yml via LG_CONFIG_FILE; see packages/zsh/.zsh/theme.zsh.
+# Colors: https://github.com/catppuccin/lazygit/blob/main/themes/latte/green.yml
+gui:
+  theme:
+    activeBorderColor:
+      - "#40a02b"
+      - bold
+    inactiveBorderColor:
+      - "#6c6f85"
+    searchingActiveBorderColor:
+      - "#df8e1d"
+    optionsTextColor:
+      - "#1e66f5"
+    selectedLineBgColor:
+      - "#ccd0da"
+    inactiveViewSelectedLineBgColor:
+      - "#9ca0b0"
+    cherryPickedCommitFgColor:
+      - "#40a02b"
+    cherryPickedCommitBgColor:
+      - "#bcc0cc"
+    markedBaseCommitFgColor:
+      - "#1e66f5"
+    markedBaseCommitBgColor:
+      - "#df8e1d"
+    unstagedChangesColor:
+      - "#d20f39"
+    defaultFgColor:
+      - "#4c4f69"

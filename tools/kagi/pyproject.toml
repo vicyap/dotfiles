@@ -1,0 +1,46 @@
+[project]
+name = "kagi-config"
+version = "0.1.0"
+description = "Kagi search settings as code: read, plan, apply, and mine usage"
+authors = [
+    { name = "Victor Yap", email = "vicyap@users.noreply.github.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "playwright>=1.62.0",
+]
+
+[project.scripts]
+kagi = "kagi_config.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.26,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.6",
+    "ty>=0.0.78",
+]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D", "COM812", "ISC001", "CPY001", "TC001", "TC003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "PLR2004", "ANN", "INP001", "RUF043", "ARG001"]
+"src/kagi_config/cli.py" = ["T201"]
+
+[tool.ty.environment]
+python-version = "3.14"
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

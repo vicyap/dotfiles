@@ -1,0 +1,7 @@
+[Unit]
+Description=Periodic filesystem sync for data safety
+Documentation=man:sync(1)
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sync

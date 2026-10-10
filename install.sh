@@ -1,0 +1,870 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+DOTFILES_REPO="https://github.com/vicyap/dotfiles.git"
+
+# Check if a command exists before lib/platform.sh is available.
+has_cmd() {
+    command -v "$1" &>/dev/null
+}
+
+prepend_path() {
+    case ":$PATH:" in
+        *":$1:"*) ;;
+        *) export PATH="$1:$PATH" ;;
+    esac
+}
+
+install_bootstrap_packages() {
+    case "$(uname -s)" in
+        Linux)
+            if ! has_cmd apt; then
+                return 0
+            fi
+
+            local packages=()
+            [[ -f /etc/ssl/certs/ca-certificates.crt ]] || packages+=(ca-certificates)
+            has_cmd curl || packages+=(curl)
+            has_cmd git || packages+=(git)
+            has_cmd zsh || packages+=(zsh)
+
+            if ((${#packages[@]} == 0)); then
+                return 0
+            fi
+
+            echo "Installing bootstrap packages..."
+            sudo apt-get update
+            sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y "${packages[@]}"
+            echo
+            ;;
+    esac
+}
+
+# Auto-detect location: honor an explicit DOTFILES_DIR (for worktree and
+# temp-$HOME testing), else this script's directory, else ~/.dotfiles.
+if [[ -z "${DOTFILES_DIR:-}" ]]; then
+    if [[ -n "${BASH_SOURCE[0]}" ]] && [[ -f "${BASH_SOURCE[0]}" ]]; then
+        DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    else
+        DOTFILES_DIR="$HOME/.dotfiles"
+    fi
+fi
+
+import_atuin_history() {
+    if ! has_cmd atuin; then
+        echo "  Skipped: atuin not installed"
+        return 0
+    fi
+
+    local db="${XDG_DATA_HOME:-$HOME/.local/share}/atuin/history.db"
+    if [[ -f "$db" ]]; then
+        echo "  ok history already imported"
+        return 0
+    fi
+
+    if [[ -f "$HOME/.zsh_history" ]]; then
+        if atuin import zsh; then
+            echo "  + imported zsh history"
+        else
+            echo "  Warning: atuin import failed"
+        fi
+    else
+        echo "  ok no zsh history to import"
+    fi
+}
+
+# zsh plugins (fzf-tab, autosuggestions, syntax-highlighting) and tmux plugins
+# (resurrect, continuum) are declared in the flake, so the old git-clone
+# installers are gone.
+
+install_nix() {
+    if has_cmd nix; then
+        echo "  ok nix already installed"
+        return 0
+    fi
+    echo "  Installing Nix (NixOS installer, flakes enabled)..."
+    curl -sSfL https://artifacts.nixos.org/nix-installer \
+        | sh -s -- install --no-confirm --enable-flakes \
+        || {
+            echo "  Warning: nix install failed"
+            return 0
+        }
+    # Load nix into the current shell so the switch below can run.
+    if [[ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+        # shellcheck disable=SC1091
+        . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+    fi
+}
+
+cleanup_relocated_nix_symlinks() {
+    # home-manager relocates some configs to XDG paths (git -> ~/.config/git,
+    # tmux -> ~/.config/tmux). Remove the old bash-symlinker links at the legacy
+    # paths so the new home-manager config isn't shadowed or, for tmux, doesn't
+    # re-trigger TPM via ~/.tmux.conf.local. Only ever touch a symlink that
+    # points into the dotfiles repo — never a user's real file.
+    local p tgt
+    for p in "$HOME/.gitconfig" "$HOME/.tmux.conf" "$HOME/.tmux.conf.local"; do
+        [[ -L "$p" ]] || continue
+        tgt="$(readlink "$p")"
+        if [[ "$tgt" == "$DOTFILES_DIR"/* ]]; then
+            rm -f "$p"
+            echo "  - removed legacy symlink $p (relocated by home-manager)"
+        fi
+    done
+}
+
+# When migrating a machine off the bash symlinker, the per-file symlinks for
+# Nix-owned packages sit at the exact paths home-manager wants and make its
+# switch fail with "would be clobbered". Drop them first — only ever a symlink
+# that points back into this repo, so no real file is ever touched.
+remove_legacy_nix_symlinks() {
+    # NIX_OWNED_PACKAGES is the single source of truth in lib/symlink.sh; both
+    # entrypoints (install.sh main and bin/dotfiles) source it before converge.
+    local pkg base rel target f
+    for pkg in "${NIX_OWNED_PACKAGES[@]}"; do
+        base="$DOTFILES_DIR/packages/$pkg"
+        [[ -d "$base" ]] || continue
+        while IFS= read -r -d '' f; do
+            rel="${f#"$base"/}"
+            target="$HOME/$rel"
+            if [[ -L "$target" && "$(readlink "$target")" == "$DOTFILES_DIR"/* ]]; then
+                rm -f "$target"
+                echo "  - removed legacy symlink $target"
+            fi
+        done < <(find "$base" \( -type f -o -type l \) -print0)
+    done
+}
+
+# Activate this host's Nix configuration. The flake is the source of truth:
+#   - a macOS host with a `darwinConfigurations.<host>` entry activates via
+#     nix-darwin (system settings + home-manager together; needs sudo);
+#   - otherwise Home Manager activates via a generic OS/architecture attr using
+#     the current user and home directory from the environment.
+# New Ubuntu hosts use the generic Home Manager config automatically. macOS hosts
+# use nix-darwin only when a host-specific system config exists; otherwise they
+# fall back to the generic Home Manager config.
+setup_nix() {
+    local host platform nix_system attr darwin_configs home_configs
+    local named_attr generic_attr use_impure
+    host="$(hostname -s 2>/dev/null || hostname)"
+    platform="$(detect_supported_platform)"
+    nix_system="$(detect_nix_system)"
+
+    install_nix
+    has_cmd nix || {
+        echo "  Skipped: nix unavailable"
+        return 0
+    }
+
+    # macOS: prefer nix-darwin when this host is declared there.
+    if [[ "$platform" == "macos" ]]; then
+        darwin_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
+            nix eval --json "${DOTFILES_DIR}#darwinConfigurations" \
+            --apply 'builtins.attrNames' 2>/dev/null || true)"
+        if [[ "$darwin_configs" == \[* && "$darwin_configs" == *"\"${host}\""* ]]; then
+            cleanup_relocated_nix_symlinks
+            remove_legacy_nix_symlinks
+            echo "  Activating nix-darwin for ${host} (needs sudo)..."
+            if has_cmd darwin-rebuild; then
+                sudo darwin-rebuild switch --flake "${DOTFILES_DIR}#${host}" \
+                    || echo "  Warning: darwin-rebuild switch failed"
+            else
+                # First run: bootstrap darwin-rebuild from the nix-darwin 26.05
+                # release branch (a floating ref — darwin-rebuild isn't on PATH
+                # yet, so the locked flake input can't be reused here). Once
+                # installed, the switch above uses the locked flake.
+                sudo NIX_CONFIG="experimental-features = nix-command flakes" \
+                    nix run "github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild" -- \
+                    switch --flake "${DOTFILES_DIR}#${host}" \
+                    || echo "  Warning: nix-darwin bootstrap switch failed"
+            fi
+            prepend_path "/run/current-system/sw/bin"
+            prepend_path "$HOME/.nix-profile/bin"
+            return 0
+        fi
+    fi
+
+    case "$platform" in
+        ubuntu)
+            generic_attr="ubuntu-${nix_system}"
+            ;;
+        macos)
+            generic_attr="macos-${nix_system}"
+            ;;
+        *)
+            echo "  Skipped: unsupported platform for home-manager (${platform})"
+            return 0
+            ;;
+    esac
+
+    if [[ "$nix_system" == "unknown" ]]; then
+        echo "  Skipped: unsupported Nix system for $(uname -s)/$(uname -m)"
+        return 0
+    fi
+
+    # Standalone home-manager (Ubuntu, or macOS with no darwin entry). Prefer a
+    # host-specific `user@host` config when the flake declares one (e.g.
+    # victor@rhinestone) — it pins identity so it activates with pure eval. Fall
+    # back to the generic OS/arch config, which needs --impure for USER/HOME.
+    named_attr="$(whoami)@${host}"
+    home_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
+        nix eval --json "${DOTFILES_DIR}#homeConfigurations" \
+        --apply 'builtins.attrNames' 2>/dev/null || true)"
+    if [[ "$home_configs" == *"\"${named_attr}\""* ]]; then
+        attr="$named_attr"
+        use_impure=0
+    elif [[ "$home_configs" == \[* && "$home_configs" == *"\"${generic_attr}\""* ]]; then
+        attr="$generic_attr"
+        use_impure=1
+    else
+        echo "  Skipped: no home-manager config for ${named_attr} or ${generic_attr}"
+        return 0
+    fi
+
+    cleanup_relocated_nix_symlinks
+    remove_legacy_nix_symlinks
+
+    echo "  Activating home-manager for ${attr}..."
+    # -b backup renames any pre-existing file (e.g. an old symlinked ~/.zshrc)
+    # instead of failing on the first switch.
+    if [[ "$use_impure" == 1 ]]; then
+        NIX_CONFIG="experimental-features = nix-command flakes" \
+            nix run home-manager/release-26.05 -- \
+            switch -b backup --impure --flake "${DOTFILES_DIR}#${attr}" \
+            || echo "  Warning: home-manager switch failed"
+    else
+        NIX_CONFIG="experimental-features = nix-command flakes" \
+            nix run home-manager/release-26.05 -- \
+            switch -b backup --flake "${DOTFILES_DIR}#${attr}" \
+            || echo "  Warning: home-manager switch failed"
+    fi
+
+    # Make Nix-provided tools visible to the rest of this run.
+    prepend_path "$HOME/.nix-profile/bin"
+}
+
+setup_linux_system() {
+    # Each supported Linux host owns its system configuration.
+    [[ "$(uname -s)" == "Linux" ]] || {
+        echo "  Skipped: not Linux"
+        return 0
+    }
+    local script
+    case "$(hostname -s 2>/dev/null || hostname)" in
+        rhinestone) script="$DOTFILES_DIR/platform/linux/setup-system.sh" ;;
+        kanto) script="$DOTFILES_DIR/platform/linux/setup-kanto.sh" ;;
+        *)
+            echo "  Skipped: no system configuration for this host"
+            return 0
+            ;;
+    esac
+    has_cmd apt || {
+        echo "  Skipped: apt not available"
+        return 0
+    }
+
+    [[ -f "$script" ]] || {
+        echo "  Skipped: $script not found"
+        return 0
+    }
+
+    # Needs sudo; run automatically only when sudo won't block on a password
+    # prompt (passwordless) or when a human is present to answer it.
+    if sudo -n true 2>/dev/null || is_interactive; then
+        bash "$script" || echo "  Warning: setup-system.sh did not complete"
+    else
+        echo "  Skipped: needs sudo — run manually: bash $script"
+    fi
+}
+
+setup_claude_plugins() {
+    if ! has_cmd claude; then
+        echo "  Skipped: claude not installed"
+        return 0
+    fi
+
+    # Custom marketplaces (official is built-in)
+    local marketplaces=(
+        "usetemi/skills"
+        "usetemi/skills-private"
+        "DietrichGebert/ponytail"
+    )
+
+    for marketplace in "${marketplaces[@]}"; do
+        claude plugin marketplace add "$marketplace" || true
+    done
+
+    # All plugins to install (enable/disable controlled by settings.json)
+    local plugins=(
+        "playwright@claude-plugins-official"
+        "typescript-lsp@claude-plugins-official"
+        "context7@claude-plugins-official"
+        "pyright-lsp@claude-plugins-official"
+        "posthog@claude-plugins-official"
+        "linear@claude-plugins-official"
+        "stripe@claude-plugins-official"
+        "vercel@claude-plugins-official"
+        "resend@claude-plugins-official"
+        "slack@claude-plugins-official"
+        "skill-creator@claude-plugins-official"
+        "claude-code-setup@claude-plugins-official"
+        "explanatory-output-style@claude-plugins-official"
+        "usetemi@usetemi"
+        "usetemi-private@usetemi-private"
+        "ponytail@ponytail"
+    )
+
+    for plugin in "${plugins[@]}"; do
+        claude plugin install "$plugin" || true
+    done
+
+    # Plugins to keep installed but disabled (install auto-enables)
+    local disabled=(
+        "claude-code-setup@claude-plugins-official"
+        "explanatory-output-style@claude-plugins-official"
+        "skill-creator@claude-plugins-official"
+        # Skill listings load into every session; none of these were ever
+        # invoked (posthog 137 skills, vercel 41, linear MCP).
+        "posthog@claude-plugins-official"
+        "linear@claude-plugins-official"
+        "vercel@claude-plugins-official"
+        "context7@claude-plugins-official" # duplicate of the user-scope MCP server
+        "usetemi@usetemi"                  # its skills are installed at user scope
+        # Its skills duplicate user-scope copies and bypass agent-skills.txt.
+        "usetemi-private@usetemi-private"
+        "resend@claude-plugins-official"
+        # Installed for projects that enable it (usetemi/temi); its SessionStart
+        # hook injects a persona, so it stays off by default.
+        "ponytail@ponytail"
+    )
+
+    for plugin in "${disabled[@]}"; do
+        claude plugin disable "$plugin" || true
+    done
+}
+
+# User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
+# constantly, so they are registered here instead of symlinked. The
+# chrome-devtools wrapper attaches to the running Chrome on macOS and runs headed Chrome on
+# Xvfb on Linux; [mcp_servers.chrome-devtools] in
+# packages/codex/.codex/config.base.toml runs the same wrapper. safari-mcp is
+# macOS-only, so its Codex entry lives in lima's untracked config.local.toml.
+# It needs Safari > Settings > Advanced > "Show features for web developers" and
+# Safari > Settings > Developer > "Allow remote automation and external agents".
+setup_claude_mcp_servers() {
+    if ! has_cmd claude; then
+        echo "  Skipped: claude not installed"
+        return 0
+    fi
+
+    register_claude_mcp_server chrome-devtools "$HOME/.agents/bin/chrome-devtools-mcp"
+    if [[ "$(uname -s)" == Darwin ]]; then
+        register_claude_mcp_server safari-mcp /usr/bin/safaridriver --mcp
+    fi
+}
+
+register_claude_mcp_server() {
+    local name="$1"
+    shift
+    if claude mcp get "$name" 2>/dev/null | grep -qF "$1"; then
+        echo "  ok $name mcp"
+        return 0
+    fi
+
+    claude mcp remove --scope user "$name" >/dev/null 2>&1 || true
+    claude mcp add --scope user "$name" -- "$@" \
+        || echo "  Skipped: $name mcp registration failed"
+}
+
+# `codex update` can only self-update the official standalone layout
+# (~/.codex/packages/standalone + the ~/.local/bin/codex symlink), so the CLI
+# comes from the official installer instead of Nix/npm/brew. The installer is
+# idempotent and doubles as the updater (checksummed, swaps a `current` link).
+install_codex_cli() {
+    if ! has_cmd curl; then
+        echo "  Skipped: curl not installed"
+        return 0
+    fi
+
+    curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh \
+        || echo "  Warning: codex standalone install failed"
+}
+
+# Converge fast path: only hit the network when the standalone layout is
+# missing (fresh machine, or codex was previously Nix/npm-owned).
+ensure_codex_cli() {
+    if [[ -x "$HOME/.codex/packages/standalone/current/bin/codex" ]]; then
+        echo "  ok codex standalone present"
+        return 0
+    fi
+    install_codex_cli
+}
+
+setup_codex_plugins() {
+    if ! has_cmd codex; then
+        echo "  Skipped: codex not installed"
+        return 0
+    fi
+
+    local curated="$HOME/.codex/.tmp/plugins"
+    local curated_manifest="$curated/.agents/plugins/marketplace.json"
+    if [[ -f "$curated_manifest" ]]; then
+        echo "  ok openai-curated marketplace"
+    else
+        mkdir -p "$(dirname "$curated")"
+        if [[ -e "$curated" && ! -d "$curated/.git" ]]; then
+            echo "  Skipped: $curated exists and is not a git checkout"
+        elif [[ -d "$curated/.git" ]]; then
+            git -C "$curated" pull --quiet --ff-only \
+                && echo "  ok openai-curated marketplace" \
+                || echo "  Skipped: openai-curated marketplace update failed"
+        else
+            git clone --depth=1 --quiet https://github.com/openai/plugins.git "$curated" \
+                && echo "  + openai-curated marketplace" \
+                || echo "  Skipped: openai-curated marketplace clone failed"
+        fi
+    fi
+
+    local plugins=(
+        "posthog@openai-curated"
+        "google-calendar@openai-curated"
+        "gmail@openai-curated"
+        "slack@openai-curated"
+        "stripe@openai-curated"
+        "github@openai-curated"
+        "google-drive@openai-curated"
+        "cloudflare@openai-curated"
+        "openai-developers@openai-curated"
+    )
+
+    # Xcode-dependent plugins (build-ios-apps bundles the xcodebuildmcp MCP
+    # server) only work on macOS.
+    local xcode_plugins=(
+        "build-ios-apps@openai-curated"
+        "build-macos-apps@openai-curated"
+    )
+    if [[ "$(detect_os)" == "macos" ]]; then
+        plugins+=("${xcode_plugins[@]}")
+    fi
+
+    local plugin
+    for plugin in "${plugins[@]}"; do
+        codex plugin add "$plugin" \
+            || echo "  Skipped: $plugin install failed"
+    done
+
+    # Remove unwanted bundled app plugins exposed by remote plugin sync.
+    local excluded_plugins=(
+        "app-6938a94a61d881918ef32cb999ff937c@openai-curated-remote" # Apple Music
+        "app-69bbcab1ccd08191a6df676440fa37af@openai-curated-remote" # GetMeDesign
+        "app-6982cfb482bc81918416ec35e7cc90e5@openai-curated-remote" # Shop
+        "app-68de829bf7648191acd70a907364c67c@openai-curated-remote" # Spotify
+        # No recorded use in Codex sessions.
+        "expo@openai-curated"
+        "build-web-apps@openai-curated"
+    )
+    if [[ "$(detect_os)" != "macos" ]]; then
+        excluded_plugins+=("${xcode_plugins[@]}")
+    fi
+
+    for plugin in "${excluded_plugins[@]}"; do
+        codex plugin remove "$plugin" \
+            || echo "  Skipped: $plugin removal failed"
+    done
+}
+
+sync_agent_skills() {
+    python3 "$DOTFILES_DIR/lib/sync-agent-skills.py" "$DOTFILES_DIR"
+}
+
+sync_claude_rules() {
+    local agents_rules="$HOME/.agents/rules"
+    local claude_rules="$HOME/.claude/rules"
+    local manifest="$HOME/.claude/.dotfiles-rules.txt"
+    local old_rules="$DOTFILES_DIR/packages/claude/.claude/rules"
+
+    if [[ ! -d "$agents_rules" ]]; then
+        echo "  Skipped: $agents_rules does not exist"
+        return 0
+    fi
+
+    mkdir -p "$claude_rules"
+
+    local linked=0
+    local skipped=0
+    local -a current=()
+    local entry name target current_link target_name
+    for entry in "$agents_rules"/*; do
+        # -f alone (it follows symlinks): a dangling symlink passes -L and
+        # would be re-admitted — and re-created in ~/.claude/rules — forever.
+        [[ -f "$entry" ]] || continue
+        name="$(basename "$entry")"
+        [[ "$name" == .* ]] && continue
+
+        target="$claude_rules/$name"
+        current+=("$name")
+
+        if [[ -L "$target" ]]; then
+            current_link="$(readlink "$target")"
+            if [[ "$current_link" == "$agents_rules/$name" ]]; then
+                echo "  ok $name"
+                linked=$((linked + 1))
+                continue
+            fi
+
+            if [[ "$current_link" == "$old_rules/$name" ]]; then
+                rm -f "$target"
+            else
+                echo "  Skipped: $target points to $current_link"
+                skipped=$((skipped + 1))
+                continue
+            fi
+        elif [[ -e "$target" ]]; then
+            echo "  Skipped: $target exists and is not a dotfiles-managed symlink"
+            skipped=$((skipped + 1))
+            continue
+        fi
+
+        ln -s "$agents_rules/$name" "$target"
+        echo "  + $name"
+        linked=$((linked + 1))
+    done
+
+    # Prune links recorded on a prior run (per the manifest) whose source rule
+    # has since been removed.
+    local prev keep stale_removed=0
+    while IFS= read -r prev; do
+        target="$claude_rules/$prev"
+        [[ -L "$target" ]] || continue
+        current_link="$(readlink "$target")"
+        if [[ "$current_link" == "$agents_rules/$prev" || "$current_link" == "$old_rules/$prev" ]]; then
+            rm -f "$target"
+            echo "  - $prev (stale)"
+            stale_removed=$((stale_removed + 1))
+        fi
+    done < <(manifest_stale_entries "$manifest" "${current[@]}")
+
+    # First migration run may not have a manifest yet. Clean up old
+    # dotfiles-owned Claude rule links whose source files moved or were folded
+    # into AGENTS.md.
+    for entry in "$claude_rules"/*; do
+        [[ -L "$entry" ]] || continue
+        name="$(basename "$entry")"
+        current_link="$(readlink "$entry")"
+        [[ "$current_link" == "$old_rules/"* ]] || continue
+
+        keep=false
+        for target_name in "${current[@]}"; do
+            if [[ "$name" == "$target_name" ]]; then
+                keep=true
+                break
+            fi
+        done
+
+        if ! $keep; then
+            rm -f "$entry"
+            echo "  - $name (legacy)"
+            stale_removed=$((stale_removed + 1))
+        fi
+    done
+
+    if ((${#current[@]} > 0)); then
+        printf '%s\n' "${current[@]}" | sort >"$manifest"
+    else
+        : >"$manifest"
+    fi
+
+    echo "  Synced $linked Claude Code rule links (skipped $skipped, pruned $stale_removed stale)"
+}
+
+generate_codex_config() {
+    local codex_dir="$HOME/.codex"
+    local base="$DOTFILES_DIR/packages/codex/.codex/config.base.toml"
+    local local_config="$DOTFILES_DIR/packages/codex/.codex/config.local.toml"
+    local merger="$DOTFILES_DIR/lib/merge-codex-config.py"
+    local target="$codex_dir/config.toml"
+
+    if [[ ! -f "$base" ]]; then
+        echo "  Skipped: config.base.toml not found"
+        return 0
+    fi
+
+    mkdir -p "$codex_dir"
+
+    # Codex writes runtime state into config.toml ([projects] trust, [hooks.state]
+    # approvals, [tui]/[notice], [plugins] installs, service_tier). A plain regen
+    # wipes them, forcing hook re-approval on every pull. The merger re-emits
+    # base+local then preserves any top-level keys/tables the managed files
+    # don't define.
+    if has_cmd python3 && [[ -f "$merger" ]]; then
+        local tmp
+        tmp="$(mktemp)"
+        if python3 "$merger" "$base" "$local_config" "$target" >"$tmp" 2>/dev/null; then
+            mv "$tmp" "$target"
+            echo "  Generated $target (preserved runtime state)"
+        else
+            rm -f "$tmp"
+            echo "  Warning: codex config merge failed; left existing $target untouched"
+        fi
+        return 0
+    fi
+
+    # Without python3 the merge can't preserve Codex runtime state ([projects]
+    # trust, [hooks.state] approvals, [plugins]), so never overwrite an
+    # existing config — only seed a machine that has none yet.
+    if [[ -f "$target" ]]; then
+        echo "  Skipped: python3 unavailable — left existing $target untouched"
+        return 0
+    fi
+    cat "$base" >"$target"
+    if [[ -f "$local_config" ]]; then
+        printf '\n' >>"$target"
+        cat "$local_config" >>"$target"
+    fi
+    echo "  Generated $target"
+}
+
+# Scaffold the untracked machine-local notes that shared instructions ask agents
+# to read. Migrate an old rules/local.md on first run, else create an empty file.
+ensure_agents_local() {
+    local f="$HOME/.agents/AGENTS.local.md"
+    [[ -e "$f" ]] && return 0
+    mkdir -p "$HOME/.agents"
+    # Migrate notes from either legacy location (the source
+    # ~/.agents/rules/local.md, or the older ~/.claude/rules/local.md regular
+    # file), else start empty.
+    local src
+    for src in "$HOME/.agents/rules/local.md" "$HOME/.claude/rules/local.md"; do
+        if [[ -f "$src" && ! -L "$src" ]]; then
+            mv "$src" "$f"
+            echo "  + migrated $src -> AGENTS.local.md"
+            return 0
+        fi
+    done
+    : >"$f"
+    echo "  + created empty AGENTS.local.md"
+}
+
+# Point this repo's git hooks at the tracked hooks/ dir so the gitleaks
+# pre-commit scan actually runs — without this, hooks/pre-commit is dead weight.
+wire_git_hooks() {
+    if [[ -d "$DOTFILES_DIR/.git" ]]; then
+        git -C "$DOTFILES_DIR" config core.hooksPath hooks \
+            && echo "  ok core.hooksPath = hooks" \
+            || echo "  Warning: could not set core.hooksPath"
+    else
+        echo "  Skipped: not a git checkout"
+    fi
+}
+
+ensure_modal_cli() {
+    if ! has_cmd mise; then
+        echo "  Skipped: mise not installed"
+        return 0
+    fi
+
+    mise exec -- uv tool install --upgrade modal \
+        || echo "  Warning: modal install/upgrade failed"
+}
+
+# --- Convergence: fast, idempotent local steps -----------------------------
+# Shared by a fresh install.sh run and `dotfiles pull`. No expensive upstream
+# refresh here (no brew bundle, mise upgrades, flake updates, or plugin pulls) —
+# those live in refresh_upstream and run only on a fresh install or
+# `dotfiles upgrade`.
+converge() {
+    require_supported_platform
+
+    install_zsh
+    echo
+    install_vim
+    echo
+
+    echo "=== Configuring default editor ==="
+    set_default_editor
+    echo
+
+    echo "=== Installing mise ==="
+    install_mise
+    echo
+
+    # Activate Nix first: it owns the CLI tool set, shell, git, tmux, etc., and
+    # symlink_all_packages below skips NIX_OWNED_PACKAGES.
+    echo "=== Activating Nix ==="
+    setup_nix
+    echo
+
+    echo "=== Symlinking packages ==="
+    symlink_all_packages "$DOTFILES_DIR/packages"
+    echo
+
+    echo "=== Wiring git hooks (gitleaks pre-commit) ==="
+    wire_git_hooks
+    echo
+
+    echo "=== Configuring host system ==="
+    setup_linux_system
+    echo
+
+    echo "=== Ensuring machine-local agent notes ==="
+    ensure_agents_local
+    echo
+
+    echo "=== Syncing Claude Code rules ==="
+    sync_claude_rules
+    echo
+
+    echo "=== Ensuring codex CLI (standalone) ==="
+    ensure_codex_cli
+    echo
+
+    if [[ "$(detect_supported_platform)" == ubuntu ]] && ! has_cmd claude; then
+        curl -fsSL https://claude.ai/install.sh | bash \
+            || echo "  Warning: Claude Code install failed"
+    fi
+
+    echo "=== Generating codex config ==="
+    generate_codex_config
+    echo
+
+    echo "=== Linking codex AGENTS.md to shared instructions ==="
+    DOTFILES_FORCE=1 create_symlink "$HOME/.agents/AGENTS.md" "$HOME/.codex/AGENTS.md"
+    echo
+
+    # Ghostty terminfo (needed on remotes without Ghostty installed)
+    echo "=== Installing terminfo ==="
+    tic -x "$DOTFILES_DIR/lib/xterm-ghostty.terminfo" \
+        || echo "  Warning: terminfo install failed"
+    echo
+
+    # Converge mise-managed runtimes to the pinned versions (no upgrades here).
+    if has_cmd mise; then
+        echo "=== Converging mise runtimes (pinned) ==="
+        mise install --yes || echo "  Warning: mise install failed"
+        prepend_path "$HOME/.local/share/mise/shims"
+        echo
+
+        echo "=== Installing/upgrading modal CLI ==="
+        ensure_modal_cli
+        echo
+
+        echo "=== Importing atuin history ==="
+        import_atuin_history
+        echo
+    fi
+
+    echo "=== Syncing agent skills ==="
+    sync_agent_skills
+    echo
+}
+
+# --- Upstream refresh: expensive, network-bound ----------------------------
+# Runs only on a fresh install.sh and `dotfiles upgrade`. Pulls newer upstream
+# state: flake inputs, Homebrew/apt packages, mise upgrades, extra CLI tools,
+# and Claude/Codex plugins.
+refresh_upstream() {
+    if has_cmd nix && [[ -f "$DOTFILES_DIR/flake.nix" ]]; then
+        echo "=== Updating Nix flake inputs ==="
+        (cd "$DOTFILES_DIR" \
+            && NIX_CONFIG="experimental-features = nix-command flakes" nix flake update) \
+            || echo "  Warning: nix flake update failed"
+        setup_nix
+        echo
+    fi
+
+    echo "=== Installing platform packages (Brewfile / apt) ==="
+    install_platform_packages "$DOTFILES_DIR"
+    echo
+
+    if has_cmd mise; then
+        echo "=== Upgrading mise tools ==="
+        # mise itself is curl-script-installed on Linux, so self-update applies
+        # there; on macOS it's brew-owned and brew bundle keeps it current.
+        if [[ "$(uname -s)" == "Linux" ]]; then
+            mise self-update --yes || echo "  Warning: mise self-update failed"
+        fi
+        mise upgrade --yes || echo "  Warning: mise upgrade failed"
+        # update:tools depends on the setup:* tasks, so this is also the
+        # single place the extra CLI tools (web, ssh-opener, tmux-status)
+        # get built. pyright/typescript-language-server are mise backend tools
+        # now, covered by `mise upgrade` above.
+        mise run update:tools || echo "  Warning: mise update:tools failed"
+        # Removes installs unreferenced by any config mise has seen; project
+        # pins reinstall automatically the next time that project is visited.
+        mise prune --yes || echo "  Warning: mise prune failed"
+        echo
+    fi
+
+    echo "=== Updating codex CLI ==="
+    install_codex_cli
+    echo
+    echo "=== Installing Codex plugins ==="
+    setup_codex_plugins
+    echo
+    echo "=== Installing Claude Code plugins ==="
+    setup_claude_plugins
+    setup_claude_mcp_servers
+    echo
+}
+
+main() {
+    echo "=== Dotfiles Installer ==="
+    echo
+
+    prepend_path "$HOME/go/bin"
+    prepend_path "$HOME/.local/bin"
+    install_bootstrap_packages
+
+    # If running via curl pipe, clone the repo
+    if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
+        if [[ -d "$DOTFILES_DIR" ]]; then
+            echo "Error: $DOTFILES_DIR exists but is not a git repo"
+            exit 1
+        fi
+        echo "Cloning dotfiles..."
+        git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+    fi
+
+    echo "Dotfiles directory: $DOTFILES_DIR"
+    echo
+
+    # Load helpers
+    source "$DOTFILES_DIR/lib/platform.sh"
+    source "$DOTFILES_DIR/lib/symlink.sh"
+
+    # Detect supported platform
+    local platform
+    platform="$(detect_supported_platform)"
+    echo "Detected platform: $platform"
+    require_supported_platform
+    echo
+
+    # Fast local convergence (shared with `dotfiles pull`).
+    converge
+
+    # Expensive upstream refresh — a fresh machine wants the full tool/plugin set
+    # (shared with `dotfiles upgrade`).
+    refresh_upstream
+
+    # Set default shell (first run only; prompt only when the login shell is not
+    # already a zsh). fzf-tab works under the system zsh too, so there is no need
+    # to force the Nix zsh.
+    if is_interactive && [[ "$SHELL" != *zsh ]]; then
+        echo
+        read -p "Set zsh as default shell? [y/N] " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            set_default_shell
+        fi
+    fi
+
+    echo
+    echo "=== Done! ==="
+    echo "Create ~/.secrets for API keys and tokens."
+    echo "Restart your terminal or run: exec zsh"
+}
+
+# Only run main when executed directly, not when sourced
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

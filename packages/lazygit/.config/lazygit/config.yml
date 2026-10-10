@@ -1,0 +1,19 @@
+# lazygit — TUI git client.
+# https://github.com/jesseduffield/lazygit
+
+gui:
+  # gui.theme lives in themes/{dark,light}.yml, layered in via LG_CONFIG_FILE
+  # (see packages/zsh/.zsh/theme.zsh).
+  authorColors:
+    "*": "#b4befe"
+  showFileTree: true
+  showRandomTip: false
+  nerdFontsVersion: "3"
+git:
+  pagers:
+    - colorArg: always
+      pager: delta --paging=never
+  commit:
+    signOff: false
+os:
+  editPreset: vim

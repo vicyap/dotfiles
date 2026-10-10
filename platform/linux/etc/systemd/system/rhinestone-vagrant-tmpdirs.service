@@ -1,0 +1,18 @@
+[Unit]
+Description=Reconstruct isolated Vagrant temporary directories
+Documentation=file:/home/victor/.dotfiles/platform/linux/README.md
+ConditionHost=rhinestone
+Before=libvirtd.service
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/rhinestone-vagrant-tmpdirs
+NoNewPrivileges=yes
+PrivateDevices=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/tmp
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+readonly XML_ROOT="/etc/libvirt/qemu"
+readonly TMP_ROOT="/tmp/rhinestone-vagrant"
+readonly HOST_USER="victor"
+readonly QEMU_USER="libvirt-qemu"
+
+if [[ ! -d "$XML_ROOT" ]]; then
+    exit 0
+fi
+
+install -d -o root -g root -m 0700 "$TMP_ROOT"
+setfacl --remove-all "$TMP_ROOT"
+setfacl -m "u:${HOST_USER}:--x,u:${QEMU_USER}:--x,m::--x,o::---" "$TMP_ROOT"
+
+declare -A declared_paths=()
+while IFS= read -r source_path; do
+    if [[ "$source_path" =~ ^/tmp/rhinestone-vagrant/[A-Za-z0-9_.-]+/tmp$ ]]; then
+        declared_paths["$source_path"]=1
+    fi
+done < <(
+    sed -n \
+        -E "s|.*<source[[:space:]][^>]*dir=['\"](/tmp/rhinestone-vagrant/[^'\"]+)['\"][^>]*>.*|\\1|p" \
+        "$XML_ROOT"/*.xml 2>/dev/null
+)
+
+for source_path in "${!declared_paths[@]}"; do
+    machine_path="${source_path%/tmp}"
+    install -d -o root -g root -m 0700 "$machine_path" "$source_path"
+    setfacl --remove-all "$machine_path" "$source_path"
+    setfacl -m "u:${HOST_USER}:rwx,u:${QEMU_USER}:rwx,m::rwx,o::---" \
+        "$machine_path" "$source_path"
+    setfacl -d -m "u:${HOST_USER}:rwx,u:${QEMU_USER}:rwx,m::rwx,o::---" \
+        "$source_path"
+done

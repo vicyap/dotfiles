@@ -1,0 +1,52 @@
+# Sensitive files - NEVER commit
+**/.ssh/id_*
+**/.ssh/*.pem
+**/.ssh/known_hosts
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.keystore
+**/id_rsa
+**/id_ed25519
+**/id_ecdsa
+
+# Credentials
+**/.netrc
+**/.npmrc
+**/.pypirc
+**/.htpasswd
+**/credentials*
+**/service-account*.json
+**/*serviceAccountKey*.json
+**/gcloud-key.json
+**/*token*
+**/*secret*
+# secrets.md is the secrets-hygiene rule doc, not a secret — keep it tracked.
+!packages/agents/.agents/rules/secrets.md
+**/.env
+**/.env.*
+
+# VM migration bundles (carry .env credentials — never commit)
+vms/**/*.zip
+vms/**/*.tar.gz
+
+# Local overrides
+*.local
+.local/
+**/rules/local.md
+**/AGENTS.local.md
+**/config.local.toml
+**/.vagrant/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.idea/
+.vscode/

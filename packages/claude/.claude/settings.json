@@ -1,0 +1,163 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
+    "CLAUDE_CODE_STOP_HOOK_BLOCK_CAP": "100",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
+  "model": "opus",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "atuin hook claude-code"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "atuin hook claude-code"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "atuin hook claude-code"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "agent-system-info"
+          }
+        ]
+      }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-worktree-create",
+            "timeout": 300,
+            "statusMessage": "Setting up worktree (env, deps, hooks)..."
+          }
+        ]
+      }
+    ]
+  },
+  "worktree": {
+    "baseRef": "fresh"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  },
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": false,
+    "context7@claude-plugins-official": false,
+    "explanatory-output-style@claude-plugins-official": false,
+    "linear@claude-plugins-official": false,
+    "playwright@claude-plugins-official": true,
+    "posthog@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "skill-creator@claude-plugins-official": false,
+    "typescript-lsp@claude-plugins-official": true,
+    "usetemi-private@usetemi-private": false,
+    "usetemi@usetemi": false,
+    "stripe@claude-plugins-official": true,
+    "vercel@claude-plugins-official": false,
+    "resend@claude-plugins-official": false,
+    "slack@claude-plugins-official": true,
+    "ponytail@ponytail": false
+  },
+  "extraKnownMarketplaces": {
+    "usetemi": {
+      "source": {
+        "source": "github",
+        "repo": "usetemi/skills"
+      }
+    },
+    "usetemi-private": {
+      "source": {
+        "source": "github",
+        "repo": "usetemi/skills-private"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    }
+  },
+  "effortLevel": "medium",
+  "modelSettings": {
+    "claude-fable-5": {
+      "effortLevel": "xhigh"
+    },
+    "claude-opus-5": {
+      "effortLevel": "medium"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "medium"
+    },
+    "claude-opus-5-5": {
+      "effortLevel": "medium"
+    },
+    "claude-sonnet-5": {
+      "effortLevel": "low"
+    }
+  },
+  "autoCompactWindow": 500000,
+  "advisorModel": "fable",
+  "pluginConfigs": {
+    "agents-md@builtin": {
+      "options": {
+        "instructionFiles": "claude-md-or-agents-md"
+      }
+    }
+  },
+  "autoUpdatesChannel": "latest",
+  "tui": "default",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "autoMemoryEnabled": false,
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "auto",
+  "preferredNotifChannel": "ghostty",
+  "autoCompactEnabled": true,
+  "switchModelsOnFlag": false,
+  "teammateMode": "auto",
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": false,
+  "useAutoModeDuringPlan": true,
+  "voiceEnabled": true
+}

@@ -1,0 +1,74 @@
+# Shared shell aliases (sourced by bash; zsh gets these via home-manager's
+# shellAliases). Functions live in .functions.
+
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# ls (prefer eza when available). The flag-translating `ls` wrapper is a
+# function in .functions.
+if command -v eza &>/dev/null; then
+  alias ll='eza -la --git --icons --group-directories-first'
+  alias la='eza -a --icons'
+  alias l='eza -F --icons'
+  alias ltree='eza --tree --level=2 --icons'
+else
+  alias ll='ls -alF'
+  alias la='ls -A'
+  alias l='ls -CF'
+fi
+
+# Git
+alias g='git'
+alias ga='git add'
+alias gaa='git add --all'
+alias gb='git branch'
+alias gba='git branch -a'
+alias gc='git commit'
+alias gcmsg='git commit -m'
+alias gco='git checkout'
+alias gcb='git checkout -b'
+alias gcl='git clone'
+alias gcp='git cherry-pick'
+alias gd='git diff'
+alias gds='git diff --staged'
+alias gf='git fetch'
+alias gl='git pull'
+alias glg='git log --graph --decorate --stat --color'
+alias glog='git log --oneline --graph --decorate'
+alias gm='git merge'
+alias gp='git push'
+alias gpom='git pull origin main'
+alias ggpush='git push origin $(git branch --show-current)'
+alias ggpull='git pull origin $(git branch --show-current)'
+alias grb='git rebase'
+alias grh='git reset HEAD'
+alias gst='git status'
+alias gsta='git stash'
+alias gstp='git stash pop'
+
+# TUIs
+alias lg='lazygit'
+alias lzd='lazydocker'
+
+# Cheatsheet — themed via glow (markdown renderer)
+alias oma='glow ~/.dotfiles/CHEATSHEET.md'
+
+# AI agents
+alias cc='claude'
+alias cx='codex'
+# `ccc` (AI commit) and `ff` (fuzzy file finder) are functions in .functions.
+
+# Dev
+alias nr='npm run'
+
+# Network
+alias ts='tailscale'
+
+# Misc
+alias c='clear'
+alias h='history'
+alias grep='grep --color=auto'
+alias df='df -h'
+alias du='du -h'
