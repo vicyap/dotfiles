@@ -138,6 +138,8 @@ skills CLI.
   one connection for the whole task: reuse the MCP's existing connection, and
   when driving CDP directly, open one long-lived session and send every command
   through it. Never open a fresh connection per command.
+- 1Password CLI asks Victor to authorize every agent tool call, so batch all
+  `op` work for a task into one Bash call.
 - On macOS, use the Safari MCP (`safari-mcp`, `/usr/bin/safaridriver --mcp`)
   for Safari rendering and compatibility checks. It sees only the tabs it
   creates, not the user's open tabs, so open the URL with `create_tab`.
