@@ -11,16 +11,17 @@ func collectDisk() string {
 		return ""
 	}
 
-	freeBytes := uint64(stat.Bavail) * uint64(stat.Bsize)
+	return formatBytes(uint64(stat.Bavail) * uint64(stat.Bsize))
+}
 
-	switch {
-	case freeBytes >= 1<<40:
-		return fmt.Sprintf("%.0fTi", float64(freeBytes)/float64(1<<40))
-	case freeBytes >= 1<<30:
-		return fmt.Sprintf("%.0fGi", float64(freeBytes)/float64(1<<30))
-	case freeBytes >= 1<<20:
-		return fmt.Sprintf("%.0fMi", float64(freeBytes)/float64(1<<20))
-	default:
-		return fmt.Sprintf("%.0fKi", float64(freeBytes)/float64(1<<10))
+// formatBytes renders n in SI units with at most three digits.
+func formatBytes(n uint64) string {
+	v := float64(n) / 1000
+	units := "KMGTP"
+	i := 0
+	for v >= 999.5 && i < len(units)-1 {
+		v /= 1000
+		i++
 	}
+	return fmt.Sprintf("%.0f%c", v, units[i])
 }
