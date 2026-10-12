@@ -116,6 +116,7 @@
       }
     }
   },
+  "feedbackDrafts": "off",
   "effortLevel": "medium",
   "modelSettings": {
     "claude-fable-5": {
@@ -136,6 +137,7 @@
   },
   "autoCompactWindow": 500000,
   "advisorModel": "fable",
+  "askUserQuestionTimeout": "never",
   "pluginConfigs": {
     "agents-md@builtin": {
       "options": {
