@@ -1,13 +1,13 @@
 [tools]
 # Languages
-go = "1.26"
-node = "24"
-python = "3.14"
+go = "1.27"
+node = "26"
+python = "3.15"
 bun = "latest"
 deno = "latest"
 uv = "latest"
-erlang = "28"
-elixir = "1.19"
+erlang = "29"
+elixir = "1.20"
 
 # CLI tools (starship, delta, atuin, lazygit, lazydocker, fastfetch, dust,
 # procs, sd, gping, yq, jless, just, glow, doggo) are now provided by

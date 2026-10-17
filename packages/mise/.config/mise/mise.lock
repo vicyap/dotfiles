@@ -97,233 +97,236 @@ checksum = "sha256:a0c3101b4158d1dfb7d6a78a7bf0f3de80c96bb423c152beec8beb22786f2
 url = "https://dl.deno.land/release/v2.9.7/deno-x86_64-pc-windows-msvc.zip"
 
 [[tools.depot]]
-version = "2.102.21"
+version = "2.102.23"
 backend = "github:depot/cli"
 
 [tools.depot."platforms.linux-arm64"]
-checksum = "sha256:1be39277423f72d9f54253033bac87cee124caae55f4108701cab5e1a8abedd7"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271488"
+checksum = "sha256:9038877942a67c2ed7d17b99aad964122c4ccbd3b459d658b1d4543abc1590f0"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292312"
 
 [tools.depot."platforms.linux-arm64-musl"]
-checksum = "sha256:1be39277423f72d9f54253033bac87cee124caae55f4108701cab5e1a8abedd7"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271488"
+checksum = "sha256:9038877942a67c2ed7d17b99aad964122c4ccbd3b459d658b1d4543abc1590f0"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292312"
 
 [tools.depot."platforms.linux-x64"]
-checksum = "sha256:aa2e0c98d618371d9af318d5c9fd9cf4c158e2195fd35fc58e6cbc747f422373"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271483"
+checksum = "sha256:b32e349ec72e077ec18f431cf3a95451b9363becc8a9a9daad5e356abf0cd31f"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292314"
 
 [tools.depot."platforms.linux-x64-baseline"]
-checksum = "sha256:aa2e0c98d618371d9af318d5c9fd9cf4c158e2195fd35fc58e6cbc747f422373"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271483"
+checksum = "sha256:b32e349ec72e077ec18f431cf3a95451b9363becc8a9a9daad5e356abf0cd31f"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292314"
 
 [tools.depot."platforms.linux-x64-musl"]
-checksum = "sha256:aa2e0c98d618371d9af318d5c9fd9cf4c158e2195fd35fc58e6cbc747f422373"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271483"
+checksum = "sha256:b32e349ec72e077ec18f431cf3a95451b9363becc8a9a9daad5e356abf0cd31f"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292314"
 
 [tools.depot."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:aa2e0c98d618371d9af318d5c9fd9cf4c158e2195fd35fc58e6cbc747f422373"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_linux_amd64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271483"
+checksum = "sha256:b32e349ec72e077ec18f431cf3a95451b9363becc8a9a9daad5e356abf0cd31f"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292314"
 
 [tools.depot."platforms.macos-arm64"]
-checksum = "sha256:1f20e704302745d8999687290c15102908493c2c4bcf11cd448a2217340627e0"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_darwin_arm64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271491"
+checksum = "sha256:e7bf7b5c82993c9e0bac0c8bf6070e0bc33746ce96815399bac82ade12e9ce59"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292323"
 
 [tools.depot."platforms.macos-x64"]
-checksum = "sha256:0292b88421e0a2a92904fa1a2425588fff2f96bc721fa0a7140efcd5a9a923f2"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271479"
+checksum = "sha256:95d4a02e7ce9fc91bb24c2eaf8f348bfbd89c636bbb390ec98b954e2fbe66578"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292308"
 
 [tools.depot."platforms.macos-x64-baseline"]
-checksum = "sha256:0292b88421e0a2a92904fa1a2425588fff2f96bc721fa0a7140efcd5a9a923f2"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_darwin_amd64.tar.gz"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271479"
+checksum = "sha256:95d4a02e7ce9fc91bb24c2eaf8f348bfbd89c636bbb390ec98b954e2fbe66578"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292308"
 
 [tools.depot."platforms.windows-x64"]
-checksum = "sha256:7118df63b8246b5ba58db856d95247a3448c990c3ee21589e4b338d5bceb6b99"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_windows_amd64.zip"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271485"
+checksum = "sha256:97e39d1a748f7a31207b37b98a87418a002f292275f2a90c9a2e725ef9cbe860"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_windows_amd64.zip"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292322"
 
 [tools.depot."platforms.windows-x64-baseline"]
-checksum = "sha256:7118df63b8246b5ba58db856d95247a3448c990c3ee21589e4b338d5bceb6b99"
-url = "https://github.com/depot/cli/releases/download/v2.102.21/depot_2.102.21_windows_amd64.zip"
-url_api = "https://api.github.com/repos/depot/cli/releases/assets/638271485"
+checksum = "sha256:97e39d1a748f7a31207b37b98a87418a002f292275f2a90c9a2e725ef9cbe860"
+url = "https://github.com/depot/cli/releases/download/v2.102.23/depot_2.102.23_windows_amd64.zip"
+url_api = "https://api.github.com/repos/depot/cli/releases/assets/642292322"
 
 [[tools.elixir]]
-version = "1.19.6-otp-28"
+version = "1.20.4-otp-29"
 backend = "core:elixir"
 
 [tools.elixir."platforms.linux-arm64"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.linux-arm64-musl"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.linux-x64"]
-checksum = "blake3:5b048ca9f3342a934612935f4c32c3b5e9013e46a11dee788cac7b70dbeddbd4"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "blake3:cfddef5f170efc103420c845ee627c6eb80f9b61c25691d50bc99fec0738b560"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.linux-x64-baseline"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.linux-x64-musl"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.macos-arm64"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.macos-x64"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.macos-x64-baseline"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.windows-x64"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [tools.elixir."platforms.windows-x64-baseline"]
-checksum = "sha256:d69db87541e1e5f4fa3f803353c01a30d4ef0e236c6bf53128b2bbed8b0b9b7e"
-url = "https://builds.hex.pm/builds/elixir/v1.19.6-otp-28.zip"
+checksum = "sha256:7863c546cda13fecc949e562e326042451dacf8fd8698a36783cb71eeb223b46"
+url = "https://builds.hex.pm/builds/elixir/v1.20.4-otp-29.zip"
 
 [[tools.erlang]]
-version = "28.5"
+version = "29.1.2"
 backend = "core:erlang"
 
 [tools.erlang."platforms.linux-arm64-musl"]
-checksum = "sha256:2c7e8ca23e6864eb20eff5d44738bfa123aed8cd21ed6d98e533d751eee28d9c"
-url = "https://github.com/erlang/otp/releases/download/OTP-28.5/otp_src_28.5.tar.gz"
-url_api = "https://api.github.com/repos/erlang/otp/releases/assets/403501100"
+checksum = "sha256:c79966661e35fe4aff8ec003db63682e3b33b10b672220d51bf93c0a9244b049"
+url = "https://github.com/erlang/otp/releases/download/OTP-29.1.2/otp_src_29.1.2.tar.gz"
+url_api = "https://api.github.com/repos/erlang/otp/releases/assets/640997755"
+install = "source"
 
 [tools.erlang."platforms.linux-x64-musl"]
-checksum = "sha256:2c7e8ca23e6864eb20eff5d44738bfa123aed8cd21ed6d98e533d751eee28d9c"
-url = "https://github.com/erlang/otp/releases/download/OTP-28.5/otp_src_28.5.tar.gz"
-url_api = "https://api.github.com/repos/erlang/otp/releases/assets/403501100"
+checksum = "sha256:c79966661e35fe4aff8ec003db63682e3b33b10b672220d51bf93c0a9244b049"
+url = "https://github.com/erlang/otp/releases/download/OTP-29.1.2/otp_src_29.1.2.tar.gz"
+url_api = "https://api.github.com/repos/erlang/otp/releases/assets/640997755"
+install = "source"
 
 [tools.erlang."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:2c7e8ca23e6864eb20eff5d44738bfa123aed8cd21ed6d98e533d751eee28d9c"
-url = "https://github.com/erlang/otp/releases/download/OTP-28.5/otp_src_28.5.tar.gz"
-url_api = "https://api.github.com/repos/erlang/otp/releases/assets/403501100"
+checksum = "sha256:c79966661e35fe4aff8ec003db63682e3b33b10b672220d51bf93c0a9244b049"
+url = "https://github.com/erlang/otp/releases/download/OTP-29.1.2/otp_src_29.1.2.tar.gz"
+url_api = "https://api.github.com/repos/erlang/otp/releases/assets/640997755"
+install = "source"
 
 [tools.erlang."platforms.macos-arm64"]
-checksum = "sha256:f365335cf6c705b52557f4d3a4c4058e2e689a0e58d822160688d0cc8a736b92"
-url = "https://github.com/erlef/otp_builds/releases/download/OTP-28.5/otp-aarch64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/erlef/otp_builds/releases/assets/403427927"
+checksum = "sha256:579af3bb043e0692503f7f24c6e65b620bdf1802a13567a7247d1d18f1ec5470"
+url = "https://github.com/erlef/otp_builds/releases/download/OTP-29.1.2/otp-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/erlef/otp_builds/releases/assets/640679208"
 
 [tools.erlang."platforms.macos-x64"]
-checksum = "sha256:ded695f1d49c9e251b2afa0205dfdcb8ee16b4432aa1d5ffb38c6ee155bf7f6f"
-url = "https://github.com/erlef/otp_builds/releases/download/OTP-28.5/otp-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/erlef/otp_builds/releases/assets/403435001"
+checksum = "sha256:bac2e78f48c30ecfdbe2b2ea219856f0225530f978b344ef8bbd6a8f7e5f58c0"
+url = "https://github.com/erlef/otp_builds/releases/download/OTP-29.1.2/otp-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/erlef/otp_builds/releases/assets/640726802"
 
 [tools.erlang."platforms.macos-x64-baseline"]
-checksum = "sha256:ded695f1d49c9e251b2afa0205dfdcb8ee16b4432aa1d5ffb38c6ee155bf7f6f"
-url = "https://github.com/erlef/otp_builds/releases/download/OTP-28.5/otp-x86_64-apple-darwin.tar.gz"
-url_api = "https://api.github.com/repos/erlef/otp_builds/releases/assets/403435001"
+checksum = "sha256:bac2e78f48c30ecfdbe2b2ea219856f0225530f978b344ef8bbd6a8f7e5f58c0"
+url = "https://github.com/erlef/otp_builds/releases/download/OTP-29.1.2/otp-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/erlef/otp_builds/releases/assets/640726802"
 
 [tools.erlang."platforms.windows-x64"]
-checksum = "sha256:d3227232221e68aa8790666e915604269d5471b61792a5d78a043ac653351140"
-url = "https://github.com/erlang/otp/releases/download/OTP-28.5/otp_win64_28.5.zip"
-url_api = "https://api.github.com/repos/erlang/otp/releases/assets/403511532"
+checksum = "sha256:4efe9772a84c6c1ef75377e9326815584958776c905f2bf687b62509e2d809c0"
+url = "https://github.com/erlang/otp/releases/download/OTP-29.1.2/otp_win64_29.1.2.zip"
+url_api = "https://api.github.com/repos/erlang/otp/releases/assets/641103480"
 
 [tools.erlang."platforms.windows-x64-baseline"]
-checksum = "sha256:d3227232221e68aa8790666e915604269d5471b61792a5d78a043ac653351140"
-url = "https://github.com/erlang/otp/releases/download/OTP-28.5/otp_win64_28.5.zip"
-url_api = "https://api.github.com/repos/erlang/otp/releases/assets/403511532"
+checksum = "sha256:4efe9772a84c6c1ef75377e9326815584958776c905f2bf687b62509e2d809c0"
+url = "https://github.com/erlang/otp/releases/download/OTP-29.1.2/otp_win64_29.1.2.zip"
+url_api = "https://api.github.com/repos/erlang/otp/releases/assets/641103480"
 
 [[tools.erlang]]
-version = "28.5"
+version = "29.1.2"
 backend = "core:erlang"
 
 [tools.erlang.options]
 precompiled_os = "ubuntu-24.04"
 
 [tools.erlang."platforms.linux-arm64"]
-checksum = "sha256:78069d75d6075bddf88e79d6d0f833a3f8d50ba98c404b33d154ee1d3ceaebd8"
-url = "https://builds.hex.pm/builds/otp/arm64/ubuntu-24.04/OTP-28.5.tar.gz"
+checksum = "sha256:5d344f2ef455cfa15ad3112ce3aaecc8fa0d97532b2f106df46bc1701bc02c27"
+url = "https://builds.hex.pm/builds/otp/arm64/ubuntu-24.04/OTP-29.1.2.tar.gz"
 
 [tools.erlang."platforms.linux-x64"]
-checksum = "sha256:dc8038a4a8e7a1107e0c959eaeef421d8960f7a70a19d045cac3e04f67d41a81"
-url = "https://builds.hex.pm/builds/otp/amd64/ubuntu-24.04/OTP-28.5.tar.gz"
+checksum = "sha256:2cfca446976fc61962585a1c77e5d11ddb6f5fed83e84668a2c4acfaad60d22e"
+url = "https://builds.hex.pm/builds/otp/amd64/ubuntu-24.04/OTP-29.1.2.tar.gz"
 
 [tools.erlang."platforms.linux-x64-baseline"]
-checksum = "sha256:dc8038a4a8e7a1107e0c959eaeef421d8960f7a70a19d045cac3e04f67d41a81"
-url = "https://builds.hex.pm/builds/otp/amd64/ubuntu-24.04/OTP-28.5.tar.gz"
+checksum = "sha256:2cfca446976fc61962585a1c77e5d11ddb6f5fed83e84668a2c4acfaad60d22e"
+url = "https://builds.hex.pm/builds/otp/amd64/ubuntu-24.04/OTP-29.1.2.tar.gz"
 
 [[tools.flyctl]]
-version = "0.4.117"
+version = "0.4.118"
 backend = "aqua:superfly/flyctl"
 
 [tools.flyctl."platforms.linux-arm64"]
-checksum = "sha256:2f7371ba710b62c0dd44aa2890e9e3cc2859b67cba948e5f2dc251146db62cb8"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_Linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993652"
+checksum = "sha256:8b9ae409107d5e268895214e773881904a81d56b9593c14c6b41639f05e25faa"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378524"
 
 [tools.flyctl."platforms.linux-arm64-musl"]
-checksum = "sha256:2f7371ba710b62c0dd44aa2890e9e3cc2859b67cba948e5f2dc251146db62cb8"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_Linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993652"
+checksum = "sha256:8b9ae409107d5e268895214e773881904a81d56b9593c14c6b41639f05e25faa"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_Linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378524"
 
 [tools.flyctl."platforms.linux-x64"]
-checksum = "sha256:fe4ec2dbd1d125578e2902f70931fca6670e325cfb658706324492d681986f2c"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993655"
+checksum = "sha256:0f2fabbb29904a7bac8bd96009314d26751084c33e098fcc393e2dac6c472f60"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378522"
 
 [tools.flyctl."platforms.linux-x64-baseline"]
-checksum = "sha256:fe4ec2dbd1d125578e2902f70931fca6670e325cfb658706324492d681986f2c"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993655"
+checksum = "sha256:0f2fabbb29904a7bac8bd96009314d26751084c33e098fcc393e2dac6c472f60"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378522"
 
 [tools.flyctl."platforms.linux-x64-musl"]
-checksum = "sha256:fe4ec2dbd1d125578e2902f70931fca6670e325cfb658706324492d681986f2c"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993655"
+checksum = "sha256:0f2fabbb29904a7bac8bd96009314d26751084c33e098fcc393e2dac6c472f60"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378522"
 
 [tools.flyctl."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:fe4ec2dbd1d125578e2902f70931fca6670e325cfb658706324492d681986f2c"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_Linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993655"
+checksum = "sha256:0f2fabbb29904a7bac8bd96009314d26751084c33e098fcc393e2dac6c472f60"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_Linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378522"
 
 [tools.flyctl."platforms.macos-arm64"]
-checksum = "sha256:9004d6ef13d0a1469be36c5c15416351e014d731dd9a9e0c12269cf02c778682"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_macOS_arm64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993663"
+checksum = "sha256:ce319226af327b69cd00ea1a05a9b90108278e17f89a54e8e3830c409e099287"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_macOS_arm64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378520"
 
 [tools.flyctl."platforms.macos-x64"]
-checksum = "sha256:637b435466b977ae42a43bdaa65568974775719ebcab1edb1c4647e3583f21a7"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_macOS_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993662"
+checksum = "sha256:1ee5049774d3b4866dac7b65715005e6e6d86c539096290e1824892760cf9547"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_macOS_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378523"
 
 [tools.flyctl."platforms.macos-x64-baseline"]
-checksum = "sha256:637b435466b977ae42a43bdaa65568974775719ebcab1edb1c4647e3583f21a7"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_macOS_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993662"
+checksum = "sha256:1ee5049774d3b4866dac7b65715005e6e6d86c539096290e1824892760cf9547"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_macOS_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378523"
 
 [tools.flyctl."platforms.windows-x64"]
-checksum = "sha256:fa092ed734bb36a3df0ce606f071a7f14ccbfac312a32535e76cf0ff3eda889e"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_Windows_x86_64.zip"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993885"
+checksum = "sha256:a630dce804b7a2b9dcee2bdf150b01792ab381982ed3c9820f1e1ffeb481bae2"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_Windows_x86_64.zip"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378661"
 
 [tools.flyctl."platforms.windows-x64-baseline"]
-checksum = "sha256:fa092ed734bb36a3df0ce606f071a7f14ccbfac312a32535e76cf0ff3eda889e"
-url = "https://github.com/superfly/flyctl/releases/download/v0.4.117/flyctl_0.4.117_Windows_x86_64.zip"
-url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/637993885"
+checksum = "sha256:a630dce804b7a2b9dcee2bdf150b01792ab381982ed3c9820f1e1ffeb481bae2"
+url = "https://github.com/superfly/flyctl/releases/download/v0.4.118/flyctl_0.4.118_Windows_x86_64.zip"
+url_api = "https://api.github.com/repos/superfly/flyctl/releases/assets/641378661"
 
 [[tools.gcloud]]
 version = "589.0.0"
@@ -363,100 +366,100 @@ url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-589.0.0
 url = "https://storage.googleapis.com/cloud-sdk-release/google-cloud-sdk-589.0.0-windows-x86_64-bundled-python.zip"
 
 [[tools.go]]
-version = "1.26.9"
+version = "1.27.2"
 backend = "core:go"
 
 [tools.go."platforms.linux-arm64"]
-checksum = "sha256:4a97373d49fcacdcf3694fea368a500b00ee3e963974f3e7514132717632f052"
-url = "https://dl.google.com/go/go1.26.9.linux-arm64.tar.gz"
+checksum = "sha256:94f3e30b8e374bc285e7dadc11e0865726b9bc6e85b841ccceaabc0214c6b7c8"
+url = "https://dl.google.com/go/go1.27.2.linux-arm64.tar.gz"
 
 [tools.go."platforms.linux-arm64-musl"]
-checksum = "sha256:4a97373d49fcacdcf3694fea368a500b00ee3e963974f3e7514132717632f052"
-url = "https://dl.google.com/go/go1.26.9.linux-arm64.tar.gz"
+checksum = "sha256:94f3e30b8e374bc285e7dadc11e0865726b9bc6e85b841ccceaabc0214c6b7c8"
+url = "https://dl.google.com/go/go1.27.2.linux-arm64.tar.gz"
 
 [tools.go."platforms.linux-x64"]
-checksum = "sha256:42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d"
-url = "https://dl.google.com/go/go1.26.9.linux-amd64.tar.gz"
+checksum = "sha256:ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5"
+url = "https://dl.google.com/go/go1.27.2.linux-amd64.tar.gz"
 
 [tools.go."platforms.linux-x64-baseline"]
-checksum = "sha256:42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d"
-url = "https://dl.google.com/go/go1.26.9.linux-amd64.tar.gz"
+checksum = "sha256:ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5"
+url = "https://dl.google.com/go/go1.27.2.linux-amd64.tar.gz"
 
 [tools.go."platforms.linux-x64-musl"]
-checksum = "sha256:42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d"
-url = "https://dl.google.com/go/go1.26.9.linux-amd64.tar.gz"
+checksum = "sha256:ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5"
+url = "https://dl.google.com/go/go1.27.2.linux-amd64.tar.gz"
 
 [tools.go."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d"
-url = "https://dl.google.com/go/go1.26.9.linux-amd64.tar.gz"
+checksum = "sha256:ecbadb99091a3f46e31f5f934b068b1864eafa7995211b39eaddf76996045fe5"
+url = "https://dl.google.com/go/go1.27.2.linux-amd64.tar.gz"
 
 [tools.go."platforms.macos-arm64"]
-checksum = "sha256:f9bb7c0a02506c5d9bf0d1eb1f7ee6c7684f844ae49558308a0427b830e022cc"
-url = "https://dl.google.com/go/go1.26.9.darwin-arm64.tar.gz"
+checksum = "sha256:76812b213b1b2302c978d28fa52fa92d541704b9e7d9d5db8002c50e4018c4c5"
+url = "https://dl.google.com/go/go1.27.2.darwin-arm64.tar.gz"
 
 [tools.go."platforms.macos-x64"]
-checksum = "sha256:00c29e3d4c8562f547410daa18d2959b641bd691ab00c4a525ea817a0253d4bd"
-url = "https://dl.google.com/go/go1.26.9.darwin-amd64.tar.gz"
+checksum = "sha256:587b59182488b23aa6e5fc25110405a3e0e5b38ed2f5b2f46ed13c32aee356fe"
+url = "https://dl.google.com/go/go1.27.2.darwin-amd64.tar.gz"
 
 [tools.go."platforms.macos-x64-baseline"]
-checksum = "sha256:00c29e3d4c8562f547410daa18d2959b641bd691ab00c4a525ea817a0253d4bd"
-url = "https://dl.google.com/go/go1.26.9.darwin-amd64.tar.gz"
+checksum = "sha256:587b59182488b23aa6e5fc25110405a3e0e5b38ed2f5b2f46ed13c32aee356fe"
+url = "https://dl.google.com/go/go1.27.2.darwin-amd64.tar.gz"
 
 [tools.go."platforms.windows-x64"]
-checksum = "sha256:d722201a9c0c086d1610e111c48203009af690892ed708072bd5ae20160e7a59"
-url = "https://dl.google.com/go/go1.26.9.windows-amd64.zip"
+checksum = "sha256:1314008898bd40df77af4b014f777f08873dbdfbcd3d92308728ee03304fe04f"
+url = "https://dl.google.com/go/go1.27.2.windows-amd64.zip"
 
 [tools.go."platforms.windows-x64-baseline"]
-checksum = "sha256:d722201a9c0c086d1610e111c48203009af690892ed708072bd5ae20160e7a59"
-url = "https://dl.google.com/go/go1.26.9.windows-amd64.zip"
+checksum = "sha256:1314008898bd40df77af4b014f777f08873dbdfbcd3d92308728ee03304fe04f"
+url = "https://dl.google.com/go/go1.27.2.windows-amd64.zip"
 
 [[tools.node]]
-version = "24.22.0"
+version = "26.12.0"
 backend = "core:node"
 
 [tools.node."platforms.linux-arm64"]
-checksum = "sha256:b7e7991d5407815adfa74a2a9cd4db683552c8ce32ff4a295c22e972849c3f5d"
-url = "https://nodejs.org/dist/v24.22.0/node-v24.22.0-linux-arm64.tar.gz"
+checksum = "sha256:ec53c915c3fdd8786c5685abd25ae3fe9fba0692307f9811d7caaadea1bcaf03"
+url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-arm64.tar.gz"
 
 [tools.node."platforms.linux-arm64-musl"]
-checksum = "sha256:6812a53e5b37fbc32476d6c3511038d2bc3bbd1b3bb348d6c04dd2c70a1c8f4a"
-url = "https://unofficial-builds.nodejs.org/download/release/v24.22.0/node-v24.22.0-linux-arm64-musl.tar.gz"
+checksum = "sha256:2e70b6d5adbae94546c4d7e01de7b64c50bf8d3dbfaad2bb0774942e9da902b8"
+url = "https://unofficial-builds.nodejs.org/download/release/v26.12.0/node-v26.12.0-linux-arm64-musl.tar.gz"
 
 [tools.node."platforms.linux-x64"]
-checksum = "sha256:28ea0a438de9a13bd7891fd758eee6c7819ee8af5442dfd8d45bd65e56d4228c"
-url = "https://nodejs.org/dist/v24.22.0/node-v24.22.0-linux-x64.tar.gz"
+checksum = "sha256:d9f88af72ad34f7ddf8e67289829f1698f54b6254f7d4f54b7453117ff1a3d2c"
+url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-x64.tar.gz"
 
 [tools.node."platforms.linux-x64-baseline"]
-checksum = "sha256:28ea0a438de9a13bd7891fd758eee6c7819ee8af5442dfd8d45bd65e56d4228c"
-url = "https://nodejs.org/dist/v24.22.0/node-v24.22.0-linux-x64.tar.gz"
+checksum = "sha256:d9f88af72ad34f7ddf8e67289829f1698f54b6254f7d4f54b7453117ff1a3d2c"
+url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-x64.tar.gz"
 
 [tools.node."platforms.linux-x64-musl"]
-checksum = "sha256:72cd253fbe0c2539d52208ed098d47b78ff2c32ba76295d8e6b5b0ce067dcba5"
-url = "https://unofficial-builds.nodejs.org/download/release/v24.22.0/node-v24.22.0-linux-x64-musl.tar.gz"
+checksum = "sha256:48ba1cdf21e684f13f38b6295f43bfea951f1ffd008b4cf93361c966b33f6938"
+url = "https://unofficial-builds.nodejs.org/download/release/v26.12.0/node-v26.12.0-linux-x64-musl.tar.gz"
 
 [tools.node."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:72cd253fbe0c2539d52208ed098d47b78ff2c32ba76295d8e6b5b0ce067dcba5"
-url = "https://unofficial-builds.nodejs.org/download/release/v24.22.0/node-v24.22.0-linux-x64-musl.tar.gz"
+checksum = "sha256:48ba1cdf21e684f13f38b6295f43bfea951f1ffd008b4cf93361c966b33f6938"
+url = "https://unofficial-builds.nodejs.org/download/release/v26.12.0/node-v26.12.0-linux-x64-musl.tar.gz"
 
 [tools.node."platforms.macos-arm64"]
-checksum = "sha256:6a9724d9b50a5f22b4816cded441b5a8d9ddae546191a5e5b7efa5a5e2ee26d5"
-url = "https://nodejs.org/dist/v24.22.0/node-v24.22.0-darwin-arm64.tar.gz"
+checksum = "sha256:2a154d4a5458930e0a2d6a1ecf64eddf5a2b3e1c13636b609c2ecb042e8c4553"
+url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-darwin-arm64.tar.gz"
 
 [tools.node."platforms.macos-x64"]
-checksum = "sha256:495e3f273c645f3c4677d438304cdfc701729ea5dec5728f5c8e76a2dece4b91"
-url = "https://nodejs.org/dist/v24.22.0/node-v24.22.0-darwin-x64.tar.gz"
+checksum = "sha256:878ecede191c7abc1bff01d3fb81f7ed81aa1161040dba18776b8ff8593614b1"
+url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-darwin-x64.tar.gz"
 
 [tools.node."platforms.macos-x64-baseline"]
-checksum = "sha256:495e3f273c645f3c4677d438304cdfc701729ea5dec5728f5c8e76a2dece4b91"
-url = "https://nodejs.org/dist/v24.22.0/node-v24.22.0-darwin-x64.tar.gz"
+checksum = "sha256:878ecede191c7abc1bff01d3fb81f7ed81aa1161040dba18776b8ff8593614b1"
+url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-darwin-x64.tar.gz"
 
 [tools.node."platforms.windows-x64"]
-checksum = "sha256:f9683a19877e12a9b167305c8db71040d812876359de21f0d2e97c3f321f80c3"
-url = "https://nodejs.org/dist/v24.22.0/node-v24.22.0-win-x64.zip"
+checksum = "sha256:50efaf01a08c520b4bbe499c09a8c5a5c370002c419c0d9da2c6815d3066a453"
+url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-win-x64.zip"
 
 [tools.node."platforms.windows-x64-baseline"]
-checksum = "sha256:f9683a19877e12a9b167305c8db71040d812876359de21f0d2e97c3f321f80c3"
-url = "https://nodejs.org/dist/v24.22.0/node-v24.22.0-win-x64.zip"
+checksum = "sha256:50efaf01a08c520b4bbe499c09a8c5a5c370002c419c0d9da2c6815d3066a453"
+url = "https://nodejs.org/dist/v26.12.0/node-v26.12.0-win-x64.zip"
 
 [[tools."npm:@tigrisdata/cli"]]
 version = "3.17.0"
@@ -512,122 +515,122 @@ version = "1.1.414"
 backend = "pipx:pyright"
 
 [[tools.python]]
-version = "3.14.8"
+version = "3.15.0"
 backend = "core:python"
 
 [tools.python."platforms.linux-arm64"]
-checksum = "sha256:d8ae14f303d3971431184cf423ae5467202de2bc19bf6491a490250b87647d4b"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:064778ca701efc4c8366d0b235a2a0f5dbe14d921aeb2ef4f5c7b93e5a75cbd0"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-arm64-musl"]
-checksum = "sha256:7b6714675192dc381e14de4f2615c73d8ce5c15775562f4843282c34c3df8b6c"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-aarch64-unknown-linux-musl-install_only_stripped.tar.gz"
+checksum = "sha256:d6064f89c264cce8444e4eb8c2d5041827fe20bf0836b2042a91807ff8a9596d"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-aarch64-unknown-linux-musl-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-x64"]
-checksum = "blake3:7e1bb20ae784f24f5ecfb709d2eeb99cab93e9e7dbace2c4fb0905e77934b1ad"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "blake3:887ee1b5da8353b32ccd1bdc2bac6075628ab0862517b58917ef046a78eb2435"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-x64-baseline"]
-checksum = "sha256:d8faa1b588506b9e3e5a3f57807bb056d534a1641a6b10d15b6ea3f0b413b960"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:69740dcd9b3480b3d53760f2d3b75582adb14fa54434628dea32480ddede542a"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-x64-musl"]
-checksum = "sha256:6ee5218694c3ddf1098aa306bb01b621d14c0bca4134b317614d9daa99f16ba2"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-x86_64-unknown-linux-musl-install_only_stripped.tar.gz"
+checksum = "sha256:e33aa97230e4a72c108a82365fd3d14a28d04a8451d15d0e9bc2b0521d2fec11"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-unknown-linux-musl-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:6ee5218694c3ddf1098aa306bb01b621d14c0bca4134b317614d9daa99f16ba2"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-x86_64-unknown-linux-musl-install_only_stripped.tar.gz"
+checksum = "sha256:e33aa97230e4a72c108a82365fd3d14a28d04a8451d15d0e9bc2b0521d2fec11"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-unknown-linux-musl-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.macos-arm64"]
-checksum = "sha256:994adadc202c5df0b4570192cc9a70e3f2c131e512f4a125c56efa8562f44b28"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-aarch64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:b4ab2009803cef142e4ebf2ebef225f6875f83cc35caf4eefb437aa9b2b76783"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-aarch64-apple-darwin-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.macos-x64"]
-checksum = "sha256:f0137337ecf6234b30c9c955219dae2d71e1a00387c4d204d6c6929e24bf9a90"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-x86_64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:4760e8fb2821441c0dbc72be49a25400c6ae90be4daa7e2a49617ed09f6a2919"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-apple-darwin-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.macos-x64-baseline"]
-checksum = "sha256:f0137337ecf6234b30c9c955219dae2d71e1a00387c4d204d6c6929e24bf9a90"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-x86_64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:4760e8fb2821441c0dbc72be49a25400c6ae90be4daa7e2a49617ed09f6a2919"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-apple-darwin-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.windows-x64"]
-checksum = "sha256:dce851f280b986764037bd952d40819e94ccceb08ac914004123f43ce17f4095"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+checksum = "sha256:743d2269e74a98f7c4281dbc2e8710c171be1965693720aac818ff0157e4d965"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.windows-x64-baseline"]
-checksum = "sha256:dce851f280b986764037bd952d40819e94ccceb08ac914004123f43ce17f4095"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.14.8+20261013-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+checksum = "sha256:743d2269e74a98f7c4281dbc2e8710c171be1965693720aac818ff0157e4d965"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.15.0+20261013-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [[tools.stripe]]
-version = "1.53.1"
+version = "1.54.0"
 backend = "aqua:stripe/stripe-cli"
 
 [tools.stripe."platforms.linux-arm64"]
-checksum = "sha256:b6e83f779e7df52b46397c7d39f71b1de6d8920239861a6eaa0da14c24e0a3c6"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619806636"
+checksum = "sha256:1a5fd5a7609ba71bed2bbe20115954b25cf2d36b690b18331e790f4e4882a72a"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648202433"
 
 [tools.stripe."platforms.linux-arm64-musl"]
-checksum = "sha256:b6e83f779e7df52b46397c7d39f71b1de6d8920239861a6eaa0da14c24e0a3c6"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_linux_arm64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619806636"
+checksum = "sha256:1a5fd5a7609ba71bed2bbe20115954b25cf2d36b690b18331e790f4e4882a72a"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648202433"
 
 [tools.stripe."platforms.linux-x64"]
-checksum = "sha256:032fe0b849a9d6a222488bc846445bafeae993af1026b78a8121d02321ca1fd1"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619806642"
+checksum = "sha256:7e8b0693b56b3690bf0bd5d50f1f8a96bd8b84ad4efd1f08c493220b191e074b"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648202447"
 
 [tools.stripe."platforms.linux-x64-baseline"]
-checksum = "sha256:032fe0b849a9d6a222488bc846445bafeae993af1026b78a8121d02321ca1fd1"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619806642"
+checksum = "sha256:7e8b0693b56b3690bf0bd5d50f1f8a96bd8b84ad4efd1f08c493220b191e074b"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648202447"
 
 [tools.stripe."platforms.linux-x64-musl"]
-checksum = "sha256:032fe0b849a9d6a222488bc846445bafeae993af1026b78a8121d02321ca1fd1"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619806642"
+checksum = "sha256:7e8b0693b56b3690bf0bd5d50f1f8a96bd8b84ad4efd1f08c493220b191e074b"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648202447"
 
 [tools.stripe."platforms.linux-x64-musl-baseline"]
-checksum = "sha256:032fe0b849a9d6a222488bc846445bafeae993af1026b78a8121d02321ca1fd1"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_linux_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619806642"
+checksum = "sha256:7e8b0693b56b3690bf0bd5d50f1f8a96bd8b84ad4efd1f08c493220b191e074b"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_linux_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648202447"
 
 [tools.stripe."platforms.macos-arm64"]
-checksum = "sha256:bbc6ff9da6242912049ef44eca293a028130884a8ea7d9345e8ae09460319bc6"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_mac-os_arm64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619805172"
+checksum = "sha256:3595a68591ed694bd0a183a6ba94aeb79c00f8e2062649065674baa450c1caee"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_mac-os_arm64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648200086"
 
 [tools.stripe."platforms.macos-x64"]
-checksum = "sha256:bd97c48caae0b116a84ad0e5bd9e5de4d3986b45f2445bba4ff13f0234c905f2"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_mac-os_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619805173"
+checksum = "sha256:f7096210c203a0a28a35735f0b4cb047ebe842c3fba21a4aff2967f1e6e3c2ad"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_mac-os_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648200092"
 
 [tools.stripe."platforms.macos-x64-baseline"]
-checksum = "sha256:bd97c48caae0b116a84ad0e5bd9e5de4d3986b45f2445bba4ff13f0234c905f2"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_mac-os_x86_64.tar.gz"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619805173"
+checksum = "sha256:f7096210c203a0a28a35735f0b4cb047ebe842c3fba21a4aff2967f1e6e3c2ad"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_mac-os_x86_64.tar.gz"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648200092"
 
 [tools.stripe."platforms.windows-x64"]
-checksum = "sha256:fa159ae2774d62dcfd0db8f7f8675e3274223ae3e92fae4d182f4c9cfb58fa23"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_windows_x86_64.zip"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619808109"
+checksum = "sha256:9653307aa5bf56f1fa8b8c1ca981e42b0be39af5d6ef5e5eb3686061450c7e4b"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_windows_x86_64.zip"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648202088"
 
 [tools.stripe."platforms.windows-x64-baseline"]
-checksum = "sha256:fa159ae2774d62dcfd0db8f7f8675e3274223ae3e92fae4d182f4c9cfb58fa23"
-url = "https://github.com/stripe/stripe-cli/releases/download/v1.53.1/stripe_1.53.1_windows_x86_64.zip"
-url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/619808109"
+checksum = "sha256:9653307aa5bf56f1fa8b8c1ca981e42b0be39af5d6ef5e5eb3686061450c7e4b"
+url = "https://github.com/stripe/stripe-cli/releases/download/v1.54.0/stripe_1.54.0_windows_x86_64.zip"
+url_api = "https://api.github.com/repos/stripe/stripe-cli/releases/assets/648202088"
 
 [[tools.uv]]
 version = "0.13.1"
