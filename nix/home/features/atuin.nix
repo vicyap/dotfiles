@@ -19,7 +19,18 @@ in
 {
   programs.atuin = {
     enable = true;
-    package = unstable.atuin;
+    package = if pkgs.stdenv.hostPlatform.isDarwin then
+      unstable.atuin.overrideAttrs (old: {
+        # Backport https://github.com/NixOS/nixpkgs/pull/574509 until the input includes it.
+        env = (old.env or { }) // {
+          ATUIN_E2E_BASH = unstable.lib.getExe (
+            unstable.writeShellScriptBin "bash" ''
+              NOSYSBASHRC=1 exec ${unstable.lib.getExe unstable.bashInteractive} "$@"
+            ''
+          );
+        };
+      })
+    else unstable.atuin;
     enableZshIntegration = true;
     flags = [ "--disable-up-arrow" ];
     settings = builtins.fromTOML (
