@@ -20,5 +20,8 @@ args = ["-c", "exec \"$HOME/.agents/bin/chrome-devtools-mcp\""]
 [mcp_servers.superhuman-mail]
 url = "https://mcp.mail.superhuman.com/mcp"
 
+[mcp_servers.fly]
+url = "https://mcp.fly.io"
+
 [tui]
 alternate_screen = "never"

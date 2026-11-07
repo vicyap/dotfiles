@@ -351,6 +351,9 @@ setup_claude_plugins() {
 # macOS-only, so its Codex entry lives in lima's untracked config.local.toml.
 # It needs Safari > Settings > Advanced > "Show features for web developers" and
 # Safari > Settings > Developer > "Allow remote automation and external agents".
+# fly is the hosted Fly.io MCP server; [mcp_servers.fly] in config.base.toml is
+# its Codex entry. Each machine signs in once with `claude mcp login fly` and
+# `codex mcp login fly` (add --no-browser over SSH).
 setup_claude_mcp_servers() {
     if ! has_cmd claude; then
         echo "  Skipped: claude not installed"
@@ -361,19 +364,28 @@ setup_claude_mcp_servers() {
     if [[ "$(uname -s)" == Darwin ]]; then
         register_claude_mcp_server safari-mcp /usr/bin/safaridriver --mcp
     fi
+    register_claude_mcp_server fly --transport http https://mcp.fly.io
 }
 
+# Registers a stdio command, or an HTTP server with: <name> --transport http <url>.
 register_claude_mcp_server() {
     local name="$1"
     shift
+    local add=(claude mcp add --scope user)
+    if [[ "$1" == --transport ]]; then
+        add+=(--transport "$2")
+        shift 2
+        add+=("$name" "$1")
+    else
+        add+=("$name" -- "$@")
+    fi
     if claude mcp get "$name" 2>/dev/null | grep -qF "$1"; then
         echo "  ok $name mcp"
         return 0
     fi
 
     claude mcp remove --scope user "$name" >/dev/null 2>&1 || true
-    claude mcp add --scope user "$name" -- "$@" \
-        || echo "  Skipped: $name mcp registration failed"
+    "${add[@]}" || echo "  Skipped: $name mcp registration failed"
 }
 
 # `codex update` can only self-update the official standalone layout
