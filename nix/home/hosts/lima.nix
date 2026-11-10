@@ -12,9 +12,6 @@
   # ~/.appstoreconnect/private_keys, never from this repo.
   home.packages = [ pkgs.fastlane ];
 
-  # codex is a macOS-only Homebrew cask; the alias would dangle on Linux.
-  programs.zsh.shellAliases.cx = "codex";
-
   # Weekly GC with generation expiry, via a home-manager launchd agent.
   # nix-darwin can't own this: nix/darwin/common.nix
   # sets nix.enable = false, so its nix.gc options are unavailable.

@@ -40,6 +40,7 @@ bash "$REPO/scripts/test-keep-awake.sh" || status=1
 note "temp-\$HOME symlink convergence"
 # Not `( ... ) || status=1`: bash ignores errexit inside a subshell that is part
 # of an || list, which would let every unchecked failure below pass.
+# shellcheck disable=SC2030,SC2031 # each test isolates its own HOME
 (
     set -e
     tmp="$(mktemp -d)"
@@ -101,6 +102,44 @@ note "temp-\$HOME symlink convergence"
     create_symlink "$HOME/.agents/AGENTS.md" "$HOME/unrelated"
     [[ ! -L "$HOME/unrelated" ]]
     echo "  ok fresh link, replacement backup, repeated convergence, scoped force"
+)
+rc=$?
+((rc == 0)) || status=1
+
+note "temp-\$HOME stale link pruning"
+# shellcheck disable=SC2030,SC2031 # each test isolates its own HOME
+(
+    set -e
+    tmp="$(mktemp -d)"
+    trap 'rm -rf "$tmp"' EXIT
+    export HOME="$tmp/home"
+    export DOTFILES_DIR="$tmp/repo"
+    export DOTFILES_INTERACTIVE=never
+    pk="$DOTFILES_DIR/packages"
+    mkdir -p "$HOME" "$pk/keep" "$pk/gone" "$pk/tonix"
+    touch "$pk/keep/.kept" "$pk/keep/.renamed" "$pk/gone/.gone" "$pk/tonix/.tonix"
+
+    # shellcheck source=/dev/null
+    source "$REPO/lib/symlink.sh"
+    symlink_all_packages "$pk" >/dev/null
+
+    rm "$pk/keep/.renamed"
+    rm -r "$pk/gone"
+    # shellcheck disable=SC2034 # read by is_nix_owned_package
+    NIX_OWNED_PACKAGES=(tonix)
+    # A real file at a recorded path must survive.
+    rm "$HOME/.gone"
+    echo mine >"$HOME/.gone"
+    prune_stale_package_links "$pk" >/dev/null
+
+    [[ -L "$HOME/.kept" ]]
+    [[ ! -e "$HOME/.renamed" && ! -L "$HOME/.renamed" ]]
+    [[ ! -L "$HOME/.tonix" ]]
+    [[ "$(cat "$HOME/.gone")" == mine ]]
+    manifests="$(package_manifest_dir)"
+    [[ -f "$manifests/symlinks-keep.txt" ]]
+    [[ ! -e "$manifests/symlinks-gone.txt" && ! -e "$manifests/symlinks-tonix.txt" ]]
+    echo "  ok removed files, removed packages, and Nix-owned packages are pruned; real files kept"
 )
 rc=$?
 ((rc == 0)) || status=1

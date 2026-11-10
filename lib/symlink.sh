@@ -105,10 +105,8 @@ create_symlink() {
     echo "  ✓ $target → $src"
 }
 
-# Print manifest entries that are absent from the given current list — the
-# shared previous/current diff behind every manifest-based prune (package
-# symlinks here, the skill and rule syncs in install.sh). Callers apply their
-# own removal predicate to each printed entry.
+# Print manifest entries that are absent from the given current list, for
+# sync_claude_rules in install.sh to prune.
 # Usage: manifest_stale_entries <manifest_file> [current_entry...]
 manifest_stale_entries() {
     local manifest="$1"
@@ -146,11 +144,11 @@ symlink_package() {
 
     echo "[$pkg_name]"
 
-    # Per-package manifest of the rel paths seen on the previous run, so links
-    # whose source file was deleted or renamed can be pruned (same
-    # previous/current diff pattern as sync_claude_rules in install.sh).
-    local manifest_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
-    local manifest="$manifest_dir/symlinks-$pkg_name.txt"
+    # Record what this run links so prune_stale_package_links can later
+    # remove links whose source is gone.
+    local manifest_dir manifest
+    manifest_dir="$(package_manifest_dir)"
+    manifest="$manifest_dir/symlinks-$pkg_name.txt"
     local -a current_rels=()
 
     # Find all files and symlinks, then link them into $HOME
@@ -172,68 +170,13 @@ symlink_package() {
         current_rels+=("$rel_path")
 
         if [[ -L "$file" ]]; then
-            # For symlinks: recreate the same link target at $HOME so relative
-            # paths resolve from the runtime location, not the dotfiles repo.
-            local link_target
-            link_target="$(readlink "$file")"
-            local target_dir
-            target_dir="$(dirname "$target")"
-            [[ -d "$target_dir" ]] || mkdir -p "$target_dir"
-            if [[ -L "$target" ]]; then
-                local current
-                current="$(readlink "$target")"
-                if [[ "$current" == "$link_target" ]]; then
-                    echo "  ✓ $target (already linked)"
-                    continue
-                fi
-                if is_force; then
-                    rm "$target"
-                elif is_interactive; then
-                    if ! prompt_user "Replace $target (currently → $current)?"; then
-                        echo "  ⊘ Skipped: $target"
-                        continue
-                    fi
-                    rm "$target"
-                else
-                    echo "  ⊘ Skipped (non-interactive): $target"
-                    continue
-                fi
-            elif [[ -e "$target" ]]; then
-                if is_force; then
-                    mkdir -p "$BACKUP_DIR"
-                    mv "$target" "$BACKUP_DIR/"
-                elif is_interactive; then
-                    if ! prompt_user "Backup and replace $target?"; then
-                        echo "  ⊘ Skipped: $target"
-                        continue
-                    fi
-                    mkdir -p "$BACKUP_DIR"
-                    mv "$target" "$BACKUP_DIR/"
-                else
-                    echo "  ⊘ Skipped (non-interactive): $target"
-                    continue
-                fi
-            fi
-            ln -s "$link_target" "$target"
-            echo "  ✓ $target → $link_target"
+            # A symlink in the package is recreated with the same target at
+            # $HOME, so relative targets resolve from where the link is used.
+            create_symlink "$(readlink "$file")" "$target"
         else
             create_symlink "$file" "$target"
         fi
     done < <(find "$pkg_path" \( -type f -o -type l \) -print0)
-
-    # Prune links recorded on a prior run whose source has since been deleted
-    # or renamed. Only ever removes a symlink that points into the dotfiles
-    # repo AND is dangling — never a real file or a foreign link.
-    local prev target link
-    while IFS= read -r prev; do
-        target="$HOME/$prev"
-        [[ -L "$target" ]] || continue
-        link="$(readlink "$target")"
-        if [[ "$link" == "$DOTFILES_DIR"/* && ! -e "$target" ]]; then
-            rm -f "$target"
-            echo "  - $target (source removed)"
-        fi
-    done < <(manifest_stale_entries "$manifest" "${current_rels[@]}")
 
     mkdir -p "$manifest_dir"
     if ((${#current_rels[@]} > 0)); then
@@ -243,18 +186,54 @@ symlink_package() {
     fi
 }
 
-# Packages whose files are managed by Nix/home-manager instead of symlinks.
-# As home-manager takes ownership of a package, add it here (per-file cutover)
-# so the bash symlinker and home-manager never fight over the same path.
-# lazygit and fastfetch configs are home-manager out-of-store symlinks
-# (nix/home/features/{lazygit,fastfetch}.nix) pointing back into packages/.
-#
-# `shell` (.aliases/.functions) is intentionally NOT here: home-manager bakes
-# its content into the generated zsh rc, but .bashrc still sources the symlinked
-# files, so the bash symlinker keeps them. There are no `fzf`, `zoxide`, or
-# `direnv` package dirs — home-manager owns those three outright, so they're
-# intentionally absent from this array; don't add package dirs for them.
-NIX_OWNED_PACKAGES=(git vim zsh starship atuin bat tmux lazygit fastfetch)
+# Packages the symlinker must not deploy, because home-manager does. Each
+# one's nix/home/features/<name>.nix says how its files are used: read at build
+# time (zsh, shell, starship, atuin, bat, tmux), which needs a home-manager
+# switch to take effect, or linked live out of the store (vim, lazygit,
+# fastfetch).
+NIX_OWNED_PACKAGES=(vim zsh shell starship atuin bat tmux lazygit fastfetch)
+
+is_nix_owned_package() {
+    local owned
+    for owned in "${NIX_OWNED_PACKAGES[@]}"; do
+        [[ "$1" == "$owned" ]] && return 0
+    done
+    return 1
+}
+
+package_manifest_dir() {
+    echo "${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+}
+
+# Remove links an earlier run created whose source the symlinker no longer
+# deploys: the file was deleted or renamed, the package was removed, or the
+# package moved to Nix. Run before home-manager activates, so it finds those
+# paths free instead of backing up a stale link. Only removes a symlink that
+# points into the repo; real files and foreign links are left alone.
+# Usage: prune_stale_package_links <packages_dir>
+prune_stale_package_links() {
+    local packages_dir="${1%/}"
+    local manifest pkg_name deployed rel target
+    for manifest in "$(package_manifest_dir)"/symlinks-*.txt; do
+        [[ -f "$manifest" ]] || continue
+        pkg_name="$(basename "$manifest" .txt)"
+        pkg_name="${pkg_name#symlinks-}"
+        deployed=1
+        if [[ ! -d "$packages_dir/$pkg_name" ]] || is_nix_owned_package "$pkg_name"; then
+            deployed=0
+        fi
+        while IFS= read -r rel; do
+            [[ -n "$rel" ]] || continue
+            target="$HOME/$rel"
+            [[ -L "$target" && "$(readlink "$target")" == "$DOTFILES_DIR"/* ]] || continue
+            if ((!deployed)) || [[ ! -e "$packages_dir/$pkg_name/$rel" ]]; then
+                rm -f "$target"
+                echo "  - $target (no longer deployed)"
+            fi
+        done <"$manifest"
+        ((deployed)) || rm -f "$manifest"
+    done
+}
 
 # Symlink all packages in a directory
 # Usage: symlink_all_packages <packages_dir>
@@ -264,15 +243,9 @@ symlink_all_packages() {
     for pkg in "$packages_dir"/*/; do
         [[ -d "$pkg" ]] || continue
 
-        local pkg_name owned skip=0
+        local pkg_name
         pkg_name="$(basename "$pkg")"
-        for owned in "${NIX_OWNED_PACKAGES[@]}"; do
-            if [[ "$pkg_name" == "$owned" ]]; then
-                skip=1
-                break
-            fi
-        done
-        if [[ "$skip" == 1 ]]; then
+        if is_nix_owned_package "$pkg_name"; then
             echo "[$pkg_name] managed by home-manager — skipping symlink"
             continue
         fi

@@ -8,6 +8,7 @@
     ./features/lazygit.nix
     ./features/fastfetch.nix
     ./features/vim.nix
+    ./features/shell.nix
     ./features/zsh.nix
     ./features/starship.nix
     ./features/atuin.nix

@@ -3,11 +3,11 @@
 # syntax-highlighting, plus fzf-tab); the deliberate ordering of the old hand-
 # written rc is preserved with mkBefore/mkAfter blocks.
 #
-# Simple aliases live in shellAliases (declarative). The complex shell functions
-# stay as readable shell in packages/shell/.functions and the two zsh-only
-# helpers (theme.zsh, alias-suggest.zsh); they are baked into the generated rc
-# via readFile, so the repo files remain the editable source and bash keeps
-# sourcing them via its own symlinks.
+# Aliases, PATH, and session variables are shared with bash and live in
+# shell.nix. The shell functions stay as readable shell in
+# packages/shell/.functions, and the two zsh-only helpers (theme.zsh,
+# alias-suggest.zsh) in packages/zsh; they are baked into the generated rc via
+# readFile, so editing them takes effect on the next home-manager switch.
 {
   config,
   lib,
@@ -15,24 +15,6 @@
   ...
 }:
 {
-  home.sessionVariables = {
-    EDITOR = "vim";
-    VISUAL = "vim";
-    LANG = "en_US.UTF-8";
-    LC_ALL = "en_US.UTF-8";
-  };
-
-  home.sessionPath = [
-    "${config.home.homeDirectory}/.dotfiles/bin"
-    "${config.home.homeDirectory}/go/bin"
-    "${config.home.homeDirectory}/.local/bin"
-    "${config.home.homeDirectory}/bin"
-    "${config.home.homeDirectory}/.resend/bin"
-    # mise shims: version-stable fallback for non-interactive shells and hooks;
-    # `mise activate` prepends real tool paths in interactive shells anyway.
-    "${config.home.homeDirectory}/.local/share/mise/shims"
-  ];
-
   programs.zsh = {
     enable = true;
     autocd = true;
@@ -96,71 +78,6 @@
         file = "fzf-tab.plugin.zsh";
       }
     ];
-
-    shellAliases = {
-      # Navigation
-      ".." = "cd ..";
-      "..." = "cd ../..";
-      "...." = "cd ../../..";
-
-      # ls (eza) — the flag-translating `ls` wrapper is a function in .functions
-      ll = "eza -la --git --icons --group-directories-first";
-      la = "eza -a --icons";
-      l = "eza -F --icons";
-      ltree = "eza --tree --level=2 --icons";
-
-      # Git
-      g = "git";
-      ga = "git add";
-      gaa = "git add --all";
-      gb = "git branch";
-      gba = "git branch -a";
-      gc = "git commit";
-      gcmsg = "git commit -m";
-      gco = "git checkout";
-      gcb = "git checkout -b";
-      gcl = "git clone";
-      gcp = "git cherry-pick";
-      gd = "git diff";
-      gds = "git diff --staged";
-      gf = "git fetch";
-      gl = "git pull";
-      glg = "git log --graph --decorate --stat --color";
-      glog = "git log --oneline --graph --decorate";
-      gm = "git merge";
-      gp = "git push";
-      gpom = "git pull origin main";
-      ggpush = "git push origin $(git branch --show-current)";
-      ggpull = "git pull origin $(git branch --show-current)";
-      grb = "git rebase";
-      grh = "git reset HEAD";
-      gst = "git status";
-      gsta = "git stash";
-      gstp = "git stash pop";
-
-      # TUIs
-      lg = "lazygit";
-      lzd = "lazydocker";
-
-      # Cheatsheet
-      oma = "glow ~/.dotfiles/CHEATSHEET.md";
-
-      # Kagi settings as code (tools/kagi); needs KAGI_SESSION_LINK in ~/.secrets
-      kagi = "uv run --project \"$HOME/.dotfiles/tools/kagi\" kagi";
-
-      # AI agents
-      cc = "claude";
-      # `cx = "codex"` is macOS-only (codex is a Homebrew cask) — see lima.nix.
-
-      # Dev / network / misc
-      nr = "npm run";
-      ts = "tailscale";
-      c = "clear";
-      h = "history";
-      grep = "grep --color=auto";
-      df = "df -h";
-      du = "du -h";
-    };
 
     # ~/.zshenv: Ubuntu's /etc/zsh/zshrc runs its own full compinit unless this
     # is set, doubling completion init for every /usr/bin/zsh start (the login

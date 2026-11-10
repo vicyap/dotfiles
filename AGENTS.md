@@ -93,9 +93,8 @@ will not prompt; the script also checks the hostname itself because it is run by
 
 ## Agent Configuration
 
-`agent-skills.txt` is the explicit list of managed user skills and their sources,
-including `software-design`, `ask-clarifying-questions`, and `ddd` from `usetemi/skills`
-(edit them there) and the local skill sources under
+`agent-skills.txt` is the explicit list of managed user skills and their sources:
+remote repositories (edit those skills upstream) and the local skill sources under
 `packages/agents/.agents/skills/`. `sync_agent_skills` refreshes all
 listed skills during every convergence, including `dotfiles pull`. Removing a
 name removes its previously managed installation and Claude/Codex links on the

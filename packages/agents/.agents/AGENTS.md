@@ -107,27 +107,26 @@ Claude Code injects a rule from its `paths:` frontmatter only when a matching
 file is read, not written or created; Codex has no path mechanism. Read the
 domain's rule before implementing:
 
-- Python (`*.py`, `*.pyi`, `pyproject.toml`, `uv.lock`): `python.md`
-- Elixir/Phoenix (`*.ex`, `*.exs`): `elixir.md`; add `ecto.md`, `phoenix.md`,
-  `heex.md`, or `liveview.md` for schemas, repos, migrations, web modules,
-  HEEx, LiveViews, or LiveView tests
+- Python: `python.md`
+- Elixir/Phoenix: `elixir.md`; add `ecto.md`, `phoenix.md`, `heex.md`, or
+  `liveview.md` for schemas, repos, migrations, web modules, HEEx, LiveViews,
+  or LiveView tests
 - Frontend (JS, TS, CSS, HTML, Vue, Svelte): `frontend.md`; add
-  `react-nextjs.md` for React, Next.js, `app/`, `pages/`, or `next.config.*`
-- Go (`*.go`, `go.mod`): `go.md`
+  `react-nextjs.md` for React or Next.js
+- Go: `go.md`
 - Shell scripts and shell config: `shell.md`
 - Terraform/OpenTofu: `terraform.md`
 - Ignore files (`.gitignore`, `.dockerignore`, ...): `secrets.md`
+
+Each rule's `paths:` frontmatter is the exact list of files it applies to.
 
 ## Skill Routing
 
 User-level skills live in `~/.agents/skills/`. Use a skill when the user names
 it or the task clearly matches its trigger. Read its `SKILL.md` completely and
-follow its routing to referenced files before acting. Dotfiles-owned:
-`design-interfaces`, `event-sourcing`, `simplify`, `writer-editor`.
-`software-design`, `ask-clarifying-questions`, and `ddd` are maintained in `usetemi/skills`
-and installed globally through dotfiles' explicit `agent-skills.txt` list on every
-pull. Edit them upstream. Temi commits its own project installation through the
-skills CLI.
+follow its routing to referenced files before acting.
+`~/.dotfiles/agent-skills.txt` lists every managed skill and its source; edit a
+skill at that source, never the installed copy.
 
 ## Tools
 

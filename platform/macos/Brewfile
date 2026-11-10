@@ -1,10 +1,9 @@
-# Homebrew packages for macOS
+# Homebrew formulae for macOS. GUI casks are declared in nix/darwin/lima.nix,
+# and the general CLI tool set, formatters, and linters in
+# nix/home/features/packages.nix; AGENTS.md "Tool Management" has the policy.
 
-# Core tools. git/vim/zsh stay brew-managed for bootstrap (needed before
-# Nix/home-manager activates; their binaries aren't Nix-managed yet). The modern
-# CLI replacements (bat, eza, delta, duf, zoxide, direnv, starship, tldr, gh,
-# ripgrep, fd, fzf, jq, tree, htop, btop, mosh, entr, chafa, cloc, git-lfs) are
-# now provided by home-manager and removed from here.
+# git, vim, and zsh are needed before home-manager has run (to clone this repo
+# and as the login shell), so they are installed here as well.
 brew "git"
 brew "vim"
 brew "curl"
@@ -13,9 +12,6 @@ brew "watch"
 brew "p7zip"
 brew "qrencode"
 
-# Formatters & linters live in home-manager now (gitleaks, shfmt, shellcheck,
-# typos, taplo, yamlfmt, clang-format — see nix/home/features/packages.nix) so
-# both OSes get the same versions.
 brew "cmake"
 
 # Development
@@ -42,21 +38,11 @@ brew "zig"
 # Cloud / infra
 brew "awscli"
 
-# AI tools
-cask "codex"
-
-# Fonts
-cask "font-jetbrains-mono-nerd-font"
-
-# Security
-cask "secretive"
-
 # Shell
 brew "zsh"
 brew "zsh-completions"
 
 # Taps
-tap "anomalyco/tap"
 tap "turbot/tap"
 brew "steampipe"
 tap "namespacelabs/namespace"

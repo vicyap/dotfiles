@@ -96,45 +96,6 @@ install_nix() {
     fi
 }
 
-cleanup_relocated_nix_symlinks() {
-    # home-manager relocates some configs to XDG paths (git -> ~/.config/git,
-    # tmux -> ~/.config/tmux). Remove the old bash-symlinker links at the legacy
-    # paths so the new home-manager config isn't shadowed or, for tmux, doesn't
-    # re-trigger TPM via ~/.tmux.conf.local. Only ever touch a symlink that
-    # points into the dotfiles repo — never a user's real file.
-    local p tgt
-    for p in "$HOME/.gitconfig" "$HOME/.tmux.conf" "$HOME/.tmux.conf.local"; do
-        [[ -L "$p" ]] || continue
-        tgt="$(readlink "$p")"
-        if [[ "$tgt" == "$DOTFILES_DIR"/* ]]; then
-            rm -f "$p"
-            echo "  - removed legacy symlink $p (relocated by home-manager)"
-        fi
-    done
-}
-
-# When migrating a machine off the bash symlinker, the per-file symlinks for
-# Nix-owned packages sit at the exact paths home-manager wants and make its
-# switch fail with "would be clobbered". Drop them first — only ever a symlink
-# that points back into this repo, so no real file is ever touched.
-remove_legacy_nix_symlinks() {
-    # NIX_OWNED_PACKAGES is the single source of truth in lib/symlink.sh; both
-    # entrypoints (install.sh main and bin/dotfiles) source it before converge.
-    local pkg base rel target f
-    for pkg in "${NIX_OWNED_PACKAGES[@]}"; do
-        base="$DOTFILES_DIR/packages/$pkg"
-        [[ -d "$base" ]] || continue
-        while IFS= read -r -d '' f; do
-            rel="${f#"$base"/}"
-            target="$HOME/$rel"
-            if [[ -L "$target" && "$(readlink "$target")" == "$DOTFILES_DIR"/* ]]; then
-                rm -f "$target"
-                echo "  - removed legacy symlink $target"
-            fi
-        done < <(find "$base" \( -type f -o -type l \) -print0)
-    done
-}
-
 # Activate this host's Nix configuration. The flake is the source of truth:
 #   - a macOS host with a `darwinConfigurations.<host>` entry activates via
 #     nix-darwin (system settings + home-manager together; needs sudo);
@@ -163,8 +124,6 @@ setup_nix() {
         darwin_configs="$(nix eval --json "${DOTFILES_DIR}#darwinConfigurations" \
             --apply 'builtins.attrNames' 2>/dev/null || true)"
         if [[ "$darwin_configs" == \[* && "$darwin_configs" == *"\"${host}\""* ]]; then
-            cleanup_relocated_nix_symlinks
-            remove_legacy_nix_symlinks
             echo "  Activating nix-darwin for ${host} (needs sudo)..."
             if has_cmd darwin-rebuild; then
                 sudo darwin-rebuild switch --flake "${DOTFILES_DIR}#${host}" \
@@ -211,9 +170,6 @@ setup_nix() {
         echo "  Skipped: no home-manager config for ${generic_attr}"
         return 0
     fi
-
-    cleanup_relocated_nix_symlinks
-    remove_legacy_nix_symlinks
 
     echo "  Activating home-manager for ${generic_attr}..."
     # -b backup renames any pre-existing file (e.g. an old symlinked ~/.zshrc)
@@ -636,6 +592,10 @@ converge() {
 
     echo "=== Installing mise ==="
     install_mise
+    echo
+
+    echo "=== Pruning stale package links ==="
+    prune_stale_package_links "$DOTFILES_DIR/packages"
     echo
 
     # Activate Nix first: it owns the CLI tool set, shell, git, tmux, etc., and

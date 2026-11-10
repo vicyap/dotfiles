@@ -98,7 +98,7 @@
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = { inherit nixpkgs-unstable; };
               # Back up (rather than fail on) any non-symlink file in the way on
-              # first activation; setup_nix removes the legacy repo symlinks.
+              # first activation; converge prunes stale repo symlinks beforehand.
               home-manager.backupFileExtension = "backup";
               home-manager.users.${username} = import homeModule;
             }

@@ -1,5 +1,5 @@
-# Global CLI tools, shared across hosts. Nix owns these; mise is narrowed to
-# language runtimes. Comments note the binary name where it differs from the
+# Global CLI tools, shared across hosts. AGENTS.md "Tool Management" says which
+# tools belong here and which belong to mise or uv. Comments note the binary name where it differs from the
 # nixpkgs attribute.
 #
 # Tools with a dedicated home-manager module are NOT listed here — their
@@ -37,8 +37,8 @@
     doggo # dig replacement (took over from the unmaintained `dog`, which nixpkgs 26.05 dropped)
 
     # git / dev tooling
-    # NOTE: codex moved to the official standalone installer (install.sh
-    # install_codex_cli) — `codex update` can't self-update a Nix-owned binary.
+    # codex is absent on purpose: `codex update` can't self-update a Nix-owned
+    # binary, so install_codex_cli in install.sh uses the standalone installer.
     postgresql # psql client (nixpkgs has no client-only package)
     lazydocker
     just

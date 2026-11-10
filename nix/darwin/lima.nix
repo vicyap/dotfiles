@@ -30,8 +30,9 @@
     (pkgs.writeScriptBin "sleepctl" (builtins.readFile ./sleepctl.sh))
   ];
 
-  # GUI apps / fonts with no good nixpkgs equivalent on macOS. CLI tools come
-  # from home-manager (nixpkgs), so only casks live here.
+  # GUI apps and fonts with no good nixpkgs equivalent on macOS. This is the
+  # only cask list: CLI tools come from home-manager, and the Brewfile holds
+  # formulae only.
   homebrew = {
     enable = true;
     onActivation = {
@@ -40,7 +41,6 @@
       upgrade = false;
     };
     casks = [
-      "codex"
       "secretive"
       "font-jetbrains-mono-nerd-font"
       "xcodes-app"
