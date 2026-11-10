@@ -2,7 +2,7 @@
 # the flake wrapper (standalone home-manager) or by nix-darwin (system
 # activation), so this module carries only shared + host home config.
 #
-# macOS-only home config that must NOT leak to headless rhinestone lives here
+# macOS-only home config that must NOT leak to headless Linux hosts lives here
 # (the shared feature modules stay host-agnostic).
 { lib, pkgs, ... }:
 {
@@ -15,9 +15,8 @@
   # codex is a macOS-only Homebrew cask; the alias would dangle on Linux.
   programs.zsh.shellAliases.cx = "codex";
 
-  # Weekly GC with generation expiry, via a home-manager launchd agent — the
-  # darwin counterpart of rhinestone's services.home-manager.autoExpire (that
-  # module is systemd-only). nix-darwin can't own this: nix/darwin/common.nix
+  # Weekly GC with generation expiry, via a home-manager launchd agent.
+  # nix-darwin can't own this: nix/darwin/common.nix
   # sets nix.enable = false, so its nix.gc options are unavailable.
   # --delete-older-than expires this user's old profile generations (home
   # included) before collecting. Verify with: launchctl list | grep nix-gc

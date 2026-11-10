@@ -85,12 +85,11 @@ owns the executable users will actually run.
 
 ### Host-Scoped System Setup
 
-System-level changes that are not `$HOME` symlinks and must apply to a single host live in `platform/linux/setup-system.sh`. Currently it is `rhinestone`-only memory-pressure hardening (24 GiB zram + a 96 GiB disk swapfile + `earlyoom`, with `vm.swappiness=30`), soft cgroup pressure controls, VM autostart, and memory observability, added after the 2026-06-17 livelock postmortem. A one-minute `rhinestone-memory-monitor.timer` records structured memory, swap, zram, PSI, reclaim, NVMe write, and cgroup metrics in the persistent journal; inspect them with `journalctl -u rhinestone-memory-monitor.service`. The script is idempotent, refuses to run on any host whose hostname is not `rhinestone`, and deploys root-owned `/etc` files stashed under `platform/linux/etc/` plus its sampler under `/usr/local/libexec/`. `install.sh` invokes it from `main()` via `setup_linux_system`, guarded by hostname plus passwordless-sudo/interactive checks, so it is a no-op on macOS and unsupported hosts.
-
-`platform/linux/setup-kanto.sh` owns `kanto`'s Ubuntu 24.04 host setup: the `America/Los_Angeles`
-system timezone, the public inbound firewall (`kanto-firewall.nft` and its unit), Docker with
-`setup-kanto-docker.sh`'s log rotation and build-cache GC, and Tailscale. `install.sh` selects
-the host script by hostname.
+`platform/linux/setup-kanto.sh` owns `kanto`'s Ubuntu 24.04 host setup, the only system-level
+configuration outside Nix: the `America/Los_Angeles` system timezone, the public inbound firewall
+(`kanto-firewall.nft` and its unit), Tailscale, and Docker with `setup-kanto-docker.sh`'s log
+rotation and build-cache GC. `setup_linux_system` in `install.sh` runs it on `kanto` when sudo
+will not prompt; the script also checks the hostname itself because it is run by hand too.
 
 ## Agent Configuration
 

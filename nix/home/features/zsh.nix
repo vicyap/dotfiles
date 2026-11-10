@@ -165,14 +165,14 @@
     # ~/.zshenv: Ubuntu's /etc/zsh/zshrc runs its own full compinit unless this
     # is set, doubling completion init for every /usr/bin/zsh start (the login
     # shell SSH and tmux actually spawn) — measured at ~580ms per shell on
-    # rhinestone. Inert on macOS, whose /etc/zshrc has no such gate.
+    # an Ubuntu host. Inert on macOS, whose /etc/zshrc has no such gate.
     envExtra = ''
       skip_global_compinit=1
     '';
 
     # ~/.zprofile (login shell): the omakase MOTD. The macOS Homebrew shellenv
     # block lives in nix/home/hosts/lima.nix (profileExtra concatenates across
-    # modules), so it never runs on headless rhinestone.
+    # modules), so it never runs on headless Linux hosts.
     profileExtra = ''
       # Omakase tool reminder (login-shell only; not run per tmux pane).
       [[ -x "$HOME/.dotfiles/bin/omakase-motd" ]] && "$HOME/.dotfiles/bin/omakase-motd"

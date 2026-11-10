@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Docker daemon settings for kanto: bounded local logs and build-cache GC.
+# Merged into the existing daemon.json so keys set by hand or by other tools
+# survive. A changed config needs a daemon restart, which would kill running
+# containers, so this refuses to apply one unless the daemon is idle.
 set -euo pipefail
 [[ "$(hostname -s)" == kanto && "$EUID" == 0 ]]
 usermod -aG docker "${SUDO_USER:?Run through sudo}"

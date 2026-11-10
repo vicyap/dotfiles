@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # agent-system-info — SessionStart hook for Claude Code and Codex CLI.
 # Injects static machine identity (fastfetch) into agent context so both
-# agents know which machine they're on (rhinestone vs lima) without baking
+# agents know which machine they're on (kanto vs lima) without baking
 # it into the dotfiles-managed AGENTS.md.
 set -euo pipefail
 

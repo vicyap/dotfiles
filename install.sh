@@ -144,8 +144,7 @@ remove_legacy_nix_symlinks() {
 # use nix-darwin only when a host-specific system config exists; otherwise they
 # fall back to the generic Home Manager config.
 setup_nix() {
-    local host platform nix_system attr darwin_configs home_configs
-    local named_attr generic_attr use_impure
+    local host platform nix_system darwin_configs home_configs generic_attr
     host="$(hostname -s 2>/dev/null || hostname)"
     platform="$(detect_supported_platform)"
     nix_system="$(detect_nix_system)"
@@ -155,11 +154,13 @@ setup_nix() {
         echo "  Skipped: nix unavailable"
         return 0
     }
+    # The home-manager and nix-darwin release branches named below must match
+    # the flake inputs in flake.nix.
+    export NIX_CONFIG="experimental-features = nix-command flakes"
 
     # macOS: prefer nix-darwin when this host is declared there.
     if [[ "$platform" == "macos" ]]; then
-        darwin_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
-            nix eval --json "${DOTFILES_DIR}#darwinConfigurations" \
+        darwin_configs="$(nix eval --json "${DOTFILES_DIR}#darwinConfigurations" \
             --apply 'builtins.attrNames' 2>/dev/null || true)"
         if [[ "$darwin_configs" == \[* && "$darwin_configs" == *"\"${host}\""* ]]; then
             cleanup_relocated_nix_symlinks
@@ -173,7 +174,7 @@ setup_nix() {
                 # release branch (a floating ref — darwin-rebuild isn't on PATH
                 # yet, so the locked flake input can't be reused here). Once
                 # installed, the switch above uses the locked flake.
-                sudo NIX_CONFIG="experimental-features = nix-command flakes" \
+                sudo NIX_CONFIG="$NIX_CONFIG" \
                     nix run "github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild" -- \
                     switch --flake "${DOTFILES_DIR}#${host}" \
                     || echo "  Warning: nix-darwin bootstrap switch failed"
@@ -202,76 +203,41 @@ setup_nix() {
         return 0
     fi
 
-    # Standalone home-manager (Ubuntu, or macOS with no darwin entry). Prefer a
-    # host-specific `user@host` config when the flake declares one (e.g.
-    # victor@rhinestone) — it pins identity so it activates with pure eval. Fall
-    # back to the generic OS/arch config, which needs --impure for USER/HOME.
-    named_attr="$(whoami)@${host}"
-    home_configs="$(NIX_CONFIG='experimental-features = nix-command flakes' \
-        nix eval --json "${DOTFILES_DIR}#homeConfigurations" \
+    # Standalone home-manager (Ubuntu, or macOS with no darwin entry). The
+    # generic configs take USER and HOME from the environment, hence --impure.
+    home_configs="$(nix eval --json "${DOTFILES_DIR}#homeConfigurations" \
         --apply 'builtins.attrNames' 2>/dev/null || true)"
-    if [[ "$home_configs" == *"\"${named_attr}\""* ]]; then
-        attr="$named_attr"
-        use_impure=0
-    elif [[ "$home_configs" == \[* && "$home_configs" == *"\"${generic_attr}\""* ]]; then
-        attr="$generic_attr"
-        use_impure=1
-    else
-        echo "  Skipped: no home-manager config for ${named_attr} or ${generic_attr}"
+    if [[ "$home_configs" != \[* || "$home_configs" != *"\"${generic_attr}\""* ]]; then
+        echo "  Skipped: no home-manager config for ${generic_attr}"
         return 0
     fi
 
     cleanup_relocated_nix_symlinks
     remove_legacy_nix_symlinks
 
-    echo "  Activating home-manager for ${attr}..."
+    echo "  Activating home-manager for ${generic_attr}..."
     # -b backup renames any pre-existing file (e.g. an old symlinked ~/.zshrc)
     # instead of failing on the first switch.
-    if [[ "$use_impure" == 1 ]]; then
-        NIX_CONFIG="experimental-features = nix-command flakes" \
-            nix run home-manager/release-26.05 -- \
-            switch -b backup --impure --flake "${DOTFILES_DIR}#${attr}" \
-            || echo "  Warning: home-manager switch failed"
-    else
-        NIX_CONFIG="experimental-features = nix-command flakes" \
-            nix run home-manager/release-26.05 -- \
-            switch -b backup --flake "${DOTFILES_DIR}#${attr}" \
-            || echo "  Warning: home-manager switch failed"
-    fi
+    nix run home-manager/release-26.05 -- \
+        switch -b backup --impure --flake "${DOTFILES_DIR}#${generic_attr}" \
+        || echo "  Warning: home-manager switch failed"
 
     # Make Nix-provided tools visible to the rest of this run.
     prepend_path "$HOME/.nix-profile/bin"
 }
 
+# kanto is the only host with system-level configuration outside Nix.
 setup_linux_system() {
-    # Each supported Linux host owns its system configuration.
-    [[ "$(uname -s)" == "Linux" ]] || {
-        echo "  Skipped: not Linux"
+    local script="$DOTFILES_DIR/platform/linux/setup-kanto.sh"
+    if [[ "$(uname -s)" != Linux || "$(hostname -s 2>/dev/null || hostname)" != kanto ]]; then
+        echo "  Skipped: no system configuration for this host"
         return 0
-    }
-    local script
-    case "$(hostname -s 2>/dev/null || hostname)" in
-        rhinestone) script="$DOTFILES_DIR/platform/linux/setup-system.sh" ;;
-        kanto) script="$DOTFILES_DIR/platform/linux/setup-kanto.sh" ;;
-        *)
-            echo "  Skipped: no system configuration for this host"
-            return 0
-            ;;
-    esac
-    has_cmd apt || {
-        echo "  Skipped: apt not available"
-        return 0
-    }
+    fi
 
-    [[ -f "$script" ]] || {
-        echo "  Skipped: $script not found"
-        return 0
-    }
-
-    # Needs sudo; run automatically only when sudo won't block on a password
-    # prompt (passwordless) or when a human is present to answer it.
+    # Needs sudo; run only when sudo won't block on a password prompt, or when
+    # DOTFILES_INTERACTIVE says someone is there to answer it.
     if sudo -n true 2>/dev/null || is_interactive; then
-        bash "$script" || echo "  Warning: setup-system.sh did not complete"
+        bash "$script" || echo "  Warning: $script did not complete"
     else
         echo "  Skipped: needs sudo — run manually: bash $script"
     fi

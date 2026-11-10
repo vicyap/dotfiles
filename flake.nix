@@ -132,14 +132,6 @@
           defaultHomeDirectory = "/Users/victoryap";
         };
 
-        # Host-specific compatibility targets.
-        "victor@rhinestone" = mkHome {
-          system = "x86_64-linux";
-          module = ./nix/home/hosts/rhinestone.nix;
-          username = "victor";
-          homeDirectory = "/home/victor";
-        };
-
         # macOS host (Apple Silicon) — standalone target kept for build-only
         # checks. The lima cutover activates via darwinConfigurations below
         # (which embeds this same home module).

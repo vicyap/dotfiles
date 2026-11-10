@@ -33,6 +33,18 @@ sudo systemctl daemon-reload
 sudo systemctl enable kanto-firewall.service
 sudo systemctl reload-or-restart kanto-firewall.service
 
+if [[ ! -f /etc/apt/sources.list.d/tailscale.list ]]; then
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg \
+        | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list \
+        | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
+    sudo apt-get update -qq
+fi
+sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y tailscale
+sudo systemctl enable --now tailscaled
+
+# Docker goes last: setup-kanto-docker.sh aborts when a config change needs a
+# restart and containers are running, and that must not skip the steps above.
 if [[ ! -f /etc/apt/sources.list.d/docker.sources ]]; then
     sudo install -d -m 0755 /etc/apt/keyrings
     sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -50,13 +62,3 @@ sudo apt-get update -qq
 sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
     docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo bash "$script_dir/setup-kanto-docker.sh"
-
-if [[ ! -f /etc/apt/sources.list.d/tailscale.list ]]; then
-    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg \
-        | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list \
-        | sudo tee /etc/apt/sources.list.d/tailscale.list >/dev/null
-    sudo apt-get update -qq
-fi
-sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y tailscale
-sudo systemctl enable --now tailscaled

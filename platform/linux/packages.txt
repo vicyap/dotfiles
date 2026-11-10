@@ -3,7 +3,6 @@ cargo
 cmake
 curl
 docker-ce
-earlyoom
 git
 imagemagick
 make
@@ -13,7 +12,6 @@ qrencode
 rsync
 rustc
 strace
-systemd-zram-generator
 tailscale
 vim
 wget

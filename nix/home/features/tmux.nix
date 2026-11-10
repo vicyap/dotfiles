@@ -26,7 +26,7 @@
     # Keep the socket at the default /tmp/tmux-$UID. home-manager's default
     # (secureSocket = true) sets TMUX_TMPDIR to $XDG_RUNTIME_DIR (/run/user/$UID),
     # which is cleaned on last-session logout — that would orphan the always-on
-    # server on rhinestone and break "close the laptop, resume the session".
+    # server on kanto and break "close the laptop, resume the session".
     secureSocket = false;
 
     plugins = with pkgs.tmuxPlugins; [
@@ -57,7 +57,7 @@
       set -g allow-passthrough on
 
       # OSC 52 clipboard (copy to local clipboard over SSH). Works everywhere,
-      # including headless rhinestone — no copy binary needed. The macOS-only
+      # including headless kanto — no copy binary needed. The macOS-only
       # `copy-command 'pbcopy'` and prefix `y` save-buffer binding live in
       # nix/home/hosts/lima.nix (pbcopy does not exist on Linux).
       set -g set-clipboard on
