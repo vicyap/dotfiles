@@ -64,49 +64,21 @@ detect_nix_system() {
     esac
 }
 
-# Check if a command exists
-has_cmd() {
-    command -v "$1" &>/dev/null
-}
-
-# Install zsh if not present
-install_zsh() {
-    if has_cmd zsh; then
-        echo "✓ zsh already installed"
+# Ubuntu needs zsh and vim from apt before home-manager has run: zsh as the
+# login shell, vim so editor prompts do not fall back to nano. macOS ships both.
+# Usage: ensure_apt_command <command> (the apt package has the same name)
+ensure_apt_command() {
+    local cmd="$1"
+    if has_cmd "$cmd"; then
+        echo "✓ $cmd already installed"
         return 0
     fi
+    [[ "$(detect_os)" == "linux" ]] || return 0
 
-    echo "Installing zsh..."
-    case "$(detect_os)" in
-        macos)
-            if has_cmd brew; then
-                brew install zsh
-            else
-                echo "⚠ zsh not found and brew not available (zsh is usually pre-installed on macOS)"
-                return 1
-            fi
-            ;;
-        linux)
-            if has_cmd apt; then
-                { sudo apt-get update \
-                    && sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y zsh; } \
-                    || echo "  Warning: zsh install failed"
-            elif has_cmd dnf; then
-                sudo dnf install -y zsh
-            elif has_cmd yum; then
-                sudo yum install -y zsh
-            elif has_cmd pacman; then
-                sudo pacman -S --noconfirm zsh
-            else
-                echo "⚠ Unknown package manager, please install zsh manually"
-                return 1
-            fi
-            ;;
-        *)
-            echo "⚠ Unknown OS, please install zsh manually"
-            return 1
-            ;;
-    esac
+    echo "Installing $cmd..."
+    { sudo apt-get update \
+        && sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y "$cmd"; } \
+        || echo "  Warning: $cmd install failed"
 }
 
 # Set zsh as default shell
@@ -162,38 +134,6 @@ set_default_editor() {
     echo "  Skipped: no vim/vi editor alternative found"
 }
 
-# Install vim on Linux so editor prompts do not fall back to nano/vim.tiny
-install_vim() {
-    if [[ "$(detect_os)" != "linux" ]]; then
-        return 0
-    fi
-
-    if has_cmd vim; then
-        echo "✓ vim already installed"
-        return 0
-    fi
-
-    echo "Installing vim..."
-    case "$(detect_os)" in
-        linux)
-            if has_cmd apt; then
-                { sudo apt-get update \
-                    && sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y vim; } \
-                    || echo "  Warning: vim install failed"
-            elif has_cmd dnf; then
-                sudo dnf install -y vim
-            elif has_cmd yum; then
-                sudo yum install -y vim
-            elif has_cmd pacman; then
-                sudo pacman -S --noconfirm vim
-            else
-                echo "⚠ Unknown package manager, please install vim manually"
-                return 1
-            fi
-            ;;
-    esac
-}
-
 # Install mise version manager
 install_mise() {
     if has_cmd mise; then
@@ -202,36 +142,14 @@ install_mise() {
     fi
 
     echo "Installing mise..."
-    case "$(detect_os)" in
-        macos)
-            if has_cmd brew; then
-                brew install mise \
-                    || {
-                        echo "  Warning: mise install failed"
-                        return 0
-                    }
-            else
-                curl -fsSL https://mise.run | sh \
-                    || {
-                        echo "  Warning: mise install failed"
-                        return 0
-                    }
-            fi
-            ;;
-        linux)
-            curl -fsSL https://mise.run | sh \
-                || {
-                    echo "  Warning: mise install failed"
-                    return 0
-                }
-            export PATH="$HOME/.local/bin:$PATH"
-            ;;
-        *)
-            echo "⚠ Unknown OS, please install mise manually: https://mise.jdx.dev"
-            return 1
-            ;;
-    esac
-
+    if has_cmd brew; then
+        brew install mise
+    else
+        curl -fsSL https://mise.run | sh && export PATH="$HOME/.local/bin:$PATH"
+    fi || {
+        echo "  Warning: mise install failed"
+        return 0
+    }
     echo "✓ mise installed"
 }
 

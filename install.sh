@@ -3,7 +3,8 @@ set -eo pipefail
 
 DOTFILES_REPO="https://github.com/vicyap/dotfiles.git"
 
-# Check if a command exists before lib/platform.sh is available.
+# Defined here, not in lib/, because install_bootstrap_packages needs it before
+# the repo has been cloned.
 has_cmd() {
     command -v "$1" &>/dev/null
 }
@@ -72,10 +73,6 @@ import_atuin_history() {
         echo "  ok no zsh history to import"
     fi
 }
-
-# zsh plugins (fzf-tab, autosuggestions, syntax-highlighting) and tmux plugins
-# (resurrect, continuum) are declared in the flake, so the old git-clone
-# installers are gone.
 
 install_nix() {
     if has_cmd nix; then
@@ -390,7 +387,6 @@ sync_claude_rules() {
     local agents_rules="$HOME/.agents/rules"
     local claude_rules="$HOME/.claude/rules"
     local manifest="$HOME/.claude/.dotfiles-rules.txt"
-    local old_rules="$DOTFILES_DIR/packages/claude/.claude/rules"
 
     if [[ ! -d "$agents_rules" ]]; then
         echo "  Skipped: $agents_rules does not exist"
@@ -402,7 +398,7 @@ sync_claude_rules() {
     local linked=0
     local skipped=0
     local -a current=()
-    local entry name target current_link target_name
+    local entry name target current_link
     for entry in "$agents_rules"/*; do
         # -f alone (it follows symlinks): a dangling symlink passes -L and
         # would be re-admitted — and re-created in ~/.claude/rules — forever.
@@ -421,13 +417,9 @@ sync_claude_rules() {
                 continue
             fi
 
-            if [[ "$current_link" == "$old_rules/$name" ]]; then
-                rm -f "$target"
-            else
-                echo "  Skipped: $target points to $current_link"
-                skipped=$((skipped + 1))
-                continue
-            fi
+            echo "  Skipped: $target points to $current_link"
+            skipped=$((skipped + 1))
+            continue
         elif [[ -e "$target" ]]; then
             echo "  Skipped: $target exists and is not a dotfiles-managed symlink"
             skipped=$((skipped + 1))
@@ -441,41 +433,17 @@ sync_claude_rules() {
 
     # Prune links recorded on a prior run (per the manifest) whose source rule
     # has since been removed.
-    local prev keep stale_removed=0
+    local prev stale_removed=0
     while IFS= read -r prev; do
         target="$claude_rules/$prev"
         [[ -L "$target" ]] || continue
         current_link="$(readlink "$target")"
-        if [[ "$current_link" == "$agents_rules/$prev" || "$current_link" == "$old_rules/$prev" ]]; then
+        if [[ "$current_link" == "$agents_rules/$prev" ]]; then
             rm -f "$target"
             echo "  - $prev (stale)"
             stale_removed=$((stale_removed + 1))
         fi
     done < <(manifest_stale_entries "$manifest" "${current[@]}")
-
-    # First migration run may not have a manifest yet. Clean up old
-    # dotfiles-owned Claude rule links whose source files moved or were folded
-    # into AGENTS.md.
-    for entry in "$claude_rules"/*; do
-        [[ -L "$entry" ]] || continue
-        name="$(basename "$entry")"
-        current_link="$(readlink "$entry")"
-        [[ "$current_link" == "$old_rules/"* ]] || continue
-
-        keep=false
-        for target_name in "${current[@]}"; do
-            if [[ "$name" == "$target_name" ]]; then
-                keep=true
-                break
-            fi
-        done
-
-        if ! $keep; then
-            rm -f "$entry"
-            echo "  - $name (legacy)"
-            stale_removed=$((stale_removed + 1))
-        fi
-    done
 
     if ((${#current[@]} > 0)); then
         printf '%s\n' "${current[@]}" | sort >"$manifest"
@@ -505,51 +473,23 @@ generate_codex_config() {
     # wipes them, forcing hook re-approval on every pull. The merger re-emits
     # base+local then preserves any top-level keys/tables the managed files
     # don't define.
-    if has_cmd python3 && [[ -f "$merger" ]]; then
-        local tmp
-        tmp="$(mktemp)"
-        if python3 "$merger" "$base" "$local_config" "$target" >"$tmp"; then
-            mv "$tmp" "$target"
-            echo "  Generated $target (preserved runtime state)"
-        else
-            rm -f "$tmp"
-            echo "  Warning: codex config merge failed; left existing $target untouched"
-        fi
-        return 0
+    local tmp
+    tmp="$(mktemp)"
+    if python3 "$merger" "$base" "$local_config" "$target" >"$tmp"; then
+        mv "$tmp" "$target"
+        echo "  Generated $target (preserved runtime state)"
+    else
+        rm -f "$tmp"
+        echo "  Warning: codex config merge failed; left existing $target untouched"
     fi
-
-    # Without python3 the merge can't preserve Codex runtime state ([projects]
-    # trust, [hooks.state] approvals, [plugins]), so never overwrite an
-    # existing config — only seed a machine that has none yet.
-    if [[ -f "$target" ]]; then
-        echo "  Skipped: python3 unavailable — left existing $target untouched"
-        return 0
-    fi
-    cat "$base" >"$target"
-    if [[ -f "$local_config" ]]; then
-        printf '\n' >>"$target"
-        cat "$local_config" >>"$target"
-    fi
-    echo "  Generated $target"
 }
 
 # Scaffold the untracked machine-local notes that shared instructions ask agents
-# to read. Migrate an old rules/local.md on first run, else create an empty file.
+# to read.
 ensure_agents_local() {
     local f="$HOME/.agents/AGENTS.local.md"
     [[ -e "$f" ]] && return 0
     mkdir -p "$HOME/.agents"
-    # Migrate notes from either legacy location (the source
-    # ~/.agents/rules/local.md, or the older ~/.claude/rules/local.md regular
-    # file), else start empty.
-    local src
-    for src in "$HOME/.agents/rules/local.md" "$HOME/.claude/rules/local.md"; do
-        if [[ -f "$src" && ! -L "$src" ]]; then
-            mv "$src" "$f"
-            echo "  + migrated $src -> AGENTS.local.md"
-            return 0
-        fi
-    done
     : >"$f"
     echo "  + created empty AGENTS.local.md"
 }
@@ -581,9 +521,9 @@ wire_git_hooks() {
 converge() {
     require_supported_platform
 
-    install_zsh
+    ensure_apt_command zsh
     echo
-    install_vim
+    ensure_apt_command vim
     echo
 
     echo "=== Configuring default editor ==="
@@ -689,10 +629,8 @@ refresh_upstream() {
             mise self-update --yes || echo "  Warning: mise self-update failed"
         fi
         mise upgrade --yes || echo "  Warning: mise upgrade failed"
-        # update:tools depends on the setup:* tasks, so this is also the
-        # single place the extra CLI tools (web, ssh-opener, tmux-status)
-        # get built. pyright/typescript-language-server are mise backend tools
-        # now, covered by `mise upgrade` above.
+        # update:tools depends on the setup:* tasks in the mise config, so
+        # this is also the single place those extra CLI tools get built.
         mise run update:tools || echo "  Warning: mise update:tools failed"
         # Removes installs unreferenced by any config mise has seen; project
         # pins reinstall automatically the next time that project is visited.
@@ -756,9 +694,9 @@ main() {
     # (shared with `dotfiles upgrade`).
     refresh_upstream
 
-    # Set default shell (first run only; prompt only when the login shell is not
-    # already a zsh). fzf-tab works under the system zsh too, so there is no need
-    # to force the Nix zsh.
+    # Offer to make zsh the login shell when it is not one already. Prompts are
+    # off unless DOTFILES_INTERACTIVE is `auto` or `always`. fzf-tab works under
+    # the system zsh too, so there is no need to force the Nix zsh.
     if is_interactive && [[ "$SHELL" != *zsh ]]; then
         echo
         read -p "Set zsh as default shell? [y/N] " -n 1 -r

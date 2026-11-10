@@ -103,9 +103,7 @@ cmd_cd() {
 
 cmd_agents_local() {
     # Machine-specific agent instructions, @-imported by ~/.agents/AGENTS.md.
-    # Not tracked by git. ensure_agents_local (install.sh) scaffolds it,
-    # including the one-time legacy rules/local.md migration — reuse it rather
-    # than duplicating a migration-less copy here.
+    # Not tracked by git; ensure_agents_local (install.sh) scaffolds it.
     load_libs
     ensure_agents_local
     ${EDITOR:-vim} "$HOME/.agents/AGENTS.local.md"
@@ -117,10 +115,6 @@ main() {
     case "$cmd" in
         pull | sync) cmd_pull ;;
         upgrade) cmd_upgrade ;;
-        update)
-            echo "'dotfiles update' was renamed to 'dotfiles upgrade'"
-            exit 1
-            ;;
         cd) cmd_cd ;;
         agents-local) cmd_agents_local ;;
         help | -h | --help) usage ;;

@@ -1,5 +1,5 @@
 # lazygit — package plus config as writable out-of-store symlinks into the
-# repo (vim.nix pattern). programs.lazygit is deliberately NOT used: the
+# repo. programs.lazygit is deliberately NOT used: the
 # module hard-wires ~/.config/lazygit/config.yml to its `settings` attrset
 # (defining enable = false and a store-generated source even when settings is
 # empty), which conflicts with external management of that path. The

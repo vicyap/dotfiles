@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # omakase-motd — printed on shell login to keep the curated toolkit in muscle memory.
-# Disable per-shell with OMAKASE_MOTD_OFF=1; remove the call from .zprofile/.bash_profile to disable globally.
+# Disable per-shell with OMAKASE_MOTD_OFF=1; remove the calls in nix/home/features/{zsh,shell}.nix to disable globally.
 
 [[ -t 1 && "${TERM:-}" != "dumb" && -z "${OMAKASE_MOTD_OFF:-}" ]] || exit 0
 
