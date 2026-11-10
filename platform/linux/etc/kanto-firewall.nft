@@ -9,8 +9,15 @@ table inet kanto_firewall {
         ct state established,related accept
         ct state invalid drop
         iifname "tailscale0" tcp dport 22 accept
-        iifname "virbr*" udp dport { 53, 67 } accept
-        iifname "virbr*" tcp dport 53 accept
+        # Guests may use only their own bridge's dnsmasq (DNS and DHCP): each accept
+        # matches one bridge. No destination match: DHCP discovery is broadcast, so
+        # a destination pin breaks lease acquisition. The virbr1 pair is
+        # transitional and goes away with the vagrant-libvirt network in the pool
+        # cleanup (rollout step 5); the virbr2 pair is the pool's.
+        iifname "virbr1" udp dport { 53, 67 } accept
+        iifname "virbr1" tcp dport 53 accept
+        iifname "virbr2" udp dport { 53, 67 } accept
+        iifname "virbr2" tcp dport 53 accept
         # IPv6 neighbor/router discovery is required for outbound connectivity.
         ip6 hoplimit 255 icmpv6 type { nd-router-advert, nd-neighbor-solicit, nd-neighbor-advert } accept
         counter drop
