@@ -657,6 +657,13 @@ ensure_agents_local() {
     echo "  + created empty AGENTS.local.md"
 }
 
+# Forced: a regular ~/.codex/AGENTS.md (one Codex or an earlier setup wrote)
+# would otherwise be skipped as a conflict and shadow the shared instructions.
+# create_symlink backs it up before replacing it.
+link_codex_agents_md() {
+    DOTFILES_FORCE=1 create_symlink "$HOME/.agents/AGENTS.md" "$HOME/.codex/AGENTS.md"
+}
+
 # Point this repo's git hooks at the tracked hooks/ dir so the gitleaks
 # pre-commit scan actually runs — without this, hooks/pre-commit is dead weight.
 wire_git_hooks() {
@@ -740,7 +747,7 @@ converge() {
     echo
 
     echo "=== Linking codex AGENTS.md to shared instructions ==="
-    DOTFILES_FORCE=1 create_symlink "$HOME/.agents/AGENTS.md" "$HOME/.codex/AGENTS.md"
+    link_codex_agents_md
     echo
 
     # Ghostty terminfo (needed on remotes without Ghostty installed)
@@ -876,7 +883,7 @@ main() {
     echo "Restart your terminal or run: exec zsh"
 }
 
-# Only run main when executed directly, not when sourced
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    main "$@"
-fi
+# Run main unless sourced (bin/dotfiles and the tests source this for its
+# functions). `return` succeeds only in a sourced file, so this also runs main
+# for `curl | bash`, where BASH_SOURCE is empty and a $0 comparison fails.
+(return 0 2>/dev/null) || main "$@"

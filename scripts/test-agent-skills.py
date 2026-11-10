@@ -86,7 +86,7 @@ class SkillConvergenceTest(unittest.TestCase):
         self.write_skill(self.dotfiles / "skills/keep", "keep", "second version")
         self.declarations.write_text("./skills keep\n")
         lock = self.home / ".local/state/skills/.skill-lock.json"
-        lock.parent.mkdir(parents=True)
+        lock.parent.mkdir(parents=True, exist_ok=True)
         lock.write_text(
             json.dumps(
                 {

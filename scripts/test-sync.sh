@@ -2,8 +2,7 @@
 # Static checks + a temp-$HOME smoke test for the installer and CLI.
 #
 # Safe to run anywhere: the convergence smoke test uses a throwaway $HOME and
-# never touches your real home directory. Mirrors the verification path used by
-# the nixtest/darwintest VMs for the parts that don't need a full machine.
+# never touches your real home directory.
 set -uo pipefail
 
 REPO="$(cd -P "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -39,6 +38,8 @@ note "Keep Awake input and unavailable-service checks"
 bash "$REPO/scripts/test-keep-awake.sh" || status=1
 
 note "temp-\$HOME symlink convergence"
+# Not `( ... ) || status=1`: bash ignores errexit inside a subshell that is part
+# of an || list, which would let every unchecked failure below pass.
 (
     set -e
     tmp="$(mktemp -d)"
@@ -48,6 +49,8 @@ note "temp-\$HOME symlink convergence"
     export DOTFILES_INTERACTIVE=never
     mkdir -p "$HOME"
 
+    # shellcheck source=/dev/null
+    source "$REPO/install.sh"
     # shellcheck source=/dev/null
     source "$REPO/lib/platform.sh"
     # shellcheck source=/dev/null
@@ -71,32 +74,54 @@ note "temp-\$HOME symlink convergence"
         exit 1
     fi
 
+    symlink_all_packages "$REPO/packages" >"$tmp/second-run"
+    if grep -vE 'already linked|^\[|^$' "$tmp/second-run"; then
+        echo "  FAIL: second convergence was not a no-op"
+        exit 1
+    fi
+
     note "temp-\$HOME shared Codex instructions"
     export DOTFILES_FORCE=0
-    # Exercise the exact targeted step used by converge without running its
-    # machine-wide installers or upstream refreshes.
-    link_step="$(sed -n '/^    DOTFILES_FORCE=1 create_symlink .*AGENTS.md/p' "$REPO/install.sh")"
-    [[ -n "$link_step" ]] || exit 1
-    eval "$link_step" || exit 1
-    [[ "$(readlink "$HOME/.codex/AGENTS.md")" == "$HOME/.agents/AGENTS.md" ]] || exit 1
-    cmp "$HOME/.codex/AGENTS.md" "$REPO/packages/agents/.agents/AGENTS.md" || exit 1
+    link_codex_agents_md
+    [[ "$(readlink "$HOME/.codex/AGENTS.md")" == "$HOME/.agents/AGENTS.md" ]]
+    cmp "$HOME/.codex/AGENTS.md" "$REPO/packages/agents/.agents/AGENTS.md"
 
     rm "$HOME/.codex/AGENTS.md"
     printf 'existing generated instructions\n' >"$HOME/.codex/AGENTS.md"
     cp "$HOME/.codex/AGENTS.md" "$tmp/expected-backup"
-    eval "$link_step" || exit 1
-    cmp "$BACKUP_DIR/AGENTS.md" "$tmp/expected-backup" || exit 1
-    [[ "$(readlink "$HOME/.codex/AGENTS.md")" == "$HOME/.agents/AGENTS.md" ]] || exit 1
+    link_codex_agents_md
+    cmp "$BACKUP_DIR/AGENTS.md" "$tmp/expected-backup"
+    [[ "$(readlink "$HOME/.codex/AGENTS.md")" == "$HOME/.agents/AGENTS.md" ]]
 
-    eval "$link_step" || exit 1
-    cmp "$BACKUP_DIR/AGENTS.md" "$tmp/expected-backup" || exit 1
-    cmp "$HOME/.codex/AGENTS.md" "$REPO/packages/agents/.agents/AGENTS.md" || exit 1
-    [[ "$DOTFILES_FORCE" == 0 ]] || exit 1
+    link_codex_agents_md
+    cmp "$BACKUP_DIR/AGENTS.md" "$tmp/expected-backup"
+    cmp "$HOME/.codex/AGENTS.md" "$REPO/packages/agents/.agents/AGENTS.md"
+    [[ "$DOTFILES_FORCE" == 0 ]]
     printf 'keep unrelated conflict\n' >"$HOME/unrelated"
     create_symlink "$HOME/.agents/AGENTS.md" "$HOME/unrelated"
-    [[ ! -L "$HOME/unrelated" ]] || exit 1
+    [[ ! -L "$HOME/unrelated" ]]
     echo "  ok fresh link, replacement backup, repeated convergence, scoped force"
-) || status=1
+)
+rc=$?
+((rc == 0)) || status=1
+
+note "piped install.sh reaches main"
+# `curl ... | bash` feeds the script on stdin; main must still run. HOME holds a
+# non-git ~/.dotfiles so main stops at its first check without installing.
+(
+    tmp="$(mktemp -d)"
+    trap 'rm -rf "$tmp"' EXIT
+    mkdir -p "$tmp/.dotfiles"
+    out="$(env -u DOTFILES_DIR HOME="$tmp" PATH="$PATH" bash <"$REPO/install.sh" 2>&1)"
+    if [[ "$out" == *"exists but is not a git repo"* ]]; then
+        echo "  ok main ran"
+    else
+        echo "  FAIL: main did not run: $out"
+        exit 1
+    fi
+)
+rc=$?
+((rc == 0)) || status=1
 
 note "temp-\$HOME skill convergence (real skills CLI)"
 uv run "$REPO/scripts/test-agent-skills.py" || status=1
