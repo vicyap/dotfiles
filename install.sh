@@ -244,8 +244,8 @@ setup_linux_system() {
 }
 
 setup_claude_plugins() {
-    if ! has_cmd claude; then
-        echo "  Skipped: claude not installed"
+    if ! has_cmd claude || ! has_cmd jq; then
+        echo "  Skipped: claude or jq not installed"
         return 0
     fi
 
@@ -260,53 +260,17 @@ setup_claude_plugins() {
         claude plugin marketplace add "$marketplace" || true
     done
 
-    # All plugins to install (enable/disable controlled by settings.json)
-    local plugins=(
-        "playwright@claude-plugins-official"
-        "typescript-lsp@claude-plugins-official"
-        "context7@claude-plugins-official"
-        "pyright-lsp@claude-plugins-official"
-        "posthog@claude-plugins-official"
-        "linear@claude-plugins-official"
-        "stripe@claude-plugins-official"
-        "vercel@claude-plugins-official"
-        "resend@claude-plugins-official"
-        "slack@claude-plugins-official"
-        "skill-creator@claude-plugins-official"
-        "claude-code-setup@claude-plugins-official"
-        "explanatory-output-style@claude-plugins-official"
-        "usetemi@usetemi"
-        "usetemi-private@usetemi-private"
-        "ponytail@ponytail"
-    )
-
-    for plugin in "${plugins[@]}"; do
+    # enabledPlugins in settings.json is the list: every key is installed, and
+    # the ones set to false are then disabled, because install enables. Disabled
+    # plugins stay installed so a project can turn one on in its own settings.
+    local settings="$DOTFILES_DIR/packages/claude/.claude/settings.json"
+    local plugin
+    while IFS= read -r plugin; do
         claude plugin install "$plugin" || true
-    done
-
-    # Plugins to keep installed but disabled (install auto-enables)
-    local disabled=(
-        "claude-code-setup@claude-plugins-official"
-        "explanatory-output-style@claude-plugins-official"
-        "skill-creator@claude-plugins-official"
-        # Skill listings load into every session; none of these were ever
-        # invoked (posthog 137 skills, vercel 41, linear MCP).
-        "posthog@claude-plugins-official"
-        "linear@claude-plugins-official"
-        "vercel@claude-plugins-official"
-        "context7@claude-plugins-official" # duplicate of the user-scope MCP server
-        "usetemi@usetemi"                  # its skills are installed at user scope
-        # Its skills duplicate user-scope copies and bypass agent-skills.txt.
-        "usetemi-private@usetemi-private"
-        "resend@claude-plugins-official"
-        # Installed for projects that enable it (usetemi/temi); its SessionStart
-        # hook injects a persona, so it stays off by default.
-        "ponytail@ponytail"
-    )
-
-    for plugin in "${disabled[@]}"; do
+    done < <(jq -r '.enabledPlugins | keys[]' "$settings")
+    while IFS= read -r plugin; do
         claude plugin disable "$plugin" || true
-    done
+    done < <(jq -r '.enabledPlugins | to_entries[] | select(.value == false) | .key' "$settings")
 }
 
 # User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
@@ -376,6 +340,17 @@ ensure_codex_cli() {
         return 0
     fi
     install_codex_cli
+}
+
+# Only Ubuntu hosts are bootstrapped here. The native installer keeps itself
+# updated after the first install.
+ensure_claude_cli() {
+    if has_cmd claude || [[ "$(detect_supported_platform)" != ubuntu ]]; then
+        echo "  ok"
+        return 0
+    fi
+    curl -fsSL https://claude.ai/install.sh | bash \
+        || echo "  Warning: Claude Code install failed"
 }
 
 setup_codex_plugins() {
@@ -577,7 +552,7 @@ generate_codex_config() {
     if has_cmd python3 && [[ -f "$merger" ]]; then
         local tmp
         tmp="$(mktemp)"
-        if python3 "$merger" "$base" "$local_config" "$target" >"$tmp" 2>/dev/null; then
+        if python3 "$merger" "$base" "$local_config" "$target" >"$tmp"; then
             mv "$tmp" "$target"
             echo "  Generated $target (preserved runtime state)"
         else
@@ -642,16 +617,6 @@ wire_git_hooks() {
     fi
 }
 
-ensure_modal_cli() {
-    if ! has_cmd mise; then
-        echo "  Skipped: mise not installed"
-        return 0
-    fi
-
-    mise exec -- uv tool install --upgrade modal \
-        || echo "  Warning: modal install/upgrade failed"
-}
-
 # --- Convergence: fast, idempotent local steps -----------------------------
 # Shared by a fresh install.sh run and `dotfiles pull`. No expensive upstream
 # refresh here (no brew bundle, mise upgrades, flake updates, or plugin pulls) —
@@ -703,10 +668,9 @@ converge() {
     ensure_codex_cli
     echo
 
-    if [[ "$(detect_supported_platform)" == ubuntu ]] && ! has_cmd claude; then
-        curl -fsSL https://claude.ai/install.sh | bash \
-            || echo "  Warning: Claude Code install failed"
-    fi
+    echo "=== Ensuring Claude Code ==="
+    ensure_claude_cli
+    echo
 
     echo "=== Generating codex config ==="
     generate_codex_config
@@ -727,10 +691,6 @@ converge() {
         echo "=== Converging mise runtimes (pinned) ==="
         mise install --yes || echo "  Warning: mise install failed"
         prepend_path "$HOME/.local/share/mise/shims"
-        echo
-
-        echo "=== Installing/upgrading modal CLI ==="
-        ensure_modal_cli
         echo
 
         echo "=== Importing atuin history ==="
@@ -777,6 +737,11 @@ refresh_upstream() {
         # Removes installs unreferenced by any config mise has seen; project
         # pins reinstall automatically the next time that project is visited.
         mise prune --yes || echo "  Warning: mise prune failed"
+        echo
+
+        echo "=== Installing/upgrading modal CLI ==="
+        mise exec -- uv tool install --upgrade modal \
+            || echo "  Warning: modal install/upgrade failed"
         echo
     fi
 

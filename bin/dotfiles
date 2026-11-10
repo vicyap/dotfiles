@@ -53,10 +53,6 @@ load_libs() {
 # PID liveness check.
 DOTFILES_LOCK_DIR="${TMPDIR:-/tmp}/dotfiles-$(id -u).lock"
 
-release_lock() {
-    rm -rf "$DOTFILES_LOCK_DIR"
-}
-
 acquire_lock() {
     if ! mkdir "$DOTFILES_LOCK_DIR" 2>/dev/null; then
         local pid
@@ -70,7 +66,7 @@ acquire_lock() {
         mkdir "$DOTFILES_LOCK_DIR"
     fi
     echo $$ >"$DOTFILES_LOCK_DIR/pid"
-    trap release_lock EXIT
+    trap 'rm -rf "$DOTFILES_LOCK_DIR"' EXIT
 }
 
 # Pull with rebase, stashing local edits around it. Without --autostash a
@@ -136,4 +132,7 @@ main() {
     esac
 }
 
+# exit explicitly: `pull` can rewrite this file while bash is still reading it,
+# and bash would otherwise go on to execute whatever now follows this line.
 main "$@"
+exit $?

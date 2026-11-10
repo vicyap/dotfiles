@@ -9,9 +9,8 @@ paths:
 
 ## React & Next.js guidelines
 
-Use the `vercel-react-best-practices` skill — the canonical, progressively
-disclosed packaging of this guidance (waterfalls, bundle size, server-side
-safety, re-render gotchas, hydration). A project may carry its own tuned copy
-under that name (temi's is curated for React Compiler, SWR, and Fly.io);
-otherwise the user-level `vercel-react-best-practices` pack applies. Do not
-restate the rules here.
+When the project carries a `vercel-react-best-practices` skill, use it: it is
+the progressively disclosed packaging of this guidance (waterfalls, bundle
+size, server-side safety, re-render gotchas, hydration), and a project's copy
+is tuned to its stack (temi's is curated for React Compiler, SWR, and Fly.io).
+Do not restate the rules here.

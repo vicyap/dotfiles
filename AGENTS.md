@@ -105,7 +105,7 @@ installs fail convergence and do not prune removed skills.
 
 `packages/agents/.agents`, `packages/claude/.claude`, and `packages/codex/.codex` deploy to `~/.agents`, `~/.claude`, and `~/.codex`. Skills are installed into `~/.agents/skills` for Codex and linked into `~/.claude/skills`. `converge` also links `~/.agents/rules/*.md` into `~/.claude/rules` and symlinks `~/.codex/AGENTS.md` to the shared `~/.agents/AGENTS.md`, which Claude imports. Shared instructions explicitly tell agents to read the untracked `~/.agents/AGENTS.local.md` if it exists. The Codex link is force-replaced during convergence, backing up an existing regular file. Do not add root-level `.agents/` or `.claude/` directories in this repository.
 
-Claude Code plugins are installed by `setup_claude_plugins` and enabled or disabled in `packages/claude/.claude/settings.json`; mirror a disable in that function's `disabled` array, since install auto-enables.
+`enabledPlugins` in `packages/claude/.claude/settings.json` is the list of Claude Code plugins: `setup_claude_plugins` installs every key and disables the ones set to `false`.
 
 ## Tools
 
