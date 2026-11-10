@@ -50,12 +50,16 @@ get_json() {
 # reason instead and returns non-zero.
 
 claude_windows() {
-    local creds="" token expires_ms data
+    local creds="" token expires_ms data rows
     if [[ "$(uname -s)" == Darwin ]]; then
         creds="$(/usr/bin/security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null || true)"
     fi
     if [[ -z "$creds" && -f "$HOME/.claude/.credentials.json" ]]; then
         creds="$(<"$HOME/.claude/.credentials.json")"
+    fi
+    if [[ -n "$creds" ]] && ! jq -e . <<<"$creds" >/dev/null 2>&1; then
+        echo "credentials file is not valid JSON"
+        return 1
     fi
     token="$(jq -r '.claudeAiOauth.accessToken // empty' <<<"$creds" 2>/dev/null || true)"
     if [[ -z "$token" ]]; then
@@ -64,7 +68,7 @@ claude_windows() {
         echo "no readable Claude Code credentials (keychain or ~/.claude/.credentials.json)"
         return 1
     fi
-    expires_ms="$(jq -r '.claudeAiOauth.expiresAt // 0 | floor' <<<"$creds")"
+    expires_ms="$(jq -r '.claudeAiOauth.expiresAt // 0 | floor' <<<"$creds" 2>/dev/null)" || expires_ms=0
     if ((expires_ms > 0 && expires_ms / 1000 <= $(date +%s))); then
         echo "token expired; run claude once to refresh it"
         return 1
@@ -85,30 +89,38 @@ EOF
     # `limits` is the current shape; five_hour/seven_day is the older one, kept
     # for accounts that still get only that. A plan without a 5-hour limit
     # simply has no session entry.
-    jq -r '
+    rows="$(jq -r '
         def row($label; $pct; $reset): [$label, ($pct | tostring), ($reset // "")] | @tsv;
-        if (.limits // [] | length) > 0 then
+        if ((.limits // []) | any(.[]; .percent != null)) then
             .limits[]
             | select(.percent != null)
             | if .kind == "session" then row("Current session"; .percent; .resets_at)
               elif .kind == "weekly_all" then row("Current week"; .percent; .resets_at)
               elif .kind == "weekly_scoped" then
                 row("Current week (\(.scope.model.display_name // .scope.surface // "scoped"))"; .percent; .resets_at)
-              else row(.kind; .percent; .resets_at) end
+              else row(.kind // "unknown"; .percent; .resets_at) end
         else
             (.five_hour | select(.utilization != null) | row("Current session"; .utilization; .resets_at)),
             (.seven_day | select(.utilization != null) | row("Current week"; .utilization; .resets_at))
-        end' <<<"$data"
+        end' <<<"$data" 2>/dev/null)" || {
+        echo "unexpected response from the usage endpoint"
+        return 1
+    }
+    [[ -z "$rows" ]] || echo "$rows"
 }
 
 codex_windows() {
-    local auth="${CODEX_HOME:-$HOME/.codex}/auth.json" token account data
+    local auth="${CODEX_HOME:-$HOME/.codex}/auth.json" token account data rows
     if [[ ! -f "$auth" ]]; then
         echo "not signed in (no $auth)"
         return 1
     fi
-    token="$(jq -r '.tokens.access_token // empty' "$auth")"
-    account="$(jq -r '.tokens.account_id // empty' "$auth")"
+    if ! jq -e . "$auth" >/dev/null 2>&1; then
+        echo "auth file is not valid JSON ($auth)"
+        return 1
+    fi
+    token="$(jq -r '.tokens.access_token // empty' "$auth" 2>/dev/null || true)"
+    account="$(jq -r '.tokens.account_id // empty' "$auth" 2>/dev/null || true)"
     if [[ -z "$token" ]]; then
         echo "not signed in (no access token in $auth)"
         return 1
@@ -126,7 +138,7 @@ EOF
         return 1
     }
 
-    jq -r '
+    rows="$(jq -r '
         .rate_limit // {}
         | [.primary_window, .secondary_window][]
         | select(. != null and .used_percent != null)
@@ -135,22 +147,45 @@ EOF
              else "\((.limit_window_seconds // 0) / 3600 | floor)-hour window" end),
             (.used_percent | tostring),
             (.reset_at // "" | tostring) ]
-        | @tsv' <<<"$data" | sort
+        | @tsv' <<<"$data" 2>/dev/null | sort)" || {
+        echo "unexpected response from the usage endpoint"
+        return 1
+    }
+    [[ -z "$rows" ]] || echo "$rows"
 }
 
-# "Nov 14, 6pm (PST)" in the local timezone, from epoch seconds or ISO 8601.
+# "Nov 14, 6pm (PST)" in the local timezone, from epoch seconds (a fraction is
+# floored) or ISO 8601 with Z or a numeric offset. jq's strflocaltime ignores a
+# Region/City TZ, so jq only reduces the input to epoch seconds and date
+# formats it: GNU takes -d "@epoch", BSD takes -r epoch.
 format_reset() {
     [[ -n "$1" ]] || {
         echo unknown
         return
     }
-    jq -rn --arg t "$1" '
-        (if ($t | test("^[0-9]+$")) then ($t | tonumber)
-         else ($t | sub("\\.[0-9]+"; "") | sub("\\+00:00$"; "Z") | fromdateiso8601) end)
-        | strflocaltime("%b|%d|%I|%M|%p|%Z") | split("|")
-        | "\(.[0]) \(.[1] | tonumber), \(.[2] | tonumber)"
-          + (if .[3] == "00" then "" else ":\(.[3])" end)
-          + "\(.[4] | ascii_downcase) (\(.[5]))"' 2>/dev/null || echo "$1"
+    local epoch fmt='+%b|%d|%I|%M|%p|%Z' out mon day hour min ampm zone
+    epoch="$(jq -rn --arg t "$1" '
+        if ($t | test("^[0-9]+(\\.[0-9]+)?$")) then ($t | tonumber | floor)
+        else
+            ($t | capture("^(?<dt>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})(\\.[0-9]+)?(?<z>Z|[+-][0-9]{2}:[0-9]{2})$")) as $m
+            | ($m.z | if . == "Z" then 0
+                else (.[1:3] | tonumber) * 3600 + (.[4:6] | tonumber) * 60
+                     | if $m.z[0:1] == "-" then -. else . end end) as $off
+            | ($m.dt + "Z" | fromdateiso8601) - $off
+        end' 2>/dev/null)" || epoch=""
+    [[ -n "$epoch" ]] || {
+        echo "$1"
+        return
+    }
+    out="$(date -d "@$epoch" "$fmt" 2>/dev/null || date -r "$epoch" "$fmt" 2>/dev/null)" || {
+        echo "$1"
+        return
+    }
+    IFS='|' read -r mon day hour min ampm zone <<<"$out"
+    # 10# keeps bash from reading 08 and 09 as bad octal.
+    printf '%s %d, %d' "$mon" "$((10#$day))" "$((10#$hour))"
+    [[ "$min" == 00 ]] || printf ':%s' "$min"
+    printf '%s (%s)\n' "$(tr '[:upper:]' '[:lower:]' <<<"$ampm")" "$zone"
 }
 
 # A bar of BAR_WIDTH cells with half-cell resolution.
