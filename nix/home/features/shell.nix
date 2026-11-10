@@ -103,6 +103,11 @@
 
     # Interactive shells only (home-manager guards ~/.bashrc itself).
     initExtra = ''
+      # A non-login interactive bash with a clean environment (`ssh host bash -i`,
+      # agent terminals) never reads ~/.profile, so load PATH and variables here.
+      [[ -f "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh" ]] \
+        && . "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh"
+
       command -v mise &>/dev/null && eval "$(mise activate bash)"
 
       # Shared shell functions, baked from packages/shell/.functions.

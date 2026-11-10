@@ -28,10 +28,6 @@
 **/.env
 **/.env.*
 
-# VM migration bundles (carry .env credentials — never commit)
-vms/**/*.zip
-vms/**/*.tar.gz
-
 # Local overrides
 *.local
 .local/

@@ -146,7 +146,7 @@ rc=$?
 
 note "piped install.sh reaches main"
 # `curl ... | bash` feeds the script on stdin; main must still run. HOME holds a
-# non-git ~/.dotfiles so main stops at its first check without installing.
+# non-git ~/.dotfiles so main stops at that check, before it installs anything.
 (
     tmp="$(mktemp -d)"
     trap 'rm -rf "$tmp"' EXIT

@@ -221,8 +221,14 @@ setup_claude_plugins() {
     local settings="$DOTFILES_DIR/packages/claude/.claude/settings.json"
     local plugin
     local -a plugins disabled
-    mapfile -t plugins < <(jq -r '.enabledPlugins | keys[]' "$settings")
-    mapfile -t disabled < <(jq -r '.enabledPlugins | to_entries[] | select(.value == false) | .key' "$settings")
+    plugins=()
+    disabled=()
+    while IFS= read -r plugin; do
+        plugins+=("$plugin")
+    done < <(jq -r '.enabledPlugins | keys[]' "$settings")
+    while IFS= read -r plugin; do
+        disabled+=("$plugin")
+    done < <(jq -r '.enabledPlugins | to_entries[] | select(.value == false) | .key' "$settings")
 
     for plugin in "${plugins[@]}"; do
         claude plugin install "$plugin" || true
@@ -667,14 +673,16 @@ main() {
 
     prepend_path "$HOME/go/bin"
     prepend_path "$HOME/.local/bin"
+
+    if [[ ! -d "$DOTFILES_DIR/.git" && -d "$DOTFILES_DIR" ]]; then
+        echo "Error: $DOTFILES_DIR exists but is not a git repo"
+        exit 1
+    fi
+
     install_bootstrap_packages
 
-    # If running via curl pipe, clone the repo
+    # If running via curl pipe, clone the repo (bootstrap may have installed git)
     if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
-        if [[ -d "$DOTFILES_DIR" ]]; then
-            echo "Error: $DOTFILES_DIR exists but is not a git repo"
-            exit 1
-        fi
         echo "Cloning dotfiles..."
         git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
     fi
