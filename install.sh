@@ -216,14 +216,20 @@ setup_claude_plugins() {
     # enabledPlugins in settings.json is the list: every key is installed, and
     # the ones set to false are then disabled, because install enables. Disabled
     # plugins stay installed so a project can turn one on in its own settings.
+    # Both lists are read up front: ~/.claude/settings.json is a symlink to
+    # this file, so each install rewrites it with the plugin enabled.
     local settings="$DOTFILES_DIR/packages/claude/.claude/settings.json"
     local plugin
-    while IFS= read -r plugin; do
+    local -a plugins disabled
+    mapfile -t plugins < <(jq -r '.enabledPlugins | keys[]' "$settings")
+    mapfile -t disabled < <(jq -r '.enabledPlugins | to_entries[] | select(.value == false) | .key' "$settings")
+
+    for plugin in "${plugins[@]}"; do
         claude plugin install "$plugin" || true
-    done < <(jq -r '.enabledPlugins | keys[]' "$settings")
-    while IFS= read -r plugin; do
+    done
+    for plugin in "${disabled[@]}"; do
         claude plugin disable "$plugin" || true
-    done < <(jq -r '.enabledPlugins | to_entries[] | select(.value == false) | .key' "$settings")
+    done
 }
 
 # User-scope MCP servers live in ~/.claude.json, which Claude Code rewrites
