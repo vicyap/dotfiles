@@ -77,24 +77,7 @@ fails to install, convergence fails without pruning removed skills.
 
 ## Structure
 
-```
-~/.dotfiles/
-├── install.sh          # Installer (symlinks + Nix)
-├── bin/dotfiles        # CLI tool
-├── lib/                # Helper scripts
-├── nix/                # Nix configs
-│   ├── home/           # home-manager: shell, core programs, CLI tool set
-│   └── darwin/         # nix-darwin: macOS system settings + casks
-├── packages/           # Symlinked dotfiles
-│   ├── bash/
-│   ├── claude/
-│   ├── codex/
-│   ├── ghostty/
-│   └── shell/
-└── platform/           # OS-specific configs
-    ├── macos/
-    └── linux/
-```
+[`AGENTS.md`](./AGENTS.md) describes the layout under "Architecture".
 
 ## Usage
 
@@ -104,6 +87,7 @@ After installation, use the `dotfiles` CLI:
 dotfiles pull     # Pull latest, then converge this machine (fast, repeatable)
 dotfiles upgrade  # pull + refresh upstream (flake inputs, Homebrew, mise, plugins)
 dotfiles cd       # cd into the dotfiles repo
+dotfiles help     # all subcommands
 ```
 
 For a fresh machine, run `./install.sh` after cloning, or pipe it from curl.
@@ -131,11 +115,12 @@ Two mechanisms; pick by who should own the file.
    - `packages/myapp/.config/myapp/config` will be symlinked to `~/.config/myapp/config`
 3. Run `dotfiles pull` or `./install.sh` to apply
 
-**Nix home-manager** (the shell, git, tmux, and the CLI tool set): add a package
+**Nix home-manager** (the shells, git, tmux, and the CLI tool set): add a package
 to `nix/home/features/packages.nix`, or a `programs.<name>` module under
 `nix/home/features/`, then `dotfiles pull`. Packages listed in
 `NIX_OWNED_PACKAGES` (`lib/symlink.sh`) are deliberately skipped by the symlinker
-so the two mechanisms never fight over the same path.
+so the two mechanisms never fight over the same path; the comment there says
+how Nix uses the files those packages still keep under `packages/`.
 
 ## Remote browser / OAuth
 
