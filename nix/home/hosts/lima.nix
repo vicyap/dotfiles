@@ -23,8 +23,7 @@
     options = "--delete-older-than 30d";
   };
 
-  # Homebrew shellenv (login shell). profileExtra is a `lines` option, so this
-  # concatenates after the shared MOTD block in nix/home/features/zsh.nix.
+  # Homebrew shellenv (login shell, macOS only).
   programs.zsh.profileExtra = ''
     # Homebrew (macOS)
     if [[ -f /opt/homebrew/bin/brew ]]; then

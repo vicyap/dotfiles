@@ -87,14 +87,6 @@
       skip_global_compinit=1
     '';
 
-    # ~/.zprofile (login shell): the omakase MOTD. The macOS Homebrew shellenv
-    # block lives in nix/home/hosts/lima.nix (profileExtra concatenates across
-    # modules), so it never runs on headless Linux hosts.
-    profileExtra = ''
-      # Omakase tool reminder (login-shell only; not run per tmux pane).
-      [[ -x "$HOME/.dotfiles/bin/omakase-motd" ]] && "$HOME/.dotfiles/bin/omakase-motd"
-    '';
-
     initContent = lib.mkMerge [
       # --- early: before compinit / plugins -------------------------------
       (lib.mkBefore ''

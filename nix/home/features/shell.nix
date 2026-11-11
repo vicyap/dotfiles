@@ -96,11 +96,6 @@
       "erasedups"
     ];
 
-    # ~/.profile (login shell): the omakase MOTD, as in zsh's profileExtra.
-    profileExtra = ''
-      [[ -x "$HOME/.dotfiles/bin/omakase-motd" ]] && "$HOME/.dotfiles/bin/omakase-motd"
-    '';
-
     # Interactive shells only (home-manager guards ~/.bashrc itself).
     initExtra = ''
       # A non-login interactive bash with a clean environment (`ssh host bash -i`,
