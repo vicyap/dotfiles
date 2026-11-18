@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prep Audio for Transcription"
+  short_description: "Trim silence, compress, and split recordings under 25 MB"
+  default_prompt: "Use $prep-audio-for-transcription to prepare these recordings for transcription."
