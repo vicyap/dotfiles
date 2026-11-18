@@ -23,8 +23,10 @@ source:
 - `<name> - trimmed part01.m4a`, `part02`, ... of roughly equal length when
   it is not. The single trimmed file is removed after splitting.
 
-It prints one line per output: path, size in bytes, and duration. Existing
-outputs are overwritten.
+It prints one line per output: path, size in bytes, and duration. It never
+overwrites: a source with any existing output is skipped with a message on
+stderr, and the script exits 1 after processing the rest. To redo a source,
+ask the user before deleting its earlier outputs.
 
 Settings:
 
